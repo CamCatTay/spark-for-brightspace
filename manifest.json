@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "D2L Course Scraping Extension",
+  "version": "1.0.0",
+  "description": "An extension to scrape course data from D2L.",
+  "icons": {
+  }
+}

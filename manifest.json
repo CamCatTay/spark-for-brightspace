@@ -2,26 +2,16 @@
   "manifest_version": 3,
   "name": "D2L-todolist",
   "version": "1.0.0",
-  "description": "An extension to scrape course data from D2L.",
-  "permissions": [
-    "scripting",
-    "tabs"
-  ],
+  "description": "An extension to manage a to-do list for D2L courses.",
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["https://*/d2l/*"],
       "all_frames": true,
       "js": ["/scripts/content.js"]
     }
   ],
-  "host_permissions": [
-    "https://*.brightspace.com/*"
-  ],
   "action": {
     "default_popup": "/html/popup.html",
     "default_icon": "/images/notebook.png"
-  },
-  "background": {
-    "service_worker": "/scripts/background.js"
   }
 }

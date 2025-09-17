@@ -6,6 +6,8 @@ class Course {
         this.files = new Map();
         this.quizzes = new Map();
         this.assignments = new Map();
+        this.discussions = new Map();
+        this.checklist = new Map();
     }
     addFile(item) {
         this.files.set(item.id, item);
@@ -18,6 +20,9 @@ class Course {
     }
     addDiscussion(item) {
         this.discussions.set(item.id, item);
+    }
+    addChecklist(item) {
+        this.checklist.set(item.id, item);
     }
     openUrl() {
         openUrl(this.url);
@@ -97,14 +102,18 @@ export async function getBrightspaceCourses(baseURL) {
     });
 }
 
+
 export async function getCourseContent(tabUrl) {
     const baseURL = await getBaseURL(tabUrl);
     const allCourses = await getBrightspaceCourses(baseURL);
     const courseIdsCSV = await getCourseIds(allCourses);
 
-    // IMPORTANT: Increase the date range by 1 day on either side to account for time zone differences
-    let startDate = allCourses[0].Access.StartDate;
-    let endDate = allCourses[0].Access.EndDate
+    // Increase the date range by 1 day on either side to account for time zone differences
+    let startDate = new Date(allCourses[0].Access.StartDate);
+    let endDate = new Date(allCourses[0].Access.EndDate);
+
+    startDate.setDate(startDate.getDate() - 1); // Subtract 1 day from the start date
+    endDate.setDate(endDate.getDate() + 1); // Add 1 day to the end date
 
     const nonGradedItemsUrl = baseURL + 
     "/d2l/api/le/1.67/content/myItems/?startDateTime=null&endDateTime=null&orgUnitIdsCSV=" + 
@@ -125,12 +134,61 @@ export async function getCourseContent(tabUrl) {
     });
     
     const courseItems = gradedItems.concat(nonGradedItems);
+    const courseMap = await mapData(allCourses, courseItems);
 
-    return courseItems;
+    return courseMap;
 }
-    
 
-export async function getMasterData(tabUrl) {
-    const data = getBrightspaceCourses(tabUrl);
-    const courseItems = getCourseContent(tabUrl)
+export async function mapData(courses, items) {
+    const courseMap = new Map();
+
+    // Iterate through courses and convert them into Course objects
+    courses.forEach(courseData => {
+        const course = new Course(
+            courseData.OrgUnit.Id,
+            courseData.OrgUnit.Name,
+            courseData.HomeUrl
+        );
+        courseMap.set(course.id, course);
+        
+    });
+    
+    // Iterate through items and convert them into Item objects
+    items.forEach(itemData => {
+        const item = new Item(
+            itemData.ItemId,
+            itemData.ItemName,
+            itemData.ItemUrl,
+            itemData.DueDate,
+            itemData.Completed || false // implement persistence later
+        );
+
+        const course = courseMap.get(parseInt(itemData.OrgUnitId, 10));
+        
+        // Add the item to the appropriate course map
+        if (course) {
+            switch (itemData.ActivityType) {
+                case 1: // File
+                    course.addFile(item);
+                    break;
+                case 3: // Assignment
+                    course.addAssignment(item);
+                    break;
+                case 4: // Quiz
+                    course.addQuiz(item);
+                    break;
+                case 5: // DiscussionForum
+                    course.addDiscussion(item);
+                    break;
+                case 10: // Checklist 
+                    course.addChecklist(item);
+                    break;
+                default:
+                    console.warn(`Unused ActivityType: ${itemData.ActivityType}`);
+            }
+        }
+    });
+
+    // Return the processed data
+    return courseMap;
 }

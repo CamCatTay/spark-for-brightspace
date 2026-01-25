@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "D2L-todolist",
+  "name": "D2L To-Do List",
   "version": "1.0.0",
   "description": "An extension to manage a to-do list for D2L courses.",
   "background": {
@@ -10,7 +10,8 @@
   "permissions": [
     "tabs",
     "scripting",
-    "storage"
+    "storage",
+    "sidePanel"
   ],
   "content_scripts": [
     {
@@ -22,5 +23,8 @@
   "action": {
     "default_popup": "/html/popup.html",
     "default_icon": "/images/notebook.png"
+  },
+  "side_panel": {
+    "default_path": "/html/sidepanel.html"
   }
 }

@@ -2,10 +2,42 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/sidepanel.css">
     <title>D2L Todolist</title>
   </head>
+
+  <div class="calendar-container">
+    
+    <div class="date-container">
+        <div id="date">Jan 25 - Today - Sunday</div>
+        <hr>
+
+        <a class="course-assignment-container" href="https://www.google.com" target="_blank" rel="noopener" >
+            <div>Quiz 1</div>
+            <div>
+                <span id="timeDue">11:59PM</span>
+                <span id="course-name">Course 1</span>
+            </div> 
+            <hr>
+        </div>
+    </a>
+
+    <div class="course-assignment-container">
+        <div>Quiz 1</div>
+        
+        <div>
+            <span id="timeDue">11:59PM</span>
+            <span id="course-name">Course 1</span>
+        </div> 
+    </div>
+   
+    <div id="date-container">Jan 26 - Tomorrow - Monday</div>
+    
+    <div id="date-container">Jan 27 - Tuesday</div>
+  </div>
+
   <body>
-    <h1>Blah</h1>
+    <h1 id="test">Blah</h1>
     <hr />
     <p id="select-a-word">Something goes here</p>
     <script src="/scripts/content.js"></script>

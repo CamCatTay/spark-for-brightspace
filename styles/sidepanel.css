@@ -1,4 +1,21 @@
-#d2l-sidepanel-title {
-    color: red;
-    font-size: 20px;
+#test {
+    color: green;
 }
+
+#course-name {
+    float: right;
+}
+
+.calendar-container hr {
+    border: 1px solid gray;
+}
+
+.calendar-container #date {
+    font-weight: bold;
+}
+
+a:link, a:visited {
+    text-decoration: none;
+    color: black;
+}
+

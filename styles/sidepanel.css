@@ -6,11 +6,11 @@
     float: right;
 }
 
-.calendar-container hr {
+#calendar-container hr {
     border: 1px solid gray;
 }
 
-.calendar-container #date {
+#calendar-container #date {
     font-weight: bold;
 }
 

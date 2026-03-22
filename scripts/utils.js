@@ -1,3 +1,5 @@
+// no longer used commented out for archive
+/*
 export function mapToObject(map) {
     const coursesObject = {};
     map.forEach((course, id) => {
@@ -14,3 +16,4 @@ export function mapToObject(map) {
     });
     return coursesObject;
 }
+*/

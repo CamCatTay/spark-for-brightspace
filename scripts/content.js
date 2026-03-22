@@ -8,28 +8,49 @@ function getMondayOfCurrentWeek(date) {
     return new Date(date.setDate(difference));
 }
 
-function createAssignmentElement(assignment, course) { // passing entire course for now may only need the name though
+function formatTimeFromDate(dateString) {
+    if (!dateString) return "No time";
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch (e) {
+        return "No time";
+    }
+}
+
+function getDateOnly(dateString) {
+    if (!dateString) return null;
+    try {
+        const date = new Date(dateString);
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    } catch (e) {
+        return null;
+    }
+}
+
+function createAssignmentElement(assignment, course) {
     const assignmentContainer = document.createElement("a");
-    assignmentContainer.id = "course-assignment-container";
-    assignmentContainer.style.cursor = "pointer";
+    assignmentContainer.className = "calendar-item";
 
-    const assignmentName = document.createElement("div");
-    assignmentName.textContent = assignment.name;
-    assignmentContainer.appendChild(assignmentName);
+    const itemName = document.createElement("div");
+    itemName.className = "item-name";
+    itemName.textContent = assignment.name;
+    assignmentContainer.appendChild(itemName);
 
-    // holds the span elements for assignment data
-    const assignmentDataContainer = document.createElement("div");
-    assignmentContainer.appendChild(assignmentDataContainer);
+    const itemMeta = document.createElement("div");
+    itemMeta.className = "item-meta";
+    
+    const itemTime = document.createElement("span");
+    itemTime.className = "item-time";
+    itemTime.textContent = formatTimeFromDate(assignment.dueDate);
+    itemMeta.appendChild(itemTime);
 
-    const timeDue = document.createElement("span");
-    timeDue.id = "timeDue";
-    timeDue.textContent = assignment.dueDate; // PLACEHOLDER: this should be time due not entire due date
-    assignmentDataContainer.appendChild(timeDue);
+    const itemCourse = document.createElement("span");
+    itemCourse.className = "item-course";
+    itemCourse.textContent = course.name;
+    itemMeta.appendChild(itemCourse);
 
-    const courseName = document.createElement("span");
-    courseName.id = "course-name";
-    courseName.textContent = course.name;
-    assignmentDataContainer.appendChild(courseName);
+    assignmentContainer.appendChild(itemMeta);
 
     // Add click listener to open assignment URL
     assignmentContainer.addEventListener("click", function(e) {
@@ -37,40 +58,50 @@ function createAssignmentElement(assignment, course) { // passing entire course 
         window.open(assignment.url, '_blank');
     });
 
-    console.log("Created assignment element for:", assignment.name);
     return assignmentContainer;
+}
+
+function formatDateHeader(date) {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const tomorrowOnly = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    const title = `${monthNames[date.getMonth()]} ${date.getDate()}`;
+    let label = dayNames[date.getDay()];
+
+    if (dateOnly.getTime() === todayOnly.getTime()) {
+        label = `Today - ${label}`;
+    } else if (dateOnly.getTime() === tomorrowOnly.getTime()) {
+        label = `Tomorrow - ${label}`;
+    }
+
+    return { title, label };
 }
 
 function initializeGUI(courseData) {
     const calendarContainer = document.getElementById("calendar-container");
 
+    if (!calendarContainer) {
+        return;
+    }
+
     const currentDate = new Date();
     const mondayDate = getMondayOfCurrentWeek(new Date(currentDate));
     console.log("Monday of current week:", mondayDate);
 
-    /* // test insert element functions
-    const div = document.createElement("div");
-    div.textContent = "base element";
-    calendarContainer.appendChild(div);
-
-    const div2 = document.createElement("div");
-    div2.textContent = "im before the base element";
-    calendarContainer.insertBefore(div2, div);
-
-    const div3 = document.createElement("div");
-    div3.textContent = "im after the base element";
-    calendarContainer.appendChild(div3, div);
-    */
-
-    const testAssignment = createAssignmentElement(
-        {name: "Test Assignment", dueDate: "2024-06-30 23:59" },
-        {name: "Test Course"}
-    )
-
-    if (calendarContainer) {
-        calendarContainer.appendChild(testAssignment);
-    }
-
+    // Show loading indicator
+    calendarContainer.innerHTML = "";
+    const loadingIndicator = document.createElement("div");
+    loadingIndicator.id = "loading-indicator";
+    loadingIndicator.textContent = "Loading assignments...";
+    calendarContainer.appendChild(loadingIndicator);
 }
 
 function updateGUI(courseData) {
@@ -80,48 +111,93 @@ function updateGUI(courseData) {
         return;
     }
 
-    // Clear existing test content
+    // Clear existing content
     calendarContainer.innerHTML = "";
 
-    console.log("updateGUI called with courseData:", courseData);
+    // Collect all items with due dates
+    const itemsByDate = {}; // { dateKey: [{ assignment, course }, ...] }
+    let minDate = null;
+    let maxDate = null;
 
-    // Iterate through all courses (courseData is an object keyed by courseId)
     Object.keys(courseData).forEach((courseId) => {
         const course = courseData[courseId];
 
-        // Display assignments with due dates (excluding completed)
-        if (course.assignments) {
-            Object.keys(course.assignments).forEach((assignmentId) => {
-                const assignment = course.assignments[assignmentId];
-                if (assignment.dueDate && !assignment.completed) {
-                    const element = createAssignmentElement(assignment, course);
-                    calendarContainer.appendChild(element);
-                }
-            });
-        }
+        const itemCollections = [
+            { items: course.assignments, type: 'assignment' },
+            { items: course.quizzes, type: 'quiz' },
+            { items: course.discussions, type: 'discussion' }
+        ];
 
-        // Display quizzes with due dates (excluding completed)
-        if (course.quizzes) {
-            Object.keys(course.quizzes).forEach((quizId) => {
-                const quiz = course.quizzes[quizId];
-                if (quiz.dueDate && !quiz.completed) {
-                    const element = createAssignmentElement(quiz, course);
-                    calendarContainer.appendChild(element);
-                }
-            });
-        }
+        itemCollections.forEach(({ items }) => {
+            if (items) {
+                Object.keys(items).forEach((itemId) => {
+                    const item = items[itemId];
+                    if (item.dueDate && !item.completed) {
+                        const dateOnly = getDateOnly(item.dueDate);
+                        if (dateOnly) {
+                            const dateKey = dateOnly.toISOString().split('T')[0];
+                            if (!itemsByDate[dateKey]) {
+                                itemsByDate[dateKey] = [];
+                            }
+                            itemsByDate[dateKey].push({ item, course });
 
-        // Display discussions with due dates (excluding completed)
-        if (course.discussions) {
-            Object.keys(course.discussions).forEach((discussionId) => {
-                const discussion = course.discussions[discussionId];
-                if (discussion.dueDate && !discussion.completed) {
-                    const element = createAssignmentElement(discussion, course);
-                    calendarContainer.appendChild(element);
-                }
-            });
-        }
+                            // Track min and max dates
+                            if (!minDate || dateOnly < minDate) minDate = dateOnly;
+                            if (!maxDate || dateOnly > maxDate) maxDate = dateOnly;
+                        }
+                    }
+                });
+            }
+        });
     });
+
+    // If no items, show empty state
+    if (!minDate || !maxDate) {
+        const emptyMessage = document.createElement("div");
+        emptyMessage.id = "loading-indicator";
+        emptyMessage.textContent = "No upcoming assignments";
+        calendarContainer.appendChild(emptyMessage);
+        return;
+    }
+
+    // Generate all dates from today to maxDate
+    const today = new Date();
+    const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endDate = new Date(maxDate);
+
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+        const dateKey = currentDate.toISOString().split('T')[0];
+        const items = itemsByDate[dateKey] || [];
+
+        // Create date header
+        const dateHeader = document.createElement("div");
+        dateHeader.className = "calendar-date-header";
+        const { title, label } = formatDateHeader(currentDate);
+        dateHeader.innerHTML = `<div class="date-title">${title}</div><div class="date-label">${label}</div>`;
+        calendarContainer.appendChild(dateHeader);
+
+        // Create items container
+        const itemsContainer = document.createElement("div");
+        itemsContainer.className = "calendar-items-container";
+
+        if (items.length === 0) {
+            const emptyNotice = document.createElement("div");
+            emptyNotice.className = "empty-day-notice";
+            emptyNotice.textContent = "No assignments due";
+            itemsContainer.appendChild(emptyNotice);
+        } else {
+            items.forEach(({ item, course }) => {
+                const element = createAssignmentElement(item, course);
+                itemsContainer.appendChild(element);
+            });
+        }
+
+        calendarContainer.appendChild(itemsContainer);
+
+        // Move to next day
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
 }
 
 window.addEventListener("load", () => {
@@ -133,32 +209,30 @@ window.addEventListener("load", () => {
     const oldCourseDataMap = new Map(); // {courseId, complete: false}
     const dateContainerMap = new Map(); // {date, dateContainer}
 
-    // initialize GUI
+    // initialize GUI with loading indicator
     initializeGUI(courseData);
 
-
-    // fetch new data first in case it is faster than storage retrieval
-    // fetch  course data and update storage
-    chrome.runtime.sendMessage({ action: "fetchCourses" }, function(response) {
-
-        // save course data to storage
-        chrome.storage.local.set({ courseData: response }, function() {
-            Object.assign(courseData, response);
-            updateGUI(courseData);
-        });
-
-        console.log("Fetched course data:", courseData);
-        console.log("It took " + getTimeTaken(startTime, performance.now()) + "s to fetch course data");
-    });
-
-    // set courseData from storage if it exists
+    // Load stored data first for immediate display
     chrome.storage.local.get([COURSE_DATA_KEY], function(result) {
-        if (result.courseData && Object.keys(courseData).length === 0) {
+        if (result.courseData) {
             Object.assign(courseData, result.courseData);
             updateGUI(courseData);
             console.log("Course data from storage:", courseData);
             console.log("It took " + getTimeTaken(startTime, performance.now()) + "s to load stored course data");
         }
+    });
+
+    // Fetch new data from API to override stored data
+    chrome.runtime.sendMessage({ action: "fetchCourses" }, function(response) {
+        // save course data to storage and update display
+        chrome.storage.local.set({ courseData: response }, function() {
+            Object.assign(courseData, response);
+            updateGUI(courseData);
+            console.log("Updated with fetched course data");
+        });
+
+        console.log("Fetched course data:", courseData);
+        console.log("It took " + getTimeTaken(startTime, performance.now()) + "s to fetch course data");
     });
 
     // setup UI and create oldCourseDataMap

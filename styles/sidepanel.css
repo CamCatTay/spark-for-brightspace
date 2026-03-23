@@ -313,3 +313,4 @@ body:has(#d2l-todolist-widget.hidden) {
 
 #calendar-container::-webkit-scrollbar-thumb:hover {
     background: #999;
+}

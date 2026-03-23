@@ -15,6 +15,8 @@
  * @property {boolean} IsExempt
  */
 
+import { getTestCourseContent } from './brightspace-test-data.js';
+
 // TEST MODE: Set to true to use fake course data for testing
 const TEST_MODE = false;
 
@@ -102,7 +104,7 @@ export async function getBrightspaceData(url) {
         const nextPageItems = await getBrightspaceData(currentPage.toString());
         return data.Items.concat(nextPageItems);
     }
-    return "Items" in data ? data.Items : data.Object; // if data has "Items" then return Items else return Object
+    return data.Items || data.Object || data.Objects || []; // return Items, Object, or Objects depending on API structure
 }
 
 // yeah .join was better approach. benchmarked both and this is nearly 2x faster
@@ -122,11 +124,23 @@ export async function getBrightspaceCourses(baseURL) {
     });
 }
 
+// Fetch quizzes and tests for a specific course
+export async function getBrightspaceQuizzes(baseURL, courseId) {
+    const quizzesURL = baseURL + `/d2l/api/le/1.67/${courseId}/quizzes/`;
+    try {
+        const quizzes = await getBrightspaceData(quizzesURL);
+        return Array.isArray(quizzes) ? quizzes : [];
+    } catch (error) {
+        console.warn(`Failed to fetch quizzes for course ${courseId}:`, error);
+        return [];
+    }
+}
+
 
 export async function getCourseContent(tabUrl) {
     // Return fake data if in test mode
     if (TEST_MODE) {
-        return getTestCourseContent();
+        return getTestCourseContent(mapData);
     }
 
     const baseURL = await getBaseURL(tabUrl);
@@ -158,101 +172,38 @@ export async function getCourseContent(tabUrl) {
         return item.ActivityType === 1;
     });
 
-    const courseItems = gradedItems.concat(nonGradedItems);
-    const courseMap = await mapData(allCourses, courseItems);
-
-    return courseMap;
-}
-
-/**
- * Generates a single fake BrightspaceItem for testing
- * @param {number} itemId - Unique item ID
- * @param {string} courseId - Course ID
- * @param {string} [itemName] - Optional item name
- * @param {number} [activityType] - Optional activity type (3=Assignment, 4=Quiz, 5=Discussion)
- * @returns {BrightspaceItem} A fake BrightspaceItem
- */
-function generateFakeBrightspaceItem(itemId, courseId, itemName, activityType = 3) {
-    // Generate a random due date between tomorrow and 30 days from now
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + Math.floor(Math.random() * 30) + 1);
-
-    const activityNames = {
-        3: "Assignment",
-        4: "Quiz",
-        5: "Discussion"
-    };
-
-    const name = itemName || `${activityNames[activityType] || "Item"} ${itemId}`;
-
-    return {
-        UserId: "user123",
-        OrgUnitId: courseId.toString(),
-        ItemId: itemId,
-        ItemName: name,
-        ItemType: activityType,
-        ItemUrl: `https://example.brightspace.com/d2l/le/content/${courseId}/viewContent/${itemId}`,
-        DueDate: dueDate.toISOString(),
-        CompletionType: 1,
-        ActivityType: activityType,
-        IsExempt: false
-    };
-}
-
-/**
- * Generates multiple fake BrightspaceItems for testing
- * @param {number} count - Number of items to generate
- * @param {string} courseId - Course ID
- * @returns {BrightspaceItem[]} Array of fake BrightspaceItems
- */
-function generateFakeBrightspaceItems(count, courseId) {
-    const items = [];
-    const activityTypes = [3, 4, 5]; // Assignment, Quiz, Discussion
-
-    for (let i = 1; i <= count; i++) {
-        const activityType = activityTypes[Math.floor(Math.random() * activityTypes.length)];
-        items.push(generateFakeBrightspaceItem(i, courseId, `Test Item ${i}`, activityType));
-    }
-
-    return items;
-}
-
-/**
- * Generates fake courses and items for testing purposes
- * @returns {Object} CourseMap with fake data
- */
-export async function getTestCourseContent() {
-    // Create fake course data matching the API structure
-    const fakeCourses = [
-        {
-            OrgUnit: {
-                Id: 1001,
-                Name: "Test Course 1",
-                Type: { Id: 3 }
-            },
-            HomeUrl: "https://example.brightspace.com/d2l/home/1001"
-        },
-        {
-            OrgUnit: {
-                Id: 1002,
-                Name: "Test Course 2",
-                Type: { Id: 3 }
-            },
-            HomeUrl: "https://example.brightspace.com/d2l/home/1002"
-        }
-    ];
-
-    // Generate fake items for each course
-    const fakeItems = [];
-    fakeCourses.forEach(course => {
-        const courseItems = generateFakeBrightspaceItems(5, course.OrgUnit.Id);
-        fakeItems.push(...courseItems);
+    // Filter out quizzes (ActivityType 4) from both lists - we'll fetch them separately
+    const filteredGradedItems = gradedItems.filter(function(item) {
+        return item.ActivityType !== 4;
     });
 
-    // Use mapData to process into proper Course objects
-    const courseMap = await mapData(fakeCourses, fakeItems);
+    let courseItems = filteredGradedItems.concat(nonGradedItems);
 
-    console.log("Using TEST MODE - fake course data loaded");
+    // Fetch quizzes for each course and add them to courseItems
+    for (const course of allCourses) {
+        const courseQuizzes = await getBrightspaceQuizzes(baseURL, course.OrgUnit.Id);
+        console.log("QUIZZES!")
+        console.log(courseQuizzes)
+        const quizItems = courseQuizzes.map(function(quiz) {
+            return {
+                UserId: course.UserId,
+                OrgUnitId: course.OrgUnit.Id,
+                ItemId: quiz.QuizId,
+                ItemName: quiz.Name,
+                ItemType: 4, // Quiz
+                ItemUrl: baseURL + `/d2l/le/quiz/${course.OrgUnit.Id}/${quiz.QuizId}`,
+                EndDate: quiz.EndDate,
+                DueDate: quiz.DueDate || quiz.EndDate, // Use EndDate if DueDate is null
+                CompletionType: 1,
+                ActivityType: 4, // Quiz
+                IsExempt: false
+            };
+        });
+        courseItems = courseItems.concat(quizItems);
+    }
+
+    const courseMap = await mapData(allCourses, courseItems);
+
     return courseMap;
 }
 
@@ -276,7 +227,7 @@ export async function mapData(courses, items) {
             itemData.ItemId,
             itemData.ItemName,
             itemData.ItemUrl,
-            itemData.DueDate,
+            itemData.DueDate || itemData.EndDate, // Use EndDate if DueDate is null
             !!itemData.DateCompleted // Item is completed if DateCompleted exists
         );
 

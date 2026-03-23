@@ -33,6 +33,7 @@ const PANEL_WIDTH_KEY = "d2l-todolist-width";
 let panelWidth = 350; // Default width
 let container, toggleBtn;
 let isAnimating = false; // Prevent multiple simultaneous animations
+let isDataStale = false; // Track if displayed data is from cache
 
 function updateBodyMargin() {
     // Always maintain the margin-right for DOM balance
@@ -261,7 +262,25 @@ function initializeGUI(courseData) {
     calendarContainer.appendChild(loadingIndicator);
 }
 
-function updateGUI(courseData) {
+function addDataStatusIndicator(isStale) {
+    const calendarContainer = document.getElementById("calendar-container");
+    if (!calendarContainer) return;
+
+    // Remove existing status indicator
+    const existingIndicator = calendarContainer.querySelector(".data-status-indicator");
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+
+    if (isStale) {
+        const indicator = document.createElement("div");
+        indicator.className = "data-status-indicator loading";
+        indicator.innerHTML = '<span class="spinner"></span> Fetching latest data...';
+        calendarContainer.appendChild(indicator);
+    }
+}
+
+function updateGUI(courseData, isFromCache = false) {
     const calendarContainer = document.getElementById("calendar-container");
     if (!calendarContainer) {
         console.warn("Calendar container not found");
@@ -270,6 +289,12 @@ function updateGUI(courseData) {
 
     // Clear existing content
     calendarContainer.innerHTML = "";
+    isDataStale = isFromCache;
+
+    // Show status indicator if data is from cache
+    if (isFromCache) {
+        addDataStatusIndicator(true);
+    }
 
     // Collect all items with due dates
     const itemsByDate = {}; // { dateKey: [{ assignment, course }, ...] }
@@ -310,6 +335,9 @@ function updateGUI(courseData) {
 
     // If no items, show empty state
     if (!minDate || !maxDate) {
+        if (isFromCache) {
+            addDataStatusIndicator(true);
+        }
         const emptyMessage = document.createElement("div");
         emptyMessage.id = "loading-indicator";
         emptyMessage.textContent = "No upcoming assignments";
@@ -362,7 +390,7 @@ window.addEventListener("load", () => {
 
     const startTime = performance.now();
     const COURSE_DATA_KEY = "courseData";
-    const courseData = {};
+    let courseData = {};
 
     // Inject the embedded UI
     injectEmbeddedUI();
@@ -371,8 +399,8 @@ window.addEventListener("load", () => {
     // Load stored data first for immediate display
     chrome.storage.local.get([COURSE_DATA_KEY], function(result) {
         if (result.courseData) {
-            Object.assign(courseData, result.courseData);
-            updateGUI(courseData);
+            courseData = JSON.parse(JSON.stringify(result.courseData)); // Deep copy
+            updateGUI(courseData, true); // Mark as from cache
             console.log("Course data from storage:", courseData);
             console.log("It took " + getTimeTaken(startTime, performance.now()) + "s to load stored course data");
         }
@@ -380,12 +408,16 @@ window.addEventListener("load", () => {
 
     // Fetch new data from API to override stored data
     chrome.runtime.sendMessage({ action: "fetchCourses" }, function(response) {
-        // save course data to storage and update display
-        chrome.storage.local.set({ courseData: response }, function() {
-            Object.assign(courseData, response);
-            updateGUI(courseData);
-            console.log("Updated with fetched course data");
-        });
+        if (response) {
+            // Completely replace courseData with fresh data
+            courseData = JSON.parse(JSON.stringify(response)); // Deep copy
+            
+            // save course data to storage and update display
+            chrome.storage.local.set({ courseData: courseData }, function() {
+                updateGUI(courseData, false); // Mark as fresh data
+                console.log("Updated with fetched course data");
+            });
+        }
 
         console.log("Fetched course data:", courseData);
         console.log("It took " + getTimeTaken(startTime, performance.now()) + "s to fetch course data");

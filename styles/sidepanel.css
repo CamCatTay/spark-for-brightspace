@@ -60,6 +60,43 @@ body.d2l-todolist-compact {
     }
 }
 
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.data-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.data-status-indicator.loading {
+    background-color: #fff8e1;
+    border-bottom-color: #ffd700;
+    color: #d68d00;
+}
+
+.data-status-indicator .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #d68d00;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
 body:has(#d2l-todolist-widget.hidden) {
     margin-right: 0 !important;
 }

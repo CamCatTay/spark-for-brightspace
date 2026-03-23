@@ -18,7 +18,7 @@
 import { getTestCourseContent } from './brightspace-test-data.js';
 
 // TEST MODE: Set to true to use fake course data for testing
-const TEST_MODE = true;
+const TEST_MODE = false;
 
 class Course {
     constructor(id, name, url) {
@@ -104,7 +104,7 @@ export async function getBrightspaceData(url) {
         const nextPageItems = await getBrightspaceData(currentPage.toString());
         return data.Items.concat(nextPageItems);
     }
-    return "Items" in data ? data.Items : data.Object; // if data has "Items" then return Items else return Object
+    return data.Items || data.Object || data.Objects || []; // return Items, Object, or Objects depending on API structure
 }
 
 // yeah .join was better approach. benchmarked both and this is nearly 2x faster
@@ -122,6 +122,18 @@ export async function getBrightspaceCourses(baseURL) {
     return allCourses.filter(function(course) {
         return course.Access.CanAccess && course.Access.IsActive && course.OrgUnit.Type.Id === 3;
     });
+}
+
+// Fetch quizzes and tests for a specific course
+export async function getBrightspaceQuizzes(baseURL, courseId) {
+    const quizzesURL = baseURL + `/d2l/api/le/1.67/${courseId}/quizzes/`;
+    try {
+        const quizzes = await getBrightspaceData(quizzesURL);
+        return Array.isArray(quizzes) ? quizzes : [];
+    } catch (error) {
+        console.warn(`Failed to fetch quizzes for course ${courseId}:`, error);
+        return [];
+    }
 }
 
 
@@ -160,7 +172,36 @@ export async function getCourseContent(tabUrl) {
         return item.ActivityType === 1;
     });
 
-    const courseItems = gradedItems.concat(nonGradedItems);
+    // Filter out quizzes (ActivityType 4) from both lists - we'll fetch them separately
+    const filteredGradedItems = gradedItems.filter(function(item) {
+        return item.ActivityType !== 4;
+    });
+
+    let courseItems = filteredGradedItems.concat(nonGradedItems);
+
+    // Fetch quizzes for each course and add them to courseItems
+    for (const course of allCourses) {
+        const courseQuizzes = await getBrightspaceQuizzes(baseURL, course.OrgUnit.Id);
+        console.log("QUIZZES!")
+        console.log(courseQuizzes)
+        const quizItems = courseQuizzes.map(function(quiz) {
+            return {
+                UserId: course.UserId,
+                OrgUnitId: course.OrgUnit.Id,
+                ItemId: quiz.QuizId,
+                ItemName: quiz.Name,
+                ItemType: 4, // Quiz
+                ItemUrl: baseURL + `/d2l/le/quiz/${course.OrgUnit.Id}/${quiz.QuizId}`,
+                EndDate: quiz.EndDate,
+                DueDate: quiz.DueDate || quiz.EndDate, // Use EndDate if DueDate is null
+                CompletionType: 1,
+                ActivityType: 4, // Quiz
+                IsExempt: false
+            };
+        });
+        courseItems = courseItems.concat(quizItems);
+    }
+
     const courseMap = await mapData(allCourses, courseItems);
 
     return courseMap;
@@ -186,7 +227,7 @@ export async function mapData(courses, items) {
             itemData.ItemId,
             itemData.ItemName,
             itemData.ItemUrl,
-            itemData.DueDate,
+            itemData.DueDate || itemData.EndDate, // Use EndDate if DueDate is null
             !!itemData.DateCompleted // Item is completed if DateCompleted exists
         );
 

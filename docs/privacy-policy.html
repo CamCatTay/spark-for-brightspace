@@ -21,14 +21,6 @@
           <li><a href="index.html#install">Install</a></li>
           <li><a href="faq.html">FAQ</a></li>
           <li><a href="privacy-policy.html">Privacy Policy</a></li>
-          <li>
-            <a
-              class="btn-nav"
-              href="https://github.com/CamCatTay/spark-for-brightspace"
-              target="_blank"
-              rel="noopener noreferrer"
-            >GitHub</a>
-          </li>
         </ul>
       </div>
     </nav>
@@ -58,117 +50,99 @@
       <section class="policy-section">
         <h2 class="policy-section-title">1. Overview</h2>
         <p class="policy-body">
-          Spark for Brightspace is a free, open-source browser extension that surfaces your
-          assignment due dates in a side panel while you browse your institution's Brightspace
-          (D2L) platform. This policy explains exactly what data the extension accesses, what
-          it stores locally, and what it never does.
+          Spark for Brightspace is a free browser extension that displays your upcoming
+          assignment due dates in a convenient side panel as you navigate your institution's
+          D2L Brightspace portal. This policy is here to be upfront about what information
+          the extension accesses, what gets saved on your device, and what we simply don't do.
         </p>
         <p class="policy-body">
-          <strong>The short version:</strong> your data never leaves your browser. We collect
-          nothing, transmit nothing, and have no servers.
+          <strong>The short version:</strong> everything stays on your device. We don't
+          collect anything, we don't send anything anywhere, and there are no servers involved.
         </p>
       </section>
 
       <section class="policy-section">
         <h2 class="policy-section-title">2. What the Extension Reads</h2>
         <p class="policy-body">
-          When the extension is active on a Brightspace page, it calls your institution's own
-          Brightspace REST API — the same API your browser uses when you navigate the site
-          normally — to retrieve:
+          While you're on a Brightspace page, the extension communicates with your institution's
+          own Brightspace REST API — the same one your browser uses during normal site navigation
+          — to retrieve the following information:
         </p>
         <ul class="policy-list">
           <li>Your active course enrollments</li>
-          <li>Assignment (dropbox) names, due dates, and submission links</li>
+          <li>Assignment names, due dates, and submission links</li>
           <li>Quiz names, start dates, due dates, and end dates</li>
           <li>Discussion forum and topic names and due dates</li>
-          <li>General content items with due dates</li>
+          <li>General content items with associated due dates</li>
         </ul>
         <p class="policy-body">
-          This data is fetched directly from your institution's Brightspace server using your
-          existing authenticated session. The extension never sees your login credentials.
+          All of this is pulled directly from your institution's Brightspace server using
+          your existing login session. The extension never has access to your username,
+          password, or any login credentials.
         </p>
       </section>
 
       <section class="policy-section">
-        <h2 class="policy-section-title">3. What Is Stored Locally</h2>
+        <h2 class="policy-section-title">3. What Is Stored on Your Device</h2>
         <p class="policy-body">
-          To avoid re-fetching data every time you navigate between pages, the extension caches
-          information locally in your browser using the standard
-          <code>chrome.storage.local</code> and <code>localStorage</code> APIs. The following
-          is stored:
+          To keep things fast and avoid re-loading data every time you switch pages, the
+          extension saves a small amount of information locally in your browser. This includes:
         </p>
         <ul class="policy-list">
-          <li><strong>Course and assignment data</strong> — a local cache of the API response described above, so the panel loads instantly on the next page.</li>
-          <li><strong>Panel scroll position</strong> — so the panel returns to where you left off when switching tabs.</li>
-          <li><strong>Active panel tab ID</strong> — to ensure only one tab shows the panel at a time.</li>
-          <li><strong>Panel width and expanded/collapsed state</strong> — so your layout preference is remembered across page loads.</li>
+          <li><strong>Course and assignment data</strong> — a local snapshot of the information described above, so the side panel loads instantly as you browse.</li>
+          <li><strong>Panel scroll position</strong> — so you return to the same spot in the panel when switching between tabs.</li>
+          <li><strong>Active tab</strong> — to make sure the panel only appears in one tab at a time.</li>
+          <li><strong>Panel size and state</strong> — so your preferred layout (expanded or collapsed, panel width) is remembered between visits.</li>
         </ul>
         <p class="policy-body">
-          All of this data is stored only on your device and is never transmitted anywhere.
-          You can clear it at any time by clearing your browser's extension storage or
-          uninstalling the extension.
+          None of this information ever leaves your device. You can remove it at any time
+          by clearing your browser's extension storage or simply uninstalling Spark for Brightspace.
         </p>
       </section>
 
       <section class="policy-section">
         <h2 class="policy-section-title">4. What We Never Do</h2>
         <ul class="policy-list">
-          <li>We do <strong>not</strong> collect, transmit, or share any personal or academic data.</li>
-          <li>We do <strong>not</strong> run any analytics, telemetry, or usage tracking.</li>
-          <li>We do <strong>not</strong> integrate with any third-party services.</li>
-          <li>We do <strong>not</strong> have a backend server or database.</li>
-          <li>We do <strong>not</strong> access any data outside of your institution's Brightspace domain.</li>
+          <li>We do <strong>not</strong> collect, share, or transmit any personal or academic data.</li>
+          <li>We do <strong>not</strong> use analytics, telemetry, or any form of usage tracking.</li>
+          <li>We do <strong>not</strong> connect to any third-party services.</li>
+          <li>We do <strong>not</strong> operate any backend servers or databases.</li>
+          <li>We do <strong>not</strong> access any information outside of your institution's Brightspace domain.</li>
         </ul>
       </section>
 
       <section class="policy-section">
         <h2 class="policy-section-title">5. Permissions</h2>
         <p class="policy-body">
-          The extension requests the following browser permissions:
+          The extension requests the following browser permissions, each with a specific purpose:
         </p>
         <ul class="policy-list">
-          <li><strong>tabs</strong> — used to detect which tab is viewing Brightspace and to coordinate the single-panel behavior across multiple open tabs.</li>
-          <li><strong>scripting</strong> — used to inject the side panel UI into Brightspace pages.</li>
-          <li><strong>storage</strong> — used to cache course data and save your panel preferences locally.</li>
+          <li><strong>Tabs</strong> — used to identify which tab is currently viewing Brightspace and to ensure only one tab shows the side panel at a time.</li>
+          <li><strong>Scripting</strong> — used to inject the side panel interface into Brightspace pages.</li>
+          <li><strong>Storage</strong> — used to cache your course data and remember your panel preferences locally on your device.</li>
         </ul>
         <p class="policy-body">
-          The extension's content scripts only activate on pages matching
-          <code>https://*/d2l/*</code> — it is completely inactive on all other websites.
+          The extension only activates on pages within your institution's Brightspace domain
+          (pages matching <code>https://*/d2l/*</code>). It remains completely inactive
+          on every other website you visit.
         </p>
       </section>
 
       <section class="policy-section">
-        <h2 class="policy-section-title">6. Open Source</h2>
+        <h2 class="policy-section-title">6. Changes to This Policy</h2>
         <p class="policy-body">
-          Spark for Brightspace is fully open source. You can inspect every line of code in
-          <a
-            class="policy-link"
-            href="https://github.com/CamCatTay/spark-for-brightspace"
-            target="_blank"
-            rel="noopener noreferrer"
-          >the GitHub repository</a> to verify these claims for yourself.
+          If this privacy policy is updated for any reason, the revised version will be
+          published here and the effective date at the top of this page will be updated
+          accordingly. Any meaningful changes will also be highlighted in the release notes
+          for the relevant update.
         </p>
       </section>
 
       <section class="policy-section">
-        <h2 class="policy-section-title">7. Changes to This Policy</h2>
+        <h2 class="policy-section-title">7. Contact</h2>
         <p class="policy-body">
-          If this policy changes, the updated version will be committed to the repository
-          and the effective date above will be updated. Significant changes will be noted
-          in the release notes.
-        </p>
-      </section>
-
-      <section class="policy-section">
-        <h2 class="policy-section-title">8. Contact</h2>
-        <p class="policy-body">
-          Questions or concerns? Open an issue on
-          <a
-            class="policy-link"
-            href="https://github.com/CamCatTay/spark-for-brightspace/issues"
-            target="_blank"
-            rel="noopener noreferrer"
-          >GitHub</a>.
+          Have a question or concern about this policy? We'd love to hear from you —
+          please reach out through the support channel listed on the extension's store page.
         </p>
       </section>
 

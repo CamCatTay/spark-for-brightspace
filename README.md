@@ -47,7 +47,7 @@ Results are displayed in a persistent side panel so you can stay oriented withou
 
 ## Contributing
 
-Found a bug or have a feature idea? Open an issue. This is a side project but contributions and feedback are welcome.
+Found a bug or have a feature idea? Open an issue. This is a side project but feedback is welcome.
 
 ## License
 

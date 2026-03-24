@@ -32,7 +32,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["images/*"],
+      "resources": ["images/*", "html/faq.html", "styles/faq.css"],
       "matches": ["<all_urls>"]
     }
   ]

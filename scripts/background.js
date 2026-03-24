@@ -7,6 +7,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         });
         return true;
     }
+
+    if (request.action === "openFaq") {
+        chrome.tabs.create({ url: chrome.runtime.getURL("html/faq.html") });
+    }
 });
 
 // Handle action button click to toggle the panel

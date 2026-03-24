@@ -302,11 +302,26 @@ function createFrequencyChart(calendarContainer, itemsByDate) {
     grid.className = "frequency-chart-grid";
     grid.id = "frequency-chart-grid";
     
-    // Week label
+    // Week label row (label + FAQ button)
+    const weekLabelRow = document.createElement("div");
+    weekLabelRow.className = "frequency-chart-header-row";
+
     const weekLabel = document.createElement("div");
     weekLabel.className = "frequency-chart-week-label";
     weekLabel.id = "frequency-chart-week-label";
-    chartContainer.appendChild(weekLabel);
+    weekLabelRow.appendChild(weekLabel);
+
+    const faqBtn = document.createElement("button");
+    faqBtn.className = "faq-btn";
+    faqBtn.title = "Help / FAQ";
+    faqBtn.textContent = "?";
+    faqBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        chrome.runtime.sendMessage({ action: "openFaq" });
+    });
+    weekLabelRow.appendChild(faqBtn);
+
+    chartContainer.appendChild(weekLabelRow);
 
     // Wrap grid + side buttons in a single row
     const chartRow = document.createElement("div");

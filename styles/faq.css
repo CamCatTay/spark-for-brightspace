@@ -1,0 +1,125 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background-color: #f5f5f5;
+    color: #1a1a1a;
+    min-height: 100%;
+}
+
+.faq-page {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+}
+
+/* Header */
+.faq-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.faq-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.faq-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.2;
+}
+
+.faq-subtitle {
+    font-size: 13px;
+    color: #888;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+/* Sections */
+.faq-section {
+    margin-bottom: 40px;
+}
+
+.faq-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 14px;
+}
+
+/* Link list */
+.faq-link-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.faq-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1a1a1a;
+    font-size: 14px;
+    font-weight: 500;
+    width: 100%;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.faq-link:hover {
+    background-color: #f9f9f9;
+    border-color: #bbb;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.faq-link:active {
+    background-color: #f0f0f0;
+}
+
+.faq-link--issues {
+    color: #c0392b;
+}
+
+.faq-link--issues:hover {
+    border-color: #e0a0a0;
+    background-color: #fff8f8;
+}
+
+.faq-link-icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+/* Empty FAQ placeholder */
+.faq-empty-note {
+    font-size: 14px;
+    color: #999;
+    font-style: italic;
+    padding: 16px;
+    background-color: #ffffff;
+    border: 1px dashed #ddd;
+    border-radius: 8px;
+    text-align: center;
+}

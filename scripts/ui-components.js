@@ -314,7 +314,7 @@ function createFrequencyChart(calendarContainer, itemsByDate) {
     faqBtn.textContent = "?";
     faqBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        chrome.runtime.sendMessage({ action: "openFaq" });
+        safeSendMessage({ action: "openFaq" });
     });
     weekLabelRow.appendChild(faqBtn);
 

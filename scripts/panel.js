@@ -1,6 +1,20 @@
 const EXPANSION_STATE_KEY = "d2l-todolist-expanded";
 const PANEL_WIDTH_KEY = "d2l-todolist-width";
 
+function safeSendMessage(message, callback) {
+    try {
+        if (callback) {
+            chrome.runtime.sendMessage(message, callback);
+        } else {
+            chrome.runtime.sendMessage(message);
+        }
+    } catch (e) {
+        if (!e.message?.includes("Extension context invalidated")) {
+            console.error(e);
+        }
+    }
+}
+
 let panelWidth = 350;
 let container, toggleBtn;
 let isAnimating = false;
@@ -47,7 +61,7 @@ function togglePanel() {
     updateToggleButtonPosition();
 
     wasClosedSilently = false;
-    chrome.runtime.sendMessage({ action: isHidden ? "panelClosed" : "panelOpened" });
+    safeSendMessage({ action: isHidden ? "panelClosed" : "panelOpened" });
 
     if (isHidden) {
         document.body.style.marginRight = "0";
@@ -180,7 +194,7 @@ function injectEmbeddedUI() {
 
     // Claim the active panel slot if starting visible.
     if (shouldShowPanel) {
-        chrome.runtime.sendMessage({ action: "panelOpened" });
+        safeSendMessage({ action: "panelOpened" });
     }
 
     // When the user switches back to this tab and the panel was silently
@@ -198,7 +212,7 @@ function injectEmbeddedUI() {
                 updateToggleButtonState(toggleBtn, true);
                 updateBodyMargin();
                 updateToggleButtonPosition();
-                chrome.runtime.sendMessage({ action: "panelOpened" });
+                safeSendMessage({ action: "panelOpened" });
                 if (_onPanelRestore) _onPanelRestore();
             }
         }

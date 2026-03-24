@@ -15,7 +15,7 @@ window.addEventListener("load", () => {
     calendarContainer.addEventListener("scroll", () => {
         clearTimeout(scrollSaveTimer);
         scrollSaveTimer = setTimeout(() => {
-            chrome.runtime.sendMessage({
+            safeSendMessage({
                 action: "saveScrollPosition",
                 position: calendarContainer.scrollTop
             });
@@ -24,7 +24,7 @@ window.addEventListener("load", () => {
 
     // Restore the shared scroll position after the calendar DOM is rebuilt.
     function restoreScrollPosition() {
-        chrome.runtime.sendMessage({ action: "getScrollPosition" }, function(response) {
+        safeSendMessage({ action: "getScrollPosition" }, function(response) {
             if (response && response.position > 0) {
                 requestAnimationFrame(() => {
                     calendarContainer.scrollTop = response.position;
@@ -52,7 +52,7 @@ window.addEventListener("load", () => {
     });
 
     // Fetch fresh data from API
-    chrome.runtime.sendMessage({ action: "fetchCourses" }, function(response) {
+    safeSendMessage({ action: "fetchCourses" }, function(response) {
         if (response) {
             courseData = JSON.parse(JSON.stringify(response));
 

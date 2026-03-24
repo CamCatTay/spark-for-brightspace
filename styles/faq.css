@@ -123,3 +123,34 @@ html, body {
     border-radius: 8px;
     text-align: center;
 }
+
+/* Privacy Policy */
+.privacy-effective-date {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 32px;
+}
+
+.privacy-body {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.7;
+    margin-bottom: 12px;
+}
+
+.privacy-list {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.7;
+    padding-left: 24px;
+    margin-bottom: 12px;
+}
+
+.privacy-link {
+    color: #1a73e8;
+    text-decoration: none;
+}
+
+.privacy-link:hover {
+    text-decoration: underline;
+}

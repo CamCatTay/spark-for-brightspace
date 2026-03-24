@@ -37,7 +37,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["images/*", "html/faq.html", "styles/faq.css"],
+      "resources": ["images/*", "html/faq.html", "html/privacy-policy.html", "styles/faq.css"],
       "matches": ["<all_urls>"]
     }
   ]

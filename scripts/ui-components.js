@@ -300,6 +300,12 @@ function createFrequencyChart(calendarContainer, itemsByDate) {
     grid.className = "frequency-chart-grid";
     grid.id = "frequency-chart-grid";
     
+    // Week label
+    const weekLabel = document.createElement("div");
+    weekLabel.className = "frequency-chart-week-label";
+    weekLabel.id = "frequency-chart-week-label";
+    chartContainer.appendChild(weekLabel);
+
     // Wrap grid + side buttons in a single row
     const chartRow = document.createElement("div");
     chartRow.className = "frequency-chart-row";
@@ -365,6 +371,13 @@ function renderFrequencyChart(chartContainer, itemsByDate, todayWeekStart, weekO
             displayWeekStart = new Date(todayWeekStart.getFullYear(), todayWeekStart.getMonth(), todayWeekStart.getDate());
         }
         displayWeekStart.setDate(displayWeekStart.getDate() + (weekOffset * 7));
+
+        // Update week label
+        const weekLabelEl = chartContainer.querySelector("#frequency-chart-week-label");
+        if (weekLabelEl) {
+            const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            weekLabelEl.textContent = `Week of ${monthNames[displayWeekStart.getMonth()]} ${displayWeekStart.getDate()}`;
+        }
         
         // Count assignments by day of the week
         const weekCounts = [0, 0, 0, 0, 0, 0, 0];

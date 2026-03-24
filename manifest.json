@@ -16,7 +16,13 @@
     {
       "matches": ["https://*/d2l/*"],
       "all_frames": false,
-      "js": ["/scripts/content.js"],
+      "js": [
+        "/scripts/date-utils.js",
+        "/scripts/color-utils.js",
+        "/scripts/panel.js",
+        "/scripts/ui-components.js",
+        "/scripts/content.js"
+      ],
       "css": ["/styles/sidepanel.css"]
     }
   ],

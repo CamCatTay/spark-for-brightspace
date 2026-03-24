@@ -46,9 +46,6 @@ class Course {
     addChecklist(item) {
         this.checklist[item.id] = item;
     }
-    openUrl() {
-        openUrl(this.url);
-    }
 }
 
 class Item {
@@ -57,29 +54,10 @@ class Item {
         this.name = name;
         this.url = url;
         this.dueDate = dueDate;
-        this.startDate = startDate; // when the item becomes available
-        this.completed = completed; // this needs to be persistent across sessions
-    }
-
-    markComplete() {
-        this.completed = true;
-    }
-
-    markIncomplete() {
-        this.completed = false;
-    }
-
-    openUrl() {
-        openUrl(this.url);
+        this.startDate = startDate;
+        this.completed = completed;
     }
 }
-
-async function openUrl(url) {
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        const tabId = tabs[0].id; // Get the active tab's ID
-        chrome.tabs.sendMessage(tabId, { action: "openUrl", url: url});
-    });
-};
 
 export async function getBaseURL(tabUrl) {
     const url = new URL(tabUrl);
@@ -87,10 +65,8 @@ export async function getBaseURL(tabUrl) {
 }
 
 export async function getBrightspaceData(url) {
-    console.log("Fetching from URL:", url);
     const response = await fetch(url);
     const data = await response.json();
-    console.log("Raw response:", data);
 
     if ("Next" in data) { // check if there is next page for course data
         if (!data.Next) {
@@ -106,14 +82,10 @@ export async function getBrightspaceData(url) {
         const nextPageItems = await getBrightspaceData(currentPage.toString());
         return data.Items.concat(nextPageItems);
     }
-    // Handle array response (for APIs that return arrays directly like dropbox)
     if (Array.isArray(data)) {
-        console.log("API returned array directly:", data);
         return data;
     }
-    const result = data.Items || data.Object || data.Objects || []; // return Items, Object, or Objects depending on API structure
-    console.log("Extracted result:", result);
-    return result;
+    return data.Items || data.Object || data.Objects || [];
 }
 
 // yeah .join was better approach. benchmarked both and this is nearly 2x faster
@@ -122,6 +94,20 @@ export async function getCourseIds(courses) {
         function(course) {
             return course.OrgUnit.Id
         }).join(",");
+}
+
+/**
+ * Clears a start date if it's already in the past (item is already available).
+ * @param {string|null} startDate - ISO date string or null
+ * @returns {string|null} The original date if in the future, null if past or null
+ */
+function clearPastStartDate(startDate) {
+    if (!startDate) return null;
+    const startDateObj = new Date(startDate);
+    const now = new Date();
+    const startDateOnly = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate());
+    const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return startDateOnly <= nowOnly ? null : startDate;
 }
 
 // utility for getCourseContent
@@ -247,18 +233,6 @@ export async function getCourseContent(tabUrl) {
         const courseAssignments = await getBrightspaceAssignments(baseURL, course.OrgUnit.Id);
         
         const assignmentItems = courseAssignments.map(function(assignment) {
-            // Check if StartDate is in the past - if so, set it to null
-            let startDate = assignment.Availability?.StartDate;
-            if (startDate) {
-                const startDateObj = new Date(startDate);
-                const now = new Date();
-                const startDateOnly = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate());
-                const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                if (startDateOnly <= nowOnly) {
-                    startDate = null; // Set to null if already available
-                }
-            }
-            
             const item = {
                 UserId: course.UserId,
                 OrgUnitId: course.OrgUnit.Id,
@@ -266,39 +240,23 @@ export async function getCourseContent(tabUrl) {
                 ItemName: assignment.Name,
                 ItemType: 3, // Assignment
                 ItemUrl: baseURL + `/d2l/le/dropbox/${course.OrgUnit.Id}/${assignment.Id}`,
-                StartDate: startDate,
+                StartDate: clearPastStartDate(assignment.Availability?.StartDate),
                 EndDate: assignment.Availability?.EndDate,
-                DueDate: assignment.DueDate || assignment.Availability?.EndDate, // Use EndDate if DueDate is null
+                DueDate: assignment.DueDate || assignment.Availability?.EndDate,
                 CompletionType: assignment.CompletionType,
                 ActivityType: 3, // Assignment
                 IsExempt: false
             };
-            console.log("Assignment: " + item.ItemName + " | StartDate: " + item.StartDate + " | DueDate: " + item.DueDate);
             return item;
         });
         courseItems = courseItems.concat(assignmentItems);
 
         const discussionForums = await getBrightspaceDiscussionForums(baseURL, course.OrgUnit.Id);
-        console.log("Discussion forums for course " + course.OrgUnit.Name + ":", discussionForums);
         
         for (const forum of discussionForums) {
             const discussionTopics = await getBrightspaceDiscussionTopics(baseURL, course.OrgUnit.Id, forum.ForumId);
-            console.log("Discussion topics for forum " + forum.Name + ":", discussionTopics);
-            console.log("Number of topics:", discussionTopics.length);
             
             const discussionItems = discussionTopics.map(function(topic) {
-                // Check if StartDate is in the past - if so, set it to null
-                let startDate = topic.StartDate;
-                if (startDate) {
-                    const startDateObj = new Date(startDate);
-                    const now = new Date();
-                    const startDateOnly = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate());
-                    const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    if (startDateOnly <= nowOnly) {
-                        startDate = null; // Set to null if already available
-                    }
-                }
-                
                 const item = {
                     UserId: course.UserId,
                     OrgUnitId: course.OrgUnit.Id,
@@ -306,14 +264,13 @@ export async function getCourseContent(tabUrl) {
                     ItemName: topic.Name,
                     ItemType: 5, // Discussion
                     ItemUrl: baseURL + `/d2l/le/discussions/forums/${course.OrgUnit.Id}/${topic.ForumId}/topics/${topic.TopicId}`,
-                    StartDate: startDate,
+                    StartDate: clearPastStartDate(topic.StartDate),
                     EndDate: topic.EndDate,
-                    DueDate: topic.EndDate || topic.StartDate, // Use EndDate if available, otherwise StartDate
+                    DueDate: topic.EndDate || topic.StartDate,
                     CompletionType: 0,
                     ActivityType: 5, // Discussion
                     IsExempt: false
                 };
-                console.log("Discussion: " + item.ItemName + " | StartDate: " + item.StartDate + " | DueDate: " + item.DueDate);
                 return item;
             });
             courseItems = courseItems.concat(discussionItems);

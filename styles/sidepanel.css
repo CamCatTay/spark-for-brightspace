@@ -256,6 +256,25 @@ body:has(#d2l-todolist-widget.hidden) {
     background-color: #f0f0f0;
 }
 
+.calendar-item.not-yet-available {
+    opacity: 0.6;
+    background-color: #f5f5f5;
+    cursor: default;
+}
+
+.calendar-item.not-yet-available:hover {
+    background-color: #f5f5f5;
+}
+
+.calendar-item.not-yet-available .item-name {
+    color: #999;
+}
+
+.calendar-item.not-yet-available .start-date-value {
+    color: #d68d00;
+    font-weight: 600;
+}
+
 .item-name {
     font-size: 14px;
     font-weight: 600;
@@ -271,6 +290,36 @@ body:has(#d2l-todolist-widget.hidden) {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+}
+
+.start-date-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    width: 100%;
+}
+
+.start-date-label {
+    color: #666;
+    font-weight: 500;
+}
+
+.start-date-value {
+    color: #d68d00;
+    font-weight: 600;
+}
+
+.due-date-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.due-date-label {
+    color: #666;
+    font-weight: 500;
+    font-size: 12px;
 }
 
 .item-time {

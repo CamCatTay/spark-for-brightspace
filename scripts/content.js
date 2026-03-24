@@ -18,6 +18,19 @@ function formatTimeFromDate(dateString) {
     }
 }
 
+function formatFullDatetime(dateString) {
+    if (!dateString) return "No date";
+    try {
+        const date = new Date(dateString);
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const dateStr = `${monthNames[date.getMonth()]} ${date.getDate()}`;
+        const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        return `${dateStr} at ${timeStr}`;
+    } catch (e) {
+        return "No date";
+    }
+}
+
 function getDateOnly(dateString) {
     if (!dateString) return null;
     try {
@@ -208,6 +221,19 @@ function createAssignmentElement(assignment, course) {
     const assignmentContainer = document.createElement("a");
     assignmentContainer.className = "calendar-item";
 
+    // Check if assignment is not yet available (start date is after today)
+    const now = new Date();
+    const nowDateOnly = getDateOnly(now);
+    const startDateOnly = assignment.startDate ? getDateOnly(assignment.startDate) : null;
+    const isNotYetAvailable = startDateOnly && startDateOnly > nowDateOnly;
+    
+    console.log("Rendering: " + assignment.name + " | startDate: " + assignment.startDate + " | startDateOnly: " + (startDateOnly ? startDateOnly.toISOString() : null) + " | nowDateOnly: " + nowDateOnly.toISOString() + " | isNotYetAvailable: " + isNotYetAvailable);
+    
+    if (isNotYetAvailable) {
+        assignmentContainer.classList.add("not-yet-available");
+        assignmentContainer.style.pointerEvents = "none"; // Disable click on unavailable items
+    }
+
     const itemName = document.createElement("div");
     itemName.className = "item-name";
     itemName.textContent = assignment.name;
@@ -216,10 +242,39 @@ function createAssignmentElement(assignment, course) {
     const itemMeta = document.createElement("div");
     itemMeta.className = "item-meta";
 
-    const itemTime = document.createElement("span");
-    itemTime.className = "item-time";
-    itemTime.textContent = formatTimeFromDate(assignment.dueDate);
-    itemMeta.appendChild(itemTime);
+    // Display start date if it exists
+    if (assignment.startDate) {
+        const startDateContainer = document.createElement("div");
+        startDateContainer.className = "start-date-container";
+        
+        const startDateLabel = document.createElement("span");
+        startDateLabel.className = "start-date-label";
+        startDateLabel.textContent = "Available: ";
+        startDateContainer.appendChild(startDateLabel);
+        
+        const startDateValue = document.createElement("span");
+        startDateValue.className = "start-date-value";
+        startDateValue.textContent = formatFullDatetime(assignment.startDate);
+        startDateContainer.appendChild(startDateValue);
+        
+        itemMeta.appendChild(startDateContainer);
+    }
+
+    // Display due date
+    const dueContainer = document.createElement("div");
+    dueContainer.className = "due-date-container";
+    
+    const dueLabel = document.createElement("span");
+    dueLabel.className = "due-date-label";
+    dueLabel.textContent = "Due: ";
+    dueContainer.appendChild(dueLabel);
+    
+    const dueTime = document.createElement("span");
+    dueTime.className = "item-time";
+    dueTime.textContent = formatTimeFromDate(assignment.dueDate);
+    dueContainer.appendChild(dueTime);
+    
+    itemMeta.appendChild(dueContainer);
 
     const itemCourse = document.createElement("span");
     itemCourse.className = "item-course";
@@ -231,7 +286,9 @@ function createAssignmentElement(assignment, course) {
     // Add click listener to open assignment URL
     assignmentContainer.addEventListener("click", function(e) {
         e.preventDefault();
-        window.open(assignment.url, '_blank');
+        if (!isNotYetAvailable) {
+            window.open(assignment.url, '_blank');
+        }
     });
 
     return assignmentContainer;

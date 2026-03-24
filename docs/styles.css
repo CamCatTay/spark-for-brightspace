@@ -1,0 +1,476 @@
+/* ── Reset & base ─────────────────────────────────────────── */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                 'Ubuntu', 'Cantarell', sans-serif;
+    background-color: #ffffff;
+    color: #1a1a1a;
+    line-height: 1.6;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* ── Layout helpers ──────────────────────────────────────── */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ── Nav ─────────────────────────────────────────────────── */
+.site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.site-nav .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    color: #1a1a1a;
+}
+
+.nav-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    list-style: none;
+}
+
+.nav-links a {
+    font-size: 14px;
+    color: #555;
+    transition: color 0.15s;
+}
+
+.nav-links a:hover {
+    color: #1a1a1a;
+}
+
+.nav-links .btn-nav {
+    padding: 7px 16px;
+    background: #1a1a1a;
+    color: #ffffff;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.nav-links .btn-nav:hover {
+    background: #333;
+    transform: translateY(-1px);
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.hero {
+    padding: 80px 0 72px;
+    text-align: center;
+    background: linear-gradient(160deg, #fafafa 0%, #f0f4ff 100%);
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.hero-logo {
+    width: 88px;
+    height: 88px;
+    object-fit: contain;
+    margin-bottom: 24px;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.12));
+}
+
+.hero-title {
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #111;
+    margin-bottom: 14px;
+}
+
+.hero-tagline {
+    font-size: 17px;
+    color: #555;
+    max-width: 520px;
+    margin: 0 auto 32px;
+    line-height: 1.65;
+}
+
+.hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: #1a1a1a;
+    color: #ffffff;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.btn-primary:hover {
+    background: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: #ffffff;
+    color: #1a1a1a;
+    border: 1px solid #d8d8d8;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.btn-secondary:hover {
+    background: #f5f5f5;
+    border-color: #bbb;
+    transform: translateY(-2px);
+}
+
+.btn-icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+/* ── Section shared ──────────────────────────────────────── */
+.section {
+    padding: 72px 0;
+}
+
+.section-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.section-title {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    margin-bottom: 14px;
+    color: #111;
+}
+
+.section-desc {
+    font-size: 15px;
+    color: #555;
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+}
+
+/* ── Features ────────────────────────────────────────────── */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.feature-card {
+    background: #fafafa;
+    border: 1px solid #ebebeb;
+    border-radius: 12px;
+    padding: 24px 22px;
+    transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.feature-card:hover {
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    transform: translateY(-2px);
+}
+
+.feature-icon {
+    font-size: 26px;
+    margin-bottom: 12px;
+}
+
+.feature-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 6px;
+}
+
+.feature-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* ── Install ─────────────────────────────────────────────── */
+.install-section {
+    background: #f8f9fc;
+    border-top: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.install-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 560px;
+}
+
+.install-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.step-number {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.step-text {
+    padding-top: 5px;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.6;
+}
+
+.step-text code {
+    font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+    background: #e8eaed;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+}
+
+.install-note {
+    margin-top: 28px;
+    font-size: 13px;
+    color: #888;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    max-width: 560px;
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+.site-footer {
+    padding: 40px 0;
+    border-top: 1px solid #e8e8e8;
+    background: #fafafa;
+}
+
+.footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.footer-logo {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.footer-links {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    font-size: 13px;
+    color: #777;
+    transition: color 0.15s;
+}
+
+.footer-links a:hover {
+    color: #1a1a1a;
+}
+
+.footer-copy {
+    width: 100%;
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 8px;
+}
+
+/* ── Privacy Policy page ─────────────────────────────────── */
+.policy-page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+}
+
+.policy-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.policy-logo {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.policy-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.policy-subtitle {
+    font-size: 13px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.policy-effective {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 36px;
+}
+
+.policy-section {
+    margin-bottom: 36px;
+}
+
+.policy-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #888;
+    margin-bottom: 12px;
+}
+
+.policy-body {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.75;
+    margin-bottom: 12px;
+}
+
+.policy-list {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.75;
+    padding-left: 24px;
+    margin-bottom: 12px;
+}
+
+.policy-link {
+    color: #1a73e8;
+}
+
+.policy-link:hover {
+    text-decoration: underline;
+}
+
+.policy-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 32px;
+    transition: color 0.15s;
+}
+
+.policy-back:hover {
+    color: #1a1a1a;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .hero-title {
+        font-size: 28px;
+    }
+
+    .hero {
+        padding: 56px 0 52px;
+    }
+
+    .section-title {
+        font-size: 22px;
+    }
+
+    .nav-links {
+        gap: 14px;
+    }
+
+    .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -220,7 +220,7 @@ export async function getCourseContent(tabUrl) {
                 ItemId: quiz.QuizId,
                 ItemName: quiz.Name,
                 ItemType: 4, // Quiz
-                ItemUrl: baseURL + `/d2l/le/quiz/${course.OrgUnit.Id}/${quiz.QuizId}`,
+                ItemUrl: baseURL + `/d2l/lms/quizzing/user/quiz_summary.d2l?ou=${course.OrgUnit.Id}&qi=${quiz.QuizId}&cfql=0`,
                 EndDate: quiz.EndDate,
                 DueDate: quiz.DueDate || quiz.EndDate, // Use EndDate if DueDate is null
                 CompletionType: 1,
@@ -239,7 +239,7 @@ export async function getCourseContent(tabUrl) {
                 ItemId: assignment.Id,
                 ItemName: assignment.Name,
                 ItemType: 3, // Assignment
-                ItemUrl: baseURL + `/d2l/le/dropbox/${course.OrgUnit.Id}/${assignment.Id}`,
+                ItemUrl: baseURL + `/d2l/lms/dropbox/user/folder_submit_files.d2l?db=${assignment.Id}&grpid=0&isprv=0&bp=0&ou=${course.OrgUnit.Id}`,
                 StartDate: clearPastStartDate(assignment.Availability?.StartDate),
                 EndDate: assignment.Availability?.EndDate,
                 DueDate: assignment.DueDate || assignment.Availability?.EndDate,
@@ -263,7 +263,7 @@ export async function getCourseContent(tabUrl) {
                     ItemId: topic.TopicId,
                     ItemName: topic.Name,
                     ItemType: 5, // Discussion
-                    ItemUrl: baseURL + `/d2l/le/discussions/forums/${course.OrgUnit.Id}/${topic.ForumId}/topics/${topic.TopicId}`,
+                    ItemUrl: baseURL + `/d2l/le/${course.OrgUnit.Id}/discussions/topics/${topic.TopicId}/View`,
                     StartDate: clearPastStartDate(topic.StartDate),
                     EndDate: topic.EndDate,
                     DueDate: topic.EndDate || topic.StartDate,

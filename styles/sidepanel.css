@@ -363,3 +363,35 @@ body:has(#d2l-todolist-widget.hidden) {
 #calendar-container::-webkit-scrollbar-thumb:hover {
     background: #999;
 }
+
+/* Scrollbar indicator with course color notches */
+:root {
+    --scrollbar-notch-width: 7px;
+    --scrollbar-notch-height: 3px;
+}
+
+.scrollbar-indicator {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: var(--scrollbar-notch-width);
+    height: 100%;
+    background-color: transparent;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.scrollbar-notch {
+    position: absolute;
+    right: 0;
+    width: var(--scrollbar-notch-width);
+    height: var(--scrollbar-notch-height);
+    opacity: 0.8;
+    transition: opacity 0.2s ease, height 0.2s ease;
+}
+
+.scrollbar-notch:hover {
+    opacity: 1;
+    height: calc(var(--scrollbar-notch-height) * 1.5);
+    cursor: pointer;
+}

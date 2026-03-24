@@ -43,11 +43,146 @@ function getDateOnly(dateString) {
 
 const EXPANSION_STATE_KEY = "d2l-todolist-expanded";
 const PANEL_WIDTH_KEY = "d2l-todolist-width";
+
+// Saturation level for course colors (0-100, where 100 is fully saturated)
+const COLOR_SATURATION = 60;
+
+// Lightness level for course colors (0-100, where 0 is dark/black, 50 is normal, 100 is bright/white)
+const COLOR_LIGHTNESS = 50;
+
+// Color pool defined by hue, with saturation and lightness applied from constants
+// Format: [hue (0-360)]
+const COLOR_POOL_HSL = [
+    [0],      // Red
+    [30],     // Orange
+    [60],     // Yellow
+    [120],    // Green
+    [240],    // Blue
+    [330],    // Pink
+    [255],    // Purple
+];
+
+// Convert HSL to Hex color
+function hslToHex(h, s, l) {
+    l /= 100;
+    const a = s * Math.min(l, 1 - l) / 100;
+    const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+// Get color from pool with applied saturation and lightness constants
+function getColorFromPool(index) {
+    const [hue] = COLOR_POOL_HSL[index % COLOR_POOL_HSL.length];
+    return hslToHex(hue, COLOR_SATURATION, COLOR_LIGHTNESS);
+}
+
 let panelWidth = 350; // Default width
 let container, toggleBtn;
 let isAnimating = false; // Prevent multiple simultaneous animations
 let isDataStale = false; // Track if displayed data is from cache
 let scrollbarWidth = 0; // Store scrollbar width
+let courseColorMap = {}; // { courseName: colorHex } - assigned lexicographically
+
+function ensureCourseColorsAssigned(courseData) {
+    // Collect all unique course names from the current courseData
+    const allCourseNames = new Set();
+    Object.keys(courseData).forEach((courseId) => {
+        const course = courseData[courseId];
+        allCourseNames.add(course.name);
+    });
+
+    // Sort lexicographically and assign colors
+    const sortedNames = Array.from(allCourseNames).sort();
+    sortedNames.forEach((name, index) => {
+        if (!courseColorMap[name]) {
+            courseColorMap[name] = getColorFromPool(index);
+        }
+    });
+}
+
+function getCourseColor(courseName) {
+    return courseColorMap[courseName] || "#808080"; // Fallback gray if not assigned
+}
+
+function createScrollbarIndicator(calendarContainer) {
+    // Remove existing indicator if present
+    const existingIndicator = calendarContainer.parentElement.querySelector(".scrollbar-indicator");
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+
+    // Create indicator overlay
+    const indicator = document.createElement("div");
+    indicator.className = "scrollbar-indicator";
+
+    // Collect all assignments with their positions
+    const assignments = calendarContainer.querySelectorAll(".calendar-item");
+    
+    if (assignments.length === 0) {
+        return; // No assignments to show
+    }
+
+    // Calculate total scrollable height
+    const containerHeight = calendarContainer.clientHeight;
+    const scrollHeight = calendarContainer.scrollHeight;
+    
+    if (scrollHeight <= containerHeight) {
+        return; // Content fits, no scrollbar needed
+    }
+
+    // Create notch for each assignment
+    assignments.forEach((assignmentEl) => {
+        const courseName = assignmentEl.querySelector(".item-course")?.textContent || "";
+        const courseColor = getCourseColor(courseName);
+        
+        // Get position of assignment relative to scroll container
+        const rect = assignmentEl.getBoundingClientRect();
+        const containerRect = calendarContainer.getBoundingClientRect();
+        const positionInContainer = assignmentEl.offsetTop;
+        const percentPosition = (positionInContainer / scrollHeight) * 100;
+
+        // Create notch element
+        const notch = document.createElement("div");
+        notch.className = "scrollbar-notch";
+        notch.style.top = percentPosition + "%";
+        notch.style.backgroundColor = courseColor;
+        notch.title = courseName;
+
+        indicator.appendChild(notch);
+    });
+
+    // Add indicator to the panel (positioned relative to panel)
+    calendarContainer.parentElement.appendChild(indicator);
+    
+    // Update notch positions on scroll
+    calendarContainer.addEventListener("scroll", () => {
+        updateScrollbarIndicator(calendarContainer);
+    });
+}
+
+function updateScrollbarIndicator(calendarContainer) {
+    const indicator = calendarContainer.parentElement.querySelector(".scrollbar-indicator");
+    if (!indicator) return;
+
+    const scrollHeight = calendarContainer.scrollHeight;
+    const containerHeight = calendarContainer.clientHeight;
+    const assignments = calendarContainer.querySelectorAll(".calendar-item");
+
+    const notches = indicator.querySelectorAll(".scrollbar-notch");
+    
+    notches.forEach((notch, index) => {
+        if (index < assignments.length) {
+            const assignmentEl = assignments[index];
+            const positionInContainer = assignmentEl.offsetTop;
+            const percentPosition = (positionInContainer / scrollHeight) * 100;
+            notch.style.top = percentPosition + "%";
+        }
+    });
+}
 
 function updateBodyMargin() {
     // Always maintain the margin-right for DOM balance
@@ -279,6 +414,8 @@ function createAssignmentElement(assignment, course) {
     const itemCourse = document.createElement("span");
     itemCourse.className = "item-course";
     itemCourse.textContent = course.name;
+    itemCourse.style.color = getCourseColor(course.name);
+    itemCourse.style.fontWeight = "bold";
     itemMeta.appendChild(itemCourse);
 
     assignmentContainer.appendChild(itemMeta);
@@ -361,6 +498,9 @@ function updateGUI(courseData, isFromCache = false) {
         console.warn("Calendar container not found");
         return;
     }
+
+    // Ensure all courses have colors assigned lexicographically
+    ensureCourseColorsAssigned(courseData);
 
     // Clear existing content
     calendarContainer.innerHTML = "";
@@ -458,6 +598,9 @@ function updateGUI(courseData, isFromCache = false) {
         // Move to next day
         currentDate.setDate(currentDate.getDate() + 1);
     }
+
+    // Create scrollbar indicator after all content is rendered
+    createScrollbarIndicator(calendarContainer);
 }
 
 window.addEventListener("load", () => {

@@ -53,89 +53,122 @@
         </div>
       </header>
 
-      <p class="policy-effective">Effective Date: March 26, 2025</p>
+      <p class="policy-effective">Effective Date: March 24, 2026</p>
 
       <section class="policy-section">
-        <h2 class="policy-section-title">1. Introduction</h2>
+        <h2 class="policy-section-title">1. Overview</h2>
         <p class="policy-body">
-          Spark for Brightspace ("we," "our," or "us") is committed to protecting your privacy.
-          This Privacy Policy explains how our browser extension interacts with student data and
-          your personal information.
+          Spark for Brightspace is a free, open-source browser extension that surfaces your
+          assignment due dates in a side panel while you browse your institution's Brightspace
+          (D2L) platform. This policy explains exactly what data the extension accesses, what
+          it stores locally, and what it never does.
+        </p>
+        <p class="policy-body">
+          <strong>The short version:</strong> your data never leaves your browser. We collect
+          nothing, transmit nothing, and have no servers.
         </p>
       </section>
 
       <section class="policy-section">
-        <h2 class="policy-section-title">2. Data Collection and Usage</h2>
+        <h2 class="policy-section-title">2. What the Extension Reads</h2>
         <p class="policy-body">
-          Our extension accesses student data solely to provide its intended functionality.
-          However, we do not store, transmit, or share any student data in any form. All data
-          processing occurs locally within your browser.
-        </p>
-        <p class="policy-body">
-          We do collect anonymized usage data to improve functionality and troubleshoot issues.
-          The collected data includes:
+          When the extension is active on a Brightspace page, it calls your institution's own
+          Brightspace REST API — the same API your browser uses when you navigate the site
+          normally — to retrieve:
         </p>
         <ul class="policy-list">
-          <li>Number of successful extension loads</li>
-          <li>Number of custom tasks created</li>
-          <li>Number of Gradescope syncs</li>
-          <li>Current streak number</li>
-          <li>Institution's public Canvas/Blackboard/Brightspace URL</li>
+          <li>Your active course enrollments</li>
+          <li>Assignment (dropbox) names, due dates, and submission links</li>
+          <li>Quiz names, start dates, due dates, and end dates</li>
+          <li>Discussion forum and topic names and due dates</li>
+          <li>General content items with due dates</li>
+        </ul>
+        <p class="policy-body">
+          This data is fetched directly from your institution's Brightspace server using your
+          existing authenticated session. The extension never sees your login credentials.
+        </p>
+      </section>
+
+      <section class="policy-section">
+        <h2 class="policy-section-title">3. What Is Stored Locally</h2>
+        <p class="policy-body">
+          To avoid re-fetching data every time you navigate between pages, the extension caches
+          information locally in your browser using the standard
+          <code>chrome.storage.local</code> and <code>localStorage</code> APIs. The following
+          is stored:
+        </p>
+        <ul class="policy-list">
+          <li><strong>Course and assignment data</strong> — a local cache of the API response described above, so the panel loads instantly on the next page.</li>
+          <li><strong>Panel scroll position</strong> — so the panel returns to where you left off when switching tabs.</li>
+          <li><strong>Active panel tab ID</strong> — to ensure only one tab shows the panel at a time.</li>
+          <li><strong>Panel width and expanded/collapsed state</strong> — so your layout preference is remembered across page loads.</li>
+        </ul>
+        <p class="policy-body">
+          All of this data is stored only on your device and is never transmitted anywhere.
+          You can clear it at any time by clearing your browser's extension storage or
+          uninstalling the extension.
+        </p>
+      </section>
+
+      <section class="policy-section">
+        <h2 class="policy-section-title">4. What We Never Do</h2>
+        <ul class="policy-list">
+          <li>We do <strong>not</strong> collect, transmit, or share any personal or academic data.</li>
+          <li>We do <strong>not</strong> run any analytics, telemetry, or usage tracking.</li>
+          <li>We do <strong>not</strong> integrate with any third-party services.</li>
+          <li>We do <strong>not</strong> have a backend server or database.</li>
+          <li>We do <strong>not</strong> access any data outside of your institution's Brightspace domain.</li>
         </ul>
       </section>
 
       <section class="policy-section">
-        <h2 class="policy-section-title">3. Anonymized Data Collection and Transmission</h2>
+        <h2 class="policy-section-title">5. Permissions</h2>
         <p class="policy-body">
-          While we do not collect, store, or transmit any personal or student data, we do collect
-          and transmit anonymized usage data as outlined above. This data does not contain any
-          personally identifiable information and cannot be linked to individual users.
+          The extension requests the following browser permissions:
+        </p>
+        <ul class="policy-list">
+          <li><strong>tabs</strong> — used to detect which tab is viewing Brightspace and to coordinate the single-panel behavior across multiple open tabs.</li>
+          <li><strong>scripting</strong> — used to inject the side panel UI into Brightspace pages.</li>
+          <li><strong>storage</strong> — used to cache course data and save your panel preferences locally.</li>
+        </ul>
+        <p class="policy-body">
+          The extension's content scripts only activate on pages matching
+          <code>https://*/d2l/*</code> — it is completely inactive on all other websites.
         </p>
       </section>
 
       <section class="policy-section">
-        <h2 class="policy-section-title">4. Third-Party Services</h2>
+        <h2 class="policy-section-title">6. Open Source</h2>
         <p class="policy-body">
-          Our extension does not use or integrate with third-party services that collect, process,
-          or store student data.
-        </p>
-      </section>
-
-      <section class="policy-section">
-        <h2 class="policy-section-title">5. Security</h2>
-        <p class="policy-body">
-          Since no student data is stored or transmitted, there is no risk of unauthorized access
-          to student data through our extension. However, users should ensure their devices and
-          browsers are secure.
-        </p>
-      </section>
-
-      <section class="policy-section">
-        <h2 class="policy-section-title">6. Children's Privacy</h2>
-        <p class="policy-body">
-          Our extension is designed to comply with student data privacy regulations. As we do not
-          collect, store, or share student data, there is no risk to children's privacy.
+          Spark for Brightspace is fully open source. You can inspect every line of code in
+          <a
+            class="policy-link"
+            href="https://github.com/CamCatTay/spark-for-brightspace"
+            target="_blank"
+            rel="noopener noreferrer"
+          >the GitHub repository</a> to verify these claims for yourself.
         </p>
       </section>
 
       <section class="policy-section">
         <h2 class="policy-section-title">7. Changes to This Policy</h2>
         <p class="policy-body">
-          We may update this Privacy Policy periodically. Any changes will be reflected in the
-          updated effective date.
+          If this policy changes, the updated version will be committed to the repository
+          and the effective date above will be updated. Significant changes will be noted
+          in the release notes.
         </p>
       </section>
 
       <section class="policy-section">
-        <h2 class="policy-section-title">8. Contact Us</h2>
+        <h2 class="policy-section-title">8. Contact</h2>
         <p class="policy-body">
-          If you have any questions about this Privacy Policy, please contact us at
+          Questions or concerns? Open an issue on
           <a
             class="policy-link"
             href="https://github.com/CamCatTay/spark-for-brightspace/issues"
             target="_blank"
             rel="noopener noreferrer"
-          >our GitHub repository</a>.
+          >GitHub</a>.
         </p>
       </section>
 

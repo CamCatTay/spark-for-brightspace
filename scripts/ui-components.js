@@ -83,7 +83,6 @@ function createAssignmentElement(assignment, course) {
 
     if (isNotYetAvailable) {
         assignmentContainer.classList.add("not-yet-available");
-        assignmentContainer.style.pointerEvents = "none";
     }
 
     const itemName = document.createElement("div");
@@ -128,9 +127,7 @@ function createAssignmentElement(assignment, course) {
 
     assignmentContainer.addEventListener("click", function(e) {
         e.preventDefault();
-        if (!isNotYetAvailable) {
-            window.open(assignment.url, '_blank');
-        }
+        window.open(assignment.url, '_blank');
     });
 
     return assignmentContainer;
@@ -302,26 +299,11 @@ function createFrequencyChart(calendarContainer, itemsByDate) {
     grid.className = "frequency-chart-grid";
     grid.id = "frequency-chart-grid";
     
-    // Week label row (label + FAQ button)
-    const weekLabelRow = document.createElement("div");
-    weekLabelRow.className = "frequency-chart-header-row";
-
+    // Week label
     const weekLabel = document.createElement("div");
     weekLabel.className = "frequency-chart-week-label";
     weekLabel.id = "frequency-chart-week-label";
-    weekLabelRow.appendChild(weekLabel);
-
-    const faqBtn = document.createElement("button");
-    faqBtn.className = "faq-btn";
-    faqBtn.title = "Help / FAQ";
-    faqBtn.textContent = "?";
-    faqBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        chrome.runtime.sendMessage({ action: "openFaq" });
-    });
-    weekLabelRow.appendChild(faqBtn);
-
-    chartContainer.appendChild(weekLabelRow);
+    chartContainer.appendChild(weekLabel);
 
     // Wrap grid + side buttons in a single row
     const chartRow = document.createElement("div");

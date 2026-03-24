@@ -221,6 +221,7 @@ export async function getCourseContent(tabUrl) {
                 ItemName: quiz.Name,
                 ItemType: 4, // Quiz
                 ItemUrl: baseURL + `/d2l/lms/quizzing/user/quiz_summary.d2l?ou=${course.OrgUnit.Id}&qi=${quiz.QuizId}&cfql=0`,
+                StartDate: clearPastStartDate(quiz.StartDate),
                 EndDate: quiz.EndDate,
                 DueDate: quiz.DueDate || quiz.EndDate, // Use EndDate if DueDate is null
                 CompletionType: 1,

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Spark for Brightspace",
+  "name": "Spark — for Brightspace",
   "version": "1.0.0",
   "description": "A productivity extension for Brightspace.",
   "icons": {

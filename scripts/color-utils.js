@@ -1,18 +1,18 @@
 // Saturation level for course colors (0-100, where 100 is fully saturated)
-const COLOR_SATURATION = 60;
+const COLOR_SATURATION = 80;
 
 // Lightness level for course colors (0-100, where 0 is dark/black, 50 is normal, 100 is bright/white)
-const COLOR_LIGHTNESS = 50;
+const COLOR_LIGHTNESS = 60;
 
 // Color pool defined by hue, with saturation and lightness applied from constants
 const COLOR_POOL_HSL = [
     [0],      // Red
     [30],     // Orange
-    [60],     // Yellow
-    [120],    // Green
-    [240],    // Blue
+    [45],     // Yellow
+    [105],    // Green
+    [228],    // Blue
     [330],    // Pink
-    [255],    // Purple
+    [270],    // Purple
 ];
 
 // { courseName: colorHex } - assigned lexicographically

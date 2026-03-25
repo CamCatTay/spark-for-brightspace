@@ -92,7 +92,6 @@ function createAssignmentElement(assignment, course) {
     const itemName = document.createElement("div");
     itemName.className = "item-name";
     itemName.textContent = assignment.name;
-    assignmentContainer.appendChild(itemName);
 
     const itemMeta = document.createElement("div");
     itemMeta.className = "item-meta";
@@ -117,7 +116,10 @@ function createAssignmentElement(assignment, course) {
     dueTime.textContent = formatTimeFromDate(assignment.dueDate);
     dueContainer.appendChild(dueTime);
 
-    itemMeta.appendChild(dueContainer);
+    const metaSeparator = document.createElement("span");
+    metaSeparator.className = "item-meta-separator";
+    metaSeparator.textContent = "|";
+    dueContainer.appendChild(metaSeparator);
 
     const itemCourse = document.createElement("span");
     itemCourse.className = "item-course";
@@ -125,21 +127,25 @@ function createAssignmentElement(assignment, course) {
     itemCourse.dataset.fullName = course.name;
     itemCourse.style.color = getCourseColor(course.name);
     itemCourse.style.fontWeight = "bold";
-    itemMeta.appendChild(itemCourse);
+    dueContainer.appendChild(itemCourse);
 
-    assignmentContainer.appendChild(itemMeta);
+    itemMeta.appendChild(dueContainer);
+
+    const itemContent = document.createElement("div");
+    itemContent.className = "item-content";
+    itemContent.appendChild(itemName);
+    itemContent.appendChild(itemMeta);
+    assignmentContainer.appendChild(itemContent);
 
     assignmentContainer.addEventListener("click", function(e) {
         e.preventDefault();
         window.open(assignment.url, '_blank');
     });
 
-    if (assignment.completed) {
-        const completedBadge = document.createElement("div");
-        completedBadge.className = "item-completed-badge";
-        completedBadge.textContent = "🗹";
-        assignmentContainer.appendChild(completedBadge);
-    }
+    const badge = document.createElement("div");
+    badge.className = assignment.completed ? "item-completed-badge" : "item-incomplete-dot";
+    badge.textContent = assignment.completed ? "✓" : "•";
+    assignmentContainer.appendChild(badge);
 
     return assignmentContainer;
 }

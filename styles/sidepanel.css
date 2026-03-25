@@ -234,7 +234,8 @@ body:has(#d2l-todolist-widget.hidden) {
 }
 
 .calendar-item {
-    display: block;
+    display: flex;
+    align-items: center;
     position: relative;
     padding: 8px 14px;
     margin: 0;
@@ -247,18 +248,21 @@ body:has(#d2l-todolist-widget.hidden) {
     transition: all 0.2s ease;
     word-break: break-word;
     overflow-wrap: break-word;
+    gap: 8px;
+}
+
+.item-content {
+    flex: 1;
+    min-width: 0;
 }
 
 .item-completed-badge {
-    position: absolute;
-    top: 6px;
-    right: 8px;
+    flex-shrink: 0;
     color: #000000;
     font-size: 15px;
     font-weight: 700;
     line-height: 1;
     pointer-events: none;
-    z-index: 1;
 }
 
 .calendar-item:hover {
@@ -299,7 +303,7 @@ body:has(#d2l-todolist-widget.hidden) {
 
 .item-meta {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
@@ -346,9 +350,23 @@ body:has(#d2l-todolist-widget.hidden) {
     color: #888;
     font-weight: 500;
     white-space: nowrap;
-    text-align: right;
     word-break: break-word;
     overflow-wrap: break-word;
+}
+
+.item-meta-separator {
+    font-size: 11px;
+    color: #ccc;
+    font-weight: 400;
+    margin: 0 1px;
+}
+
+.item-incomplete-dot {
+    flex-shrink: 0;
+    color: #bbb;
+    font-size: 18px;
+    line-height: 1;
+    pointer-events: none;
 }
 
 .empty-day-notice {

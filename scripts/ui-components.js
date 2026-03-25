@@ -10,6 +10,10 @@ const COURSE_NAME_TRIM_WORDS = [
     "Summer",
 ];
 
+// How many days before today the calendar should start.
+// Set to 0 to start from today; increase to show past items.
+const CALENDAR_START_DAYS_BACK = 30;
+
 function truncateCourseName(name) {
     if (!name) return name;
     const pattern = COURSE_NAME_TRIM_WORDS
@@ -233,9 +237,10 @@ function updateGUI(courseData, isFromCache = false) {
         console.error("Error creating frequency chart (non-fatal):", e);
     }
 
-    // Generate calendar from today to maxDate
+    // Generate calendar from CALENDAR_START_DAYS_BACK days before today to maxDate
     const today = new Date();
     const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    startDate.setDate(startDate.getDate() - CALENDAR_START_DAYS_BACK);
     const endDate = new Date(maxDate);
 
     let currentDate = new Date(startDate);

@@ -603,14 +603,14 @@ body:has(#d2l-todolist-widget.hidden) {
 
 .frequency-bar {
     width: 100%;
-    background: linear-gradient(135deg, #2196F3, #1976D2);
-    border-radius: 1px;
+    background: linear-gradient(135deg, #f3aa21, #d27c19);
+    border-radius: 1px; 
     transition: all 0.3s ease;
     min-height: 2px;
 }
 
 .frequency-bar:hover {
-    background: linear-gradient(135deg, #1976D2, #1565C0);
+    background: linear-gradient(135deg, #f5ad27, #d68325);
     filter: brightness(1.1);
 }
 

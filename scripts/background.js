@@ -51,6 +51,18 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         });
         return true; // keep channel open for async response
     }
+
+    // A tab finished fetching — broadcast to all other D2L tabs to sync.
+    if (request.action === "broadcastCourseDataUpdated") {
+        chrome.tabs.query({}, function(tabs) {
+            tabs.forEach(tab => {
+                if (tab.id !== sender.tab.id && tab.url && tab.url.includes("/d2l/")) {
+                    chrome.tabs.sendMessage(tab.id, { action: "courseDataUpdated" }).catch(() => {});
+                }
+            });
+        });
+        return;
+    }
 });
 
 // Handle action button click to toggle the panel

@@ -1,4 +1,5 @@
 const COURSE_DATA_KEY = "courseData";
+const LAST_FETCHED_KEY = "spark-last-fetched";
 
 window.addEventListener("load", () => {
     let courseData = {};
@@ -39,7 +40,10 @@ window.addEventListener("load", () => {
     });
 
     // Load stored data first for immediate display
-    chrome.storage.local.get([COURSE_DATA_KEY], function(result) {
+    chrome.storage.local.get([COURSE_DATA_KEY, LAST_FETCHED_KEY], function(result) {
+        if (result[LAST_FETCHED_KEY]) {
+            lastFetchedTime = new Date(result[LAST_FETCHED_KEY]);
+        }
         if (result.courseData) {
             courseData = JSON.parse(JSON.stringify(result.courseData));
             updateGUI(courseData, true);
@@ -53,15 +57,27 @@ window.addEventListener("load", () => {
             courseData = JSON.parse(JSON.stringify(response));
             lastFetchedTime = new Date();
 
-            chrome.storage.local.set({ courseData: courseData }, function() {
+            chrome.storage.local.set({ courseData: courseData, [LAST_FETCHED_KEY]: lastFetchedTime.toISOString() }, function() {
                 updateGUI(courseData, false);
                 restoreScrollPosition();
+                safeSendMessage({ action: "broadcastCourseDataUpdated" });
             });
         }
     });
 });
 
 chrome.runtime.onMessage.addListener(function(request) {
+    if (request.action === "courseDataUpdated") {
+        // Another tab fetched fresh data — sync from storage without fetching again.
+        chrome.storage.local.get([COURSE_DATA_KEY, LAST_FETCHED_KEY], function(result) {
+            if (result[LAST_FETCHED_KEY]) {
+                lastFetchedTime = new Date(result[LAST_FETCHED_KEY]);
+            }
+            if (result.courseData) {
+                updateGUI(JSON.parse(JSON.stringify(result.courseData)), false);
+            }
+        });
+    }
     if (request.action === "openUrl") {
         window.open(request.url, '_blank');
     }

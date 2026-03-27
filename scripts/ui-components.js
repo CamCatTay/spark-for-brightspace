@@ -142,10 +142,15 @@ function createAssignmentElement(assignment, course) {
 
     const itemCourse = document.createElement("span");
     itemCourse.className = "item-course";
-    itemCourse.textContent = truncateCourseName(course.name);
     itemCourse.dataset.fullName = course.name;
-    itemCourse.style.color = getCourseColor(course.name);
-    itemCourse.style.fontWeight = "bold";
+
+    const courseDot = document.createElement("span");
+    courseDot.className = "item-course-dot";
+    courseDot.textContent = "●";
+    courseDot.style.color = getCourseColor(course.name);
+    itemCourse.appendChild(courseDot);
+    itemCourse.appendChild(document.createTextNode(truncateCourseName(course.name)));
+
     dueContainer.appendChild(itemCourse);
 
     itemMeta.appendChild(dueContainer);

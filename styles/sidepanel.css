@@ -345,6 +345,15 @@ body:has(#d2l-todolist-widget.hidden) {
     white-space: nowrap;
     word-break: break-word;
     overflow-wrap: break-word;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.item-course-dot {
+    font-size: 15px;
+    line-height: 0;
+    flex-shrink: 0;
 }
 
 .item-meta-separator {
@@ -597,7 +606,7 @@ body:has(#d2l-todolist-widget.hidden) {
 .frequency-bar {
     width: 100%;
     background: linear-gradient(135deg, #f6ba1d, #f6a41d);
-    border-radius: 1px; 
+    border-radius: 1px;
     transition: all 0.3s ease;
     min-height: 2px;
 }

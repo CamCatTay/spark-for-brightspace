@@ -12,7 +12,12 @@ const COURSE_NAME_TRIM_WORDS = [
 
 // How many days before today the calendar should start.
 // Set to 0 to start from today; increase to show past items.
-const CALENDAR_START_DAYS_BACK = 0;
+const CALENDAR_START_DAYS_BACK = 30;
+
+// Toggle to show/hide the "Last fetched" timestamp in the frequency chart.
+const SHOW_LAST_FETCHED = true;
+
+let lastFetchedTime = null;
 
 function truncateCourseName(name) {
     if (!name) return name;
@@ -153,26 +158,23 @@ function createAssignmentElement(assignment, course) {
 function initializeGUI() {
     const calendarContainer = document.getElementById("calendar-container");
     if (!calendarContainer) return;
-
-    calendarContainer.innerHTML = "";
-    const loadingIndicator = document.createElement("div");
-    loadingIndicator.id = "loading-indicator";
-    loadingIndicator.textContent = "Loading assignments...";
-    calendarContainer.appendChild(loadingIndicator);
+    addDataStatusIndicator(true);
 }
 
 function addDataStatusIndicator(isStale) {
+    const chartContainer = document.getElementById("frequency-chart");
     const calendarContainer = document.getElementById("calendar-container");
-    if (!calendarContainer) return;
+    const targetContainer = chartContainer || calendarContainer;
+    if (!targetContainer) return;
 
-    const existingIndicator = calendarContainer.querySelector(".data-status-indicator");
+    const existingIndicator = document.querySelector(".data-status-indicator");
     if (existingIndicator) existingIndicator.remove();
 
     if (isStale) {
         const indicator = document.createElement("div");
         indicator.className = "data-status-indicator loading";
         indicator.innerHTML = '<span class="spinner"></span> Fetching latest data...';
-        calendarContainer.appendChild(indicator);
+        targetContainer.appendChild(indicator);
     }
 }
 
@@ -182,12 +184,11 @@ function updateGUI(courseData, isFromCache = false) {
 
     ensureCourseColorsAssigned(courseData);
 
+    const existingChart = calendarContainer.querySelector("#frequency-chart");
+    const preservedWeekOffset = existingChart ? (existingChart._weekOffset || 0) : 0;
+
     calendarContainer.innerHTML = "";
     isDataStale = isFromCache;
-
-    if (isFromCache) {
-        addDataStatusIndicator(true);
-    }
 
     // Collect all items with due dates
     const itemsByDate = {};
@@ -231,16 +232,21 @@ function updateGUI(courseData, isFromCache = false) {
         emptyMessage.id = "loading-indicator";
         emptyMessage.textContent = "No upcoming assignments";
         calendarContainer.appendChild(emptyMessage);
+        if (isFromCache) addDataStatusIndicator(true);
         return;
     }
 
     // Create frequency chart at the top
     try {
         if (typeof createFrequencyChart === 'function' && typeof getWeekStart === 'function' && typeof getDateKey === 'function') {
-            createFrequencyChart(calendarContainer, itemsByDate);
+            createFrequencyChart(calendarContainer, itemsByDate, preservedWeekOffset);
         }
     } catch (e) {
         console.error("Error creating frequency chart (non-fatal):", e);
+    }
+
+    if (isFromCache) {
+        addDataStatusIndicator(true);
     }
 
     // Generate calendar from CALENDAR_START_DAYS_BACK days before today to maxDate
@@ -282,7 +288,7 @@ function updateGUI(courseData, isFromCache = false) {
     createScrollbarIndicator(calendarContainer);
 }
 
-function createFrequencyChart(calendarContainer, itemsByDate) {
+function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset = 0) {
     const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     // Get the week containing today
@@ -296,7 +302,7 @@ function createFrequencyChart(calendarContainer, itemsByDate) {
 
     // Store current week and offset
     chartContainer._todayWeekStart = todayWeekStart.getTime();
-    chartContainer._weekOffset = 0; // 0 = current week, 1 = next week, -1 = prev week (not allowed)
+    chartContainer._weekOffset = initialWeekOffset;
     chartContainer._calendarContainer = calendarContainer; // Store for click-to-scroll
 
     const prevBtn = document.createElement("button");
@@ -356,9 +362,19 @@ function createFrequencyChart(calendarContainer, itemsByDate) {
     chartRow.appendChild(nextBtn);
     chartContainer.appendChild(chartRow);
 
+    if (SHOW_LAST_FETCHED) {
+        const lastFetchedEl = document.createElement("div");
+        lastFetchedEl.className = "frequency-chart-last-fetched";
+        lastFetchedEl.textContent = lastFetchedTime
+            ? "Last fetched: " + lastFetchedTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+            : "Last fetched: —";
+        chartContainer.appendChild(lastFetchedEl);
+    }
+
     // Initial render
     try {
-        renderFrequencyChart(chartContainer, itemsByDate, todayWeekStart, 0, calendarContainer);
+        renderFrequencyChart(chartContainer, itemsByDate, todayWeekStart, initialWeekOffset, calendarContainer);
+        updateFrequencyNavButtons(chartContainer);
     } catch (e) {
         console.error("Error rendering frequency chart:", e);
     }
@@ -429,7 +445,9 @@ function renderFrequencyChart(chartContainer, itemsByDate, todayWeekStart, weekO
             const dayDate = new Date(displayWeekStart);
             dayDate.setDate(dayDate.getDate() + i);
             const dateKey = getDateKey(dayDate);
-            const count = itemsByDate[dateKey]?.length || 0;
+            // Count only incomplete items for the frequency chart to reflect actionable workload
+            // In the future this could be a user setting to toggle completed items on/off in the chart
+            const count = itemsByDate[dateKey]?.filter(({ item }) => !item.completed).length || 0;
             weekCounts[i] = count;
             maxCount = Math.max(maxCount, count);
         }

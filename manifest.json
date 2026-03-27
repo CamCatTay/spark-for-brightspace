@@ -14,7 +14,6 @@
   },
   "permissions": [
     "tabs",
-    "scripting",
     "storage"
   ],
   "content_scripts": [
@@ -33,7 +32,7 @@
   ],
   "action": {
     "default_icon": "/images/spark_logo.png",
-    "default_title": "Spark for Brightspace"
+    "default_title": "Spark - for Brightspace"
   },
   "web_accessible_resources": [
     {

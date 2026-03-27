@@ -91,15 +91,24 @@ body.d2l-todolist-compact {
     gap: 8px;
     padding: 12px 16px;
     background-color: #f5f5f5;
-    border-bottom: 1px solid #e0e0e0;
     font-size: 13px;
     color: #666;
     font-weight: 500;
 }
 
+.frequency-chart-container .data-status-indicator {
+    margin: 0 -12px -10px;
+}
+
+.frequency-chart-last-fetched {
+    font-size: 10px;
+    color: #aaa;
+    text-align: left;
+    margin-top: 0px;
+}
+
 .data-status-indicator.loading {
     background-color: #fff8e1;
-    border-bottom-color: #ffd700;
     color: #d68d00;
 }
 

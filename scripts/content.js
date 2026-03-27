@@ -1,6 +1,7 @@
 const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
 let fetchInFlight = false;
+let globalFetchInFlight = false; // true when another tab's fetch is still running
 
 window.addEventListener("load", () => {
     let courseData = {};
@@ -35,7 +36,7 @@ window.addEventListener("load", () => {
     // tab, re-render the in-memory data so the panel is never blank.
     registerPanelRestoreCallback(() => {
         if (courseData && Object.keys(courseData).length > 0) {
-            updateGUI(courseData, fetchInFlight);
+            updateGUI(courseData, fetchInFlight || globalFetchInFlight);
             restoreScrollPosition();
         }
     });
@@ -54,6 +55,7 @@ window.addEventListener("load", () => {
 
     // Fetch fresh data from API
     fetchInFlight = true;
+    safeSendMessage({ action: "broadcastFetchStarted" });
     safeSendMessage({ action: "fetchCourses" }, function(response) {
         fetchInFlight = false;
         if (response) {
@@ -70,8 +72,14 @@ window.addEventListener("load", () => {
 });
 
 chrome.runtime.onMessage.addListener(function(request) {
+    if (request.action === "fetchStarted") {
+        // Another tab started fetching — show the loading indicator while we wait for its data.
+        globalFetchInFlight = true;
+        addDataStatusIndicator(true);
+    }
     if (request.action === "courseDataUpdated") {
-        // Another tab fetched fresh data — sync from storage without fetching again.
+        // Another tab finished fetching — sync from storage and clear the global flag.
+        globalFetchInFlight = false;
         chrome.storage.local.get([COURSE_DATA_KEY, LAST_FETCHED_KEY], function(result) {
             if (result[LAST_FETCHED_KEY]) {
                 lastFetchedTime = new Date(result[LAST_FETCHED_KEY]);

@@ -12,13 +12,16 @@ const COURSE_NAME_TRIM_WORDS = [
 
 // How many days before today the calendar should start.
 // Set to 0 to start from today; increase to show past items.
-const CALENDAR_START_DAYS_BACK = 0;
+const CALENDAR_START_DAYS_BACK = 30;
 
 // Toggle to show/hide the "Last fetched" timestamp in the frequency chart.
 const SHOW_LAST_FETCHED = true;
 
 // Color applied to due times when the deadline is within 24 hours.
 const CAUTION_COLOR = "#f6ba1d";
+
+// Color applied to due times when the item is incomplete and past due.
+const OVERDUE_COLOR = "#e84040";
 
 let lastFetchedTime = null;
 
@@ -123,8 +126,11 @@ function createAssignmentElement(assignment, course) {
     dueTime.className = "item-time";
     dueTime.textContent = formatTimeFromDate(assignment.dueDate);
     const msUntilDue = new Date(assignment.dueDate) - new Date();
+    // If assignment is incomplete and past due, apply overdue color
+    if (!assignment.completed && msUntilDue < 0) {
+        dueTime.style.color = OVERDUE_COLOR;
     // If assignment is due within 24 hours emphasize it with a caution color
-    if (msUntilDue >= 0 && msUntilDue <= 24 * 60 * 60 * 1000) {
+    } else if (msUntilDue >= 0 && msUntilDue <= 24 * 60 * 60 * 1000) {
         dueTime.style.color = CAUTION_COLOR;
     }
     dueContainer.appendChild(dueTime);

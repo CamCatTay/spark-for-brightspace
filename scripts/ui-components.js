@@ -12,7 +12,7 @@ const COURSE_NAME_TRIM_WORDS = [
 
 // How many days before today the calendar should start.
 // Set to 0 to start from today; increase to show past items.
-const CALENDAR_START_DAYS_BACK = 0;
+const CALENDAR_START_DAYS_BACK = 30;
 
 function truncateCourseName(name) {
     if (!name) return name;
@@ -153,12 +153,7 @@ function createAssignmentElement(assignment, course) {
 function initializeGUI() {
     const calendarContainer = document.getElementById("calendar-container");
     if (!calendarContainer) return;
-
-    calendarContainer.innerHTML = "";
-    const loadingIndicator = document.createElement("div");
-    loadingIndicator.id = "loading-indicator";
-    loadingIndicator.textContent = "Loading assignments...";
-    calendarContainer.appendChild(loadingIndicator);
+    addDataStatusIndicator(true);
 }
 
 function addDataStatusIndicator(isStale) {

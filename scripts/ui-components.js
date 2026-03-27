@@ -17,8 +17,11 @@ const CALENDAR_START_DAYS_BACK = 30;
 // Toggle to show/hide the "Last fetched" timestamp in the frequency chart.
 const SHOW_LAST_FETCHED = true;
 
-// Color applied to due times when the deadline is within 24 hours.
-const CAUTION_COLOR = "#f6ba1d";
+// Color applied to due times when the item is due today.
+const DUE_TODAY_COLOR = "#f6e01d";
+
+// Color applied to due times when the item is due tomorrow.
+const DUE_TOMORROW_COLOR = "#e8900c";
 
 // Color applied to due times when the item is incomplete and past due.
 const OVERDUE_COLOR = "#e84040";
@@ -125,13 +128,18 @@ function createAssignmentElement(assignment, course) {
     const dueTime = document.createElement("span");
     dueTime.className = "item-time";
     dueTime.textContent = formatTimeFromDate(assignment.dueDate);
-    const msUntilDue = new Date(assignment.dueDate) - new Date();
-    // If assignment is incomplete and past due, apply overdue color
-    if (!assignment.completed && msUntilDue < 0) {
+    const dueDateOnly = getDateOnly(assignment.dueDate);
+    const tomorrowDateOnly = new Date(nowDateOnly);
+    tomorrowDateOnly.setDate(tomorrowDateOnly.getDate() + 1);
+    // Incomplete and past due
+    if (!assignment.completed && dueDateOnly < nowDateOnly) {
         dueTime.style.color = OVERDUE_COLOR;
-    // If assignment is due within 24 hours emphasize it with a caution color
-    } else if (msUntilDue >= 0 && msUntilDue <= 24 * 60 * 60 * 1000) {
-        dueTime.style.color = CAUTION_COLOR;
+    // Due today
+    } else if (dueDateOnly && dueDateOnly.getTime() === nowDateOnly.getTime()) {
+        dueTime.style.color = DUE_TODAY_COLOR;
+    // Due tomorrow
+    } else if (dueDateOnly && dueDateOnly.getTime() === tomorrowDateOnly.getTime()) {
+        dueTime.style.color = DUE_TOMORROW_COLOR;
     }
     dueContainer.appendChild(dueTime);
 

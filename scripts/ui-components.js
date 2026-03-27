@@ -424,7 +424,7 @@ function renderFrequencyChart(chartContainer, itemsByDate, todayWeekStart, weekO
             const dayDate = new Date(displayWeekStart);
             dayDate.setDate(dayDate.getDate() + i);
             const dateKey = getDateKey(dayDate);
-            const count = itemsByDate[dateKey]?.length || 0;
+            const count = itemsByDate[dateKey]?.filter(({ item }) => !item.completed).length || 0;
             weekCounts[i] = count;
             maxCount = Math.max(maxCount, count);
         }

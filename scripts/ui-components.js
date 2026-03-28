@@ -361,7 +361,7 @@ function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset 
     const refreshBtn = document.createElement("button");
     refreshBtn.className = "spark-refresh-btn";
     refreshBtn.title = "Refresh";
-    refreshBtn.textContent = "⟳";
+    refreshBtn.textContent = "↻";
     refreshBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         if (typeof triggerRefresh === 'function') triggerRefresh();

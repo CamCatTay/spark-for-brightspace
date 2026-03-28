@@ -156,8 +156,9 @@ body:has(#d2l-todolist-widget.hidden) {
     width: 30px;
     height: 30px;
     background: none;
+    background-color: transparent;
     border: none;
-    color: #1a1a1a;
+    color: #888;
     font-size: 20px;
     cursor: pointer;
     display: flex;
@@ -169,20 +170,34 @@ body:has(#d2l-todolist-widget.hidden) {
     transition: background-color 0.2s ease, transform 0.8s linear;
 }
 
-.spark-refresh-btn {
-    color: #888;
-}
-
 .spark-refresh-btn:hover {
     color: #333;
 }
 
-.spark-refresh-btn:hover {
-    background-color: rgba(0, 0, 0, 0.08);
+.spark-refresh-btn.spinning {
+    animation: spin 0.6s linear;
 }
 
-.spark-refresh-btn:active {
-    background-color: rgba(0, 0, 0, 0.16);
+.spark-settings-btn {
+    width: 30px;
+    height: 30px;
+    background: none;
+    background-color: transparent;
+    border: none;
+    color: #888;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, transform 0.8s linear;
+}
+
+.spark-settings-btn:hover {
+    color: #333;
 }
 
 #calendar-container {
@@ -488,12 +503,20 @@ body:has(#d2l-todolist-widget.hidden) {
     flex: 1;
 }
 
+.spark-btn-spacer {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
 .faq-btn {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 1.5px solid #aaa;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    border: none;
     background: none;
+    background-color: transparent;
     color: #888;
     font-size: 11px;
     font-weight: 700;
@@ -504,17 +527,27 @@ body:has(#d2l-todolist-widget.hidden) {
     padding: 0;
     line-height: 1;
     flex-shrink: 0;
-    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    position: relative;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.faq-btn::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid #aaa;
+    pointer-events: none;
+    transition: border-color 0.2s ease;
+}
+
+.faq-btn:hover::before {
+    border-color: #555;
 }
 
 .faq-btn:hover {
-    border-color: #555;
     color: #333;
-    background-color: rgba(0, 0, 0, 0.06);
-}
-
-.faq-btn:active {
-    background-color: rgba(0, 0, 0, 0.12);
 }
 
 .frequency-chart-container {
@@ -584,6 +617,12 @@ body:has(#d2l-todolist-widget.hidden) {
     gap: 4px;
     transition: opacity 0.2s ease;
     cursor: pointer;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.frequency-day--today {
+    background-color: #e8e8e8;
 }
 
 .frequency-day:hover {

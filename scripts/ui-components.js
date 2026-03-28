@@ -18,10 +18,10 @@ const CALENDAR_START_DAYS_BACK = 30;
 const SHOW_LAST_FETCHED = true;
 
 // Color applied to due times when the item is due today.
-const DUE_TODAY_COLOR = "#f6ce1d";
+const DUE_TODAY_COLOR = "#e8900c";
 
 // Color applied to due times when the item is due tomorrow.
-const DUE_TOMORROW_COLOR = "#e8900c";
+const DUE_TOMORROW_COLOR = "#e7c21d";
 
 // Color applied to due times when the item is incomplete and past due.
 const OVERDUE_COLOR = "#e84040";
@@ -358,17 +358,34 @@ function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset 
     weekLabel.className = "frequency-chart-week-label";
     weekLabel.id = "frequency-chart-week-label";
 
+    const settingsBtn = document.createElement("button");
+    settingsBtn.className = "spark-settings-btn";
+    settingsBtn.title = "Settings";
+    settingsBtn.textContent = "▷";
+    settingsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        safeSendMessage({ action: "openSettings" });
+    });
+    weekLabelRow.appendChild(settingsBtn);
+
     const refreshBtn = document.createElement("button");
     refreshBtn.className = "spark-refresh-btn";
     refreshBtn.title = "Refresh";
     refreshBtn.textContent = "↻";
     refreshBtn.addEventListener("click", (e) => {
         e.stopPropagation();
+        refreshBtn.classList.add("spinning");
+        refreshBtn.addEventListener("animationend", () => refreshBtn.classList.remove("spinning"), { once: true });
         if (typeof triggerRefresh === 'function') triggerRefresh();
     });
     weekLabelRow.appendChild(refreshBtn);
 
+    // Week label is added above buttons so it stays left-aligned while buttons below are right-aligned
     weekLabelRow.appendChild(weekLabel);
+
+    const faqSpacer = document.createElement("div");
+    faqSpacer.className = "spark-btn-spacer";
+    weekLabelRow.appendChild(faqSpacer);
 
     const faqBtn = document.createElement("button");
     faqBtn.className = "faq-btn";
@@ -490,6 +507,14 @@ function renderFrequencyChart(chartContainer, itemsByDate, todayWeekStart, weekO
 
             const dayCell = document.createElement("div");
             dayCell.className = "frequency-day";
+            const todayCheck = new Date();
+            if (
+                dayDate.getFullYear() === todayCheck.getFullYear() &&
+                dayDate.getMonth() === todayCheck.getMonth() &&
+                dayDate.getDate() === todayCheck.getDate()
+            ) {
+                dayCell.classList.add("frequency-day--today");
+            }
 
             const dayLabel = document.createElement("div");
             dayLabel.className = "frequency-day-label";

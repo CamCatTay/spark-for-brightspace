@@ -18,7 +18,7 @@
 import { getTestCourseContent } from './brightspace-test-data.js';
 
 // TEST MODE: Set to true to use fake course data for testing
-const TEST_MODE = false;
+const TEST_MODE = true;
 
 class Course {
     constructor(id, name, url) {

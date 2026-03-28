@@ -514,10 +514,10 @@ body:has(#d2l-todolist-widget.hidden) {
 }
 
 .faq-btn {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    border: 1.5px solid #aaa;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    border: none;
     background: none;
     color: #888;
     font-size: 11px;
@@ -529,11 +529,26 @@ body:has(#d2l-todolist-widget.hidden) {
     padding: 0;
     line-height: 1;
     flex-shrink: 0;
-    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    position: relative;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.faq-btn::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid #aaa;
+    pointer-events: none;
+    transition: border-color 0.2s ease;
+}
+
+.faq-btn:hover::before {
+    border-color: #555;
 }
 
 .faq-btn:hover {
-    border-color: #555;
     color: #333;
     background-color: rgba(0, 0, 0, 0.06);
 }

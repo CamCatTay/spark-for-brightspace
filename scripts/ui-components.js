@@ -357,6 +357,7 @@ function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset 
     const weekLabel = document.createElement("div");
     weekLabel.className = "frequency-chart-week-label";
     weekLabel.id = "frequency-chart-week-label";
+    
     const refreshBtn = document.createElement("button");
     refreshBtn.className = "spark-panel-toggle spark-refresh-btn";
     refreshBtn.title = "Refresh";

@@ -357,15 +357,15 @@ function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset 
     const weekLabel = document.createElement("div");
     weekLabel.className = "frequency-chart-week-label";
     weekLabel.id = "frequency-chart-week-label";
-    const panelToggleBtn = document.createElement("button");
-    panelToggleBtn.className = "spark-panel-toggle";
-    panelToggleBtn.title = "Close panel";
-    panelToggleBtn.textContent = "\u25b6";
-    panelToggleBtn.addEventListener("click", (e) => {
+    const refreshBtn = document.createElement("button");
+    refreshBtn.className = "spark-panel-toggle spark-refresh-btn";
+    refreshBtn.title = "Refresh";
+    refreshBtn.textContent = "\u21bb";
+    refreshBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        togglePanel();
+        if (typeof triggerRefresh === 'function') triggerRefresh();
     });
-    weekLabelRow.appendChild(panelToggleBtn);
+    weekLabelRow.appendChild(refreshBtn);
 
     weekLabelRow.appendChild(weekLabel);
 

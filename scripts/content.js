@@ -2,6 +2,11 @@ const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
 let fetchInFlight = false;
 let globalFetchInFlight = false; // true when another tab's fetch is still running
+let _refreshFn = null;
+
+function triggerRefresh() {
+    if (_refreshFn) _refreshFn();
+}
 
 window.addEventListener("load", () => {
     let courseData = {};
@@ -53,22 +58,29 @@ window.addEventListener("load", () => {
         }
     });
 
-    // Fetch fresh data from API
-    fetchInFlight = true;
-    safeSendMessage({ action: "broadcastFetchStarted" });
-    safeSendMessage({ action: "fetchCourses" }, function(response) {
-        fetchInFlight = false;
-        if (response) {
-            courseData = JSON.parse(JSON.stringify(response));
-            lastFetchedTime = new Date();
+    // Register the refresh function so ui-components can trigger a fetch
+    _refreshFn = function() {
+        if (fetchInFlight) return;
+        fetchInFlight = true;
+        addDataStatusIndicator(true);
+        safeSendMessage({ action: "broadcastFetchStarted" });
+        safeSendMessage({ action: "fetchCourses" }, function(response) {
+            fetchInFlight = false;
+            if (response) {
+                courseData = JSON.parse(JSON.stringify(response));
+                lastFetchedTime = new Date();
 
-            chrome.storage.local.set({ courseData: courseData, [LAST_FETCHED_KEY]: lastFetchedTime.toISOString() }, function() {
-                updateGUI(courseData, false);
-                restoreScrollPosition();
-                safeSendMessage({ action: "broadcastCourseDataUpdated" });
-            });
-        }
-    });
+                chrome.storage.local.set({ courseData: courseData, [LAST_FETCHED_KEY]: lastFetchedTime.toISOString() }, function() {
+                    updateGUI(courseData, false);
+                    restoreScrollPosition();
+                    safeSendMessage({ action: "broadcastCourseDataUpdated" });
+                });
+            }
+        });
+    };
+
+    // Fetch fresh data from API
+    _refreshFn();
 });
 
 chrome.runtime.onMessage.addListener(function(request) {

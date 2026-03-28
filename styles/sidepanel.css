@@ -169,6 +169,15 @@ body:has(#d2l-todolist-widget.hidden) {
     transition: background-color 0.2s ease;
 }
 
+.spark-refresh-btn {
+    font-size: 17px;
+    color: #888;
+}
+
+.spark-refresh-btn:hover {
+    color: #333;
+}
+
 .spark-panel-toggle:hover {
     background-color: rgba(0, 0, 0, 0.08);
 }

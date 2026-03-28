@@ -152,7 +152,7 @@ body:has(#d2l-todolist-widget.hidden) {
     background-color: #ccc;
 }
 
-.spark-panel-toggle {
+.spark-refresh-btn {
     width: 18px;
     height: 18px;
     background: none;
@@ -170,7 +170,7 @@ body:has(#d2l-todolist-widget.hidden) {
 }
 
 .spark-refresh-btn {
-    font-size: 17px;
+    font-size: 25px;
     color: #888;
 }
 
@@ -178,11 +178,11 @@ body:has(#d2l-todolist-widget.hidden) {
     color: #333;
 }
 
-.spark-panel-toggle:hover {
+.spark-refresh-btn:hover {
     background-color: rgba(0, 0, 0, 0.08);
 }
 
-.spark-panel-toggle:active {
+.spark-refresh-btn:active {
     background-color: rgba(0, 0, 0, 0.16);
 }
 

@@ -507,6 +507,14 @@ function renderFrequencyChart(chartContainer, itemsByDate, todayWeekStart, weekO
 
             const dayCell = document.createElement("div");
             dayCell.className = "frequency-day";
+            const todayCheck = new Date();
+            if (
+                dayDate.getFullYear() === todayCheck.getFullYear() &&
+                dayDate.getMonth() === todayCheck.getMonth() &&
+                dayDate.getDate() === todayCheck.getDate()
+            ) {
+                dayCell.classList.add("frequency-day--today");
+            }
 
             const dayLabel = document.createElement("div");
             dayLabel.className = "frequency-day-label";

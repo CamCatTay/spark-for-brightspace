@@ -617,6 +617,12 @@ body:has(#d2l-todolist-widget.hidden) {
     gap: 4px;
     transition: opacity 0.2s ease;
     cursor: pointer;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.frequency-day--today {
+    background-color: #e8e8e8;
 }
 
 .frequency-day:hover {

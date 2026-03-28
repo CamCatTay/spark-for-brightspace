@@ -358,6 +358,16 @@ function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset 
     weekLabel.className = "frequency-chart-week-label";
     weekLabel.id = "frequency-chart-week-label";
 
+    const settingsBtn = document.createElement("button");
+    settingsBtn.className = "spark-settings-btn";
+    settingsBtn.title = "Settings";
+    settingsBtn.textContent = "▷";
+    settingsBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        safeSendMessage({ action: "openSettings" });
+    });
+    weekLabelRow.appendChild(settingsBtn);
+
     const refreshBtn = document.createElement("button");
     refreshBtn.className = "spark-refresh-btn";
     refreshBtn.title = "Refresh";
@@ -368,6 +378,7 @@ function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset 
     });
     weekLabelRow.appendChild(refreshBtn);
 
+    // Week label is added above buttons so it stays left-aligned while buttons below are right-aligned
     weekLabelRow.appendChild(weekLabel);
 
     const faqBtn = document.createElement("button");

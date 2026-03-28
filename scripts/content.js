@@ -77,13 +77,16 @@ window.addEventListener("load", () => {
             restoreScrollPosition();
         }
         if (result[SETTINGS_OPEN_KEY]) {
-            let sp = document.getElementById("spark-settings-panel");
-            if (!sp) {
-                sp = buildSettingsPanel();
-                document.body.appendChild(sp);
+            const widget = document.getElementById("d2l-todolist-widget");
+            if (widget && !widget.classList.contains("hidden") && widget.style.display !== "none") {
+                let sp = document.getElementById("spark-settings-panel");
+                if (!sp) {
+                    sp = buildSettingsPanel();
+                    document.body.appendChild(sp);
+                }
+                sp.style.right = (typeof panelWidth !== "undefined" ? panelWidth : 350) + "px";
+                sp.classList.add("open");
             }
-            sp.style.right = (typeof panelWidth !== "undefined" ? panelWidth : 350) + "px";
-            sp.classList.add("open");
         }
     });
 
@@ -150,8 +153,6 @@ chrome.runtime.onMessage.addListener(function(request) {
         // the user comes back.
         if (document.visibilityState === "visible") {
             closePanelSilently();
-            const sp = document.getElementById("spark-settings-panel");
-            if (sp) sp.classList.remove("open");
         }
     }
     if (request.action === "settingsOpened") {

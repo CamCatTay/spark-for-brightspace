@@ -89,8 +89,23 @@ function togglePanel() {
                 setTimeout(() => { isAnimating = false; }, 250);
             }, 400);
         } else {
-            // Panel slide-in is ~400ms
-            setTimeout(() => { isAnimating = false; }, 400);
+            // Panel slide-in is ~400ms; then check if settings should be open globally
+            setTimeout(() => {
+                chrome.storage.local.get(["spark-settings-open"], function(result) {
+                    if (result["spark-settings-open"]) {
+                        let sp = document.getElementById("spark-settings-panel");
+                        if (!sp) {
+                            sp = buildSettingsPanel();
+                            document.body.appendChild(sp);
+                        }
+                        sp.style.right = panelWidth + "px";
+                        sp.classList.add("open");
+                        setTimeout(() => { isAnimating = false; }, 250);
+                    } else {
+                        isAnimating = false;
+                    }
+                });
+            }, 400);
         }
     }
 }
@@ -105,7 +120,11 @@ function closePanelSilently() {
     container.style.display = "none";
     document.body.style.marginRight = "0";
     const sp = document.getElementById("spark-settings-panel");
-    if (sp) sp.classList.remove("open");
+    if (sp) {
+        sp.style.transition = "none";
+        sp.classList.remove("open");
+        requestAnimationFrame(() => { sp.style.transition = ""; });
+    }
 }
 
 function createEmbeddedCalendarUI() {

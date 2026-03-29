@@ -335,8 +335,6 @@ function updateGUI(courseData, isFromCache = false) {
 }
 
 function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset = 0) {
-    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
     // Get the week containing today
     const today = new Date();
     const todayWeekStart = getWeekStart(today);

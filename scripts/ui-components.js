@@ -230,7 +230,6 @@ function updateGUI(courseData, isFromCache = false) {
     const preservedWeekOffset = existingChart ? (existingChart._weekOffset || 0) : 0;
 
     calendarContainer.innerHTML = "";
-    isDataStale = isFromCache;
 
     // Collect all items with due dates
     const itemsByDate = {};

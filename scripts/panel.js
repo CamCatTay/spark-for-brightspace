@@ -19,7 +19,6 @@ let panelWidth = 350;
 let container;
 let isAnimating = false;
 let settingsWasOpen = false;
-let isDataStale = false;
 // True when the panel was closed by another tab taking over (not by the user).
 let wasClosedSilently = false;
 // Callback invoked when the panel is restored after a silent close.

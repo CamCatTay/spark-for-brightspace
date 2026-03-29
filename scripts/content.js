@@ -1,11 +1,18 @@
 const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
+const SETTINGS_OPEN_KEY = "spark-settings-open";
+const SETTINGS_VALUE_KEY = "spark-user-settings";
 let fetchInFlight = false;
 let globalFetchInFlight = false; // true when another tab's fetch is still running
 let _refreshFn = null;
+let _reRenderFn = null;
 
 function triggerRefresh() {
     if (_refreshFn) _refreshFn();
+}
+
+function triggerReRender() {
+    if (_reRenderFn) _reRenderFn();
 }
 
 window.addEventListener("load", () => {
@@ -40,14 +47,35 @@ window.addEventListener("load", () => {
     // When this tab's panel is restored after being silently closed by another
     // tab, re-render the in-memory data so the panel is never blank.
     registerPanelRestoreCallback(() => {
-        if (courseData && Object.keys(courseData).length > 0) {
-            updateGUI(courseData, fetchInFlight || globalFetchInFlight);
-            restoreScrollPosition();
-        }
+        // Re-apply settings then re-render so display is correct even if settings
+        // changed on another tab while this panel was silently closed.
+        chrome.storage.local.get([SETTINGS_OPEN_KEY, SETTINGS_VALUE_KEY], function(result) {
+            if (result[SETTINGS_VALUE_KEY]) {
+                applySettings(result[SETTINGS_VALUE_KEY]);
+            }
+            if (courseData && Object.keys(courseData).length > 0) {
+                updateGUI(courseData, fetchInFlight || globalFetchInFlight);
+                restoreScrollPosition();
+            }
+            let sp = document.getElementById("spark-settings-panel");
+            if (result[SETTINGS_OPEN_KEY]) {
+                if (!sp) {
+                    sp = buildSettingsPanel();
+                    document.body.appendChild(sp);
+                }
+                sp.style.right = (typeof panelWidth !== "undefined" ? panelWidth : 350) + "px";
+                sp.classList.add("open");
+            } else if (sp) {
+                sp.classList.remove("open");
+            }
+        });
     });
 
     // Load stored data first for immediate display
-    chrome.storage.local.get([COURSE_DATA_KEY, LAST_FETCHED_KEY], function(result) {
+    chrome.storage.local.get([COURSE_DATA_KEY, LAST_FETCHED_KEY, SETTINGS_OPEN_KEY, SETTINGS_VALUE_KEY], function(result) {
+        if (result[SETTINGS_VALUE_KEY]) {
+            applySettings(result[SETTINGS_VALUE_KEY]);
+        }
         if (result[LAST_FETCHED_KEY]) {
             lastFetchedTime = new Date(result[LAST_FETCHED_KEY]);
         }
@@ -55,6 +83,18 @@ window.addEventListener("load", () => {
             courseData = JSON.parse(JSON.stringify(result.courseData));
             updateGUI(courseData, true);
             restoreScrollPosition();
+        }
+        if (result[SETTINGS_OPEN_KEY]) {
+            const widget = document.getElementById("d2l-todolist-widget");
+            if (widget && !widget.classList.contains("hidden") && widget.style.display !== "none") {
+                let sp = document.getElementById("spark-settings-panel");
+                if (!sp) {
+                    sp = buildSettingsPanel();
+                    document.body.appendChild(sp);
+                }
+                sp.style.right = (typeof panelWidth !== "undefined" ? panelWidth : 350) + "px";
+                sp.classList.add("open");
+            }
         }
     });
 
@@ -77,6 +117,13 @@ window.addEventListener("load", () => {
                 });
             }
         });
+    };
+
+    // Re-render with current in-memory data (used when settings change)
+    _reRenderFn = function() {
+        if (courseData && Object.keys(courseData).length > 0) {
+            updateGUI(courseData, fetchInFlight || globalFetchInFlight);
+        }
     };
 
     // Fetch fresh data from API
@@ -115,5 +162,26 @@ chrome.runtime.onMessage.addListener(function(request) {
         if (document.visibilityState === "visible") {
             closePanelSilently();
         }
+    }
+    if (request.action === "settingsOpened") {
+        // Don't open the settings panel on a tab whose main panel is currently hidden
+        // (e.g. the inactive side of a split-screen setup).
+        const widget = document.getElementById("d2l-todolist-widget");
+        if (!widget || widget.classList.contains("hidden") || widget.style.display === "none") return;
+        let settingsPanel = document.getElementById("spark-settings-panel");
+        if (!settingsPanel) {
+            settingsPanel = buildSettingsPanel();
+            document.body.appendChild(settingsPanel);
+        }
+        settingsPanel.style.right = (typeof panelWidth !== "undefined" ? panelWidth : 350) + "px";
+        settingsPanel.classList.add("open");
+    }
+    if (request.action === "settingsClosed") {
+        const settingsPanel = document.getElementById("spark-settings-panel");
+        if (settingsPanel) settingsPanel.classList.remove("open");
+    }
+    if (request.action === "settingsChanged") {
+        applySettings(request.settings);
+        triggerReRender();
     }
 });

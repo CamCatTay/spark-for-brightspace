@@ -12,7 +12,22 @@ const COURSE_NAME_TRIM_WORDS = [
 
 // How many days before today the calendar should start.
 // Set to 0 to start from today; increase to show past items.
-const CALENDAR_START_DAYS_BACK = 7;
+const CALENDAR_START_DAYS_BACK_STORAGE_KEY = "d2l-todolist-calendar-start-days-back";
+let CALENDAR_START_DAYS_BACK = parseInt(localStorage.getItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY) ?? "7", 10);
+if (!Number.isFinite(CALENDAR_START_DAYS_BACK) || CALENDAR_START_DAYS_BACK < 0) CALENDAR_START_DAYS_BACK = 7;
+
+const HIDDEN_COURSES_KEY = "d2l-todolist-hidden-courses";
+let hiddenCourseIds = new Set(JSON.parse(localStorage.getItem(HIDDEN_COURSES_KEY) || "[]"));
+
+const HIDDEN_TYPES_KEY = "d2l-todolist-hidden-types";
+let hiddenTypes = new Set(JSON.parse(localStorage.getItem(HIDDEN_TYPES_KEY) || "[]"));
+const ITEM_TYPES = [
+    { key: "assignments", label: "Assignments" },
+    { key: "quizzes", label: "Quizzes" },
+    { key: "discussions", label: "Discussions" },
+];
+
+let _lastCourseData = {};
 
 // Toggle to show/hide the "Last fetched" timestamp in the frequency chart.
 const SHOW_LAST_FETCHED = true;
@@ -183,9 +198,7 @@ function createAssignmentElement(assignment, course) {
 }
 
 function initializeGUI() {
-    const calendarContainer = document.getElementById("calendar-container");
-    if (!calendarContainer) return;
-    addDataStatusIndicator(true);
+    updateGUI({}, true);
 }
 
 function addDataStatusIndicator(isStale) {
@@ -209,13 +222,14 @@ function updateGUI(courseData, isFromCache = false) {
     const calendarContainer = document.getElementById("calendar-container");
     if (!calendarContainer) return;
 
+    _lastCourseData = courseData;
     ensureCourseColorsAssigned(courseData);
+    updateSettingsCourseList(courseData);
 
     const existingChart = calendarContainer.querySelector("#frequency-chart");
     const preservedWeekOffset = existingChart ? (existingChart._weekOffset || 0) : 0;
 
     calendarContainer.innerHTML = "";
-    isDataStale = isFromCache;
 
     // Collect all items with due dates
     const itemsByDate = {};
@@ -225,13 +239,16 @@ function updateGUI(courseData, isFromCache = false) {
     Object.keys(courseData).forEach((courseId) => {
         const course = courseData[courseId];
 
+        if (hiddenCourseIds.has(courseId)) return;
+
         const itemCollections = [
-            { items: course.assignments, showCompleted: true },
-            { items: course.quizzes, showCompleted: true },
-            { items: course.discussions, showCompleted: true }
+            { items: course.assignments, type: "assignments", showCompleted: true },
+            { items: course.quizzes, type: "quizzes", showCompleted: true },
+            { items: course.discussions, type: "discussions", showCompleted: true }
         ];
 
-        itemCollections.forEach(({ items, showCompleted }) => {
+        itemCollections.forEach(({ items, type, showCompleted }) => {
+            if (hiddenTypes.has(type)) return;
             if (items) {
                 Object.keys(items).forEach((itemId) => {
                     const item = items[itemId];
@@ -253,17 +270,7 @@ function updateGUI(courseData, isFromCache = false) {
         });
     });
 
-    // Empty state
-    if (!minDate || !maxDate) {
-        const emptyMessage = document.createElement("div");
-        emptyMessage.id = "loading-indicator";
-        emptyMessage.textContent = "No upcoming assignments";
-        calendarContainer.appendChild(emptyMessage);
-        if (isFromCache) addDataStatusIndicator(true);
-        return;
-    }
-
-    // Create frequency chart at the top
+    // Always create frequency chart (contains settings, refresh, and FAQ buttons)
     try {
         if (typeof createFrequencyChart === 'function' && typeof getWeekStart === 'function' && typeof getDateKey === 'function') {
             createFrequencyChart(calendarContainer, itemsByDate, preservedWeekOffset);
@@ -274,6 +281,17 @@ function updateGUI(courseData, isFromCache = false) {
 
     if (isFromCache) {
         addDataStatusIndicator(true);
+    }
+
+    // Empty state — chart is already rendered above for the buttons and loading indicator
+    if (!minDate || !maxDate) {
+        const existingIndicator = calendarContainer.parentElement.querySelector(".scrollbar-indicator");
+        if (existingIndicator) existingIndicator.remove();
+        const emptyMessage = document.createElement("div");
+        emptyMessage.id = "loading-indicator";
+        emptyMessage.textContent = "No upcoming assignments";
+        calendarContainer.appendChild(emptyMessage);
+        return;
     }
 
     // Generate calendar from CALENDAR_START_DAYS_BACK days before today to maxDate
@@ -316,8 +334,6 @@ function updateGUI(courseData, isFromCache = false) {
 }
 
 function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset = 0) {
-    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
     // Get the week containing today
     const today = new Date();
     const todayWeekStart = getWeekStart(today);
@@ -361,10 +377,18 @@ function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset 
     const settingsBtn = document.createElement("button");
     settingsBtn.className = "spark-settings-btn";
     settingsBtn.title = "Settings";
-    settingsBtn.textContent = "▷";
+    settingsBtn.textContent = "⚙";
     settingsBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        safeSendMessage({ action: "openSettings" });
+        let settingsPanel = document.getElementById("spark-settings-panel");
+        if (!settingsPanel) {
+            settingsPanel = buildSettingsPanel();
+            document.body.appendChild(settingsPanel);
+        }
+        settingsPanel.classList.toggle("open");
+        settingsPanel.style.right = (typeof panelWidth !== "undefined" ? panelWidth : 350) + "px";
+        const isOpen = settingsPanel.classList.contains("open");
+        safeSendMessage({ action: isOpen ? "broadcastSettingsOpened" : "broadcastSettingsClosed" });
     });
     weekLabelRow.appendChild(settingsBtn);
 
@@ -411,7 +435,7 @@ function createFrequencyChart(calendarContainer, itemsByDate, initialWeekOffset 
         const lastFetchedEl = document.createElement("div");
         lastFetchedEl.className = "frequency-chart-last-fetched";
         lastFetchedEl.textContent = lastFetchedTime
-            ? "Last fetched: " + lastFetchedTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+            ? "Last fetched: " + lastFetchedTime.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" })
             : "Last fetched: —";
         chartContainer.appendChild(lastFetchedEl);
     }
@@ -620,4 +644,218 @@ function updateFrequencyNavButtons(chartContainer) {
     } catch (e) {
         console.error("Error updating frequency nav buttons:", e);
     }
+}
+
+// Returns a plain object snapshot of all user-configurable settings.
+function getAllSettings() {
+    return {
+        daysBack: CALENDAR_START_DAYS_BACK,
+        hiddenCourses: [...hiddenCourseIds],
+        hiddenTypesArr: [...hiddenTypes],
+    };
+}
+
+// Applies a settings object (from chrome.storage or a broadcast message) to
+// in-memory state, localStorage, and any currently-open settings panel UI.
+function applySettings({ daysBack, hiddenCourses, hiddenTypesArr }) {
+    CALENDAR_START_DAYS_BACK = daysBack;
+    hiddenCourseIds = new Set(hiddenCourses);
+    hiddenTypes = new Set(hiddenTypesArr);
+
+    // Keep localStorage in sync so the initial module-level reads stay warm.
+    localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, daysBack.toString());
+    localStorage.setItem(HIDDEN_COURSES_KEY, JSON.stringify(hiddenCourses));
+    localStorage.setItem(HIDDEN_TYPES_KEY, JSON.stringify(hiddenTypesArr));
+
+    // Sync the settings panel UI if it is currently rendered.
+    const daysInput = document.getElementById("spark-setting-days-back");
+    if (daysInput) daysInput.value = daysBack.toString();
+
+    ITEM_TYPES.forEach(({ key }) => {
+        const cb = document.querySelector(`.settings-course-checkbox[data-setting-type="${key}"]`);
+        if (cb) cb.checked = !hiddenTypes.has(key);
+    });
+
+    updateSettingsCourseList(_lastCourseData);
+}
+
+function buildSettingsPanel() {
+    const panel = document.createElement("div");
+    panel.id = "spark-settings-panel";
+
+    // Header
+    const header = document.createElement("div");
+    header.className = "settings-header";
+
+    const title = document.createElement("span");
+    title.className = "settings-title";
+    title.textContent = "Settings";
+
+    header.appendChild(title);
+    panel.appendChild(header);
+
+    // Body
+    const body = document.createElement("div");
+    body.className = "settings-body";
+
+    // CALENDAR_START_DAYS_BACK setting
+    const section = document.createElement("div");
+    section.className = "settings-section";
+
+    const label = document.createElement("label");
+    label.className = "settings-label";
+    label.htmlFor = "spark-setting-days-back";
+    label.textContent = "Calendar look-back days";
+
+    const description = document.createElement("p");
+    description.className = "settings-description";
+    description.textContent = "How many days before today the calendar starts showing items. Set to 0 to start from today.";
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.id = "spark-setting-days-back";
+    input.className = "settings-input";
+    input.min = "0";
+    input.max = "365";
+    input.value = CALENDAR_START_DAYS_BACK.toString();
+    input.addEventListener("change", () => {
+        const val = Math.max(0, Math.min(365, parseInt(input.value, 10) || 0));
+        input.value = val.toString();
+        CALENDAR_START_DAYS_BACK = val;
+        localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, val.toString());
+        if (typeof safeSendMessage === "function") safeSendMessage({ action: "broadcastSettingsChanged", settings: getAllSettings() });
+        if (typeof triggerReRender === "function") triggerReRender();
+    });
+
+    section.appendChild(label);
+    section.appendChild(description);
+    section.appendChild(input);
+    body.appendChild(section);
+
+    // Assignment types section
+    const typesSection = document.createElement("div");
+    typesSection.className = "settings-section";
+
+    const typesLabel = document.createElement("div");
+    typesLabel.className = "settings-label";
+    typesLabel.textContent = "Visible assignment types";
+
+    const typesDescription = document.createElement("p");
+    typesDescription.className = "settings-description";
+    typesDescription.textContent = "Uncheck a type to hide it from the calendar.";
+
+    const typesList = document.createElement("div");
+    typesList.className = "settings-courses-list";
+
+    ITEM_TYPES.forEach(({ key, label: typeLabel }) => {
+        const row = document.createElement("label");
+        row.className = "settings-course-row";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "settings-course-checkbox";
+        checkbox.dataset.settingType = key;
+        checkbox.checked = !hiddenTypes.has(key);
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+                hiddenTypes.delete(key);
+            } else {
+                hiddenTypes.add(key);
+            }
+            localStorage.setItem(HIDDEN_TYPES_KEY, JSON.stringify([...hiddenTypes]));
+            if (typeof safeSendMessage === "function") safeSendMessage({ action: "broadcastSettingsChanged", settings: getAllSettings() });
+            if (typeof triggerReRender === "function") triggerReRender();
+        });
+
+        const name = document.createElement("span");
+        name.className = "settings-course-name";
+        name.textContent = typeLabel;
+
+        row.appendChild(checkbox);
+        row.appendChild(name);
+        typesList.appendChild(row);
+    });
+
+    typesSection.appendChild(typesLabel);
+    typesSection.appendChild(typesDescription);
+    typesSection.appendChild(typesList);
+    body.appendChild(typesSection);
+
+    // Courses section (populated by updateSettingsCourseList)
+    const coursesSection = document.createElement("div");
+    coursesSection.className = "settings-section";
+    coursesSection.id = "spark-settings-courses";
+
+    const coursesLabel = document.createElement("div");
+    coursesLabel.className = "settings-label";
+    coursesLabel.textContent = "Visible courses";
+
+    const coursesDescription = document.createElement("p");
+    coursesDescription.className = "settings-description";
+    coursesDescription.textContent = "Uncheck a course to hide it from the calendar.";
+
+    const coursesList = document.createElement("div");
+    coursesList.id = "spark-settings-courses-list";
+    coursesList.className = "settings-courses-list";
+
+    coursesSection.appendChild(coursesLabel);
+    coursesSection.appendChild(coursesDescription);
+    coursesSection.appendChild(coursesList);
+    body.appendChild(coursesSection);
+
+    panel.appendChild(body);
+
+    // Populate course list with whatever data was last received.
+    // Pass coursesList directly since the panel isn't in the DOM yet.
+    if (Object.keys(_lastCourseData).length > 0) {
+        updateSettingsCourseList(_lastCourseData, coursesList);
+    }
+
+    return panel;
+}
+
+function updateSettingsCourseList(courseData, listEl = null) {
+    const list = listEl || document.getElementById("spark-settings-courses-list");
+    if (!list) return;
+
+    list.innerHTML = "";
+
+    Object.keys(courseData).forEach((courseId) => {
+        const course = courseData[courseId];
+        const displayName = truncateCourseName(course.name) || course.name;
+        const color = getCourseColor(course.name);
+        const isHidden = hiddenCourseIds.has(courseId);
+
+        const row = document.createElement("label");
+        row.className = "settings-course-row";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "settings-course-checkbox";
+        checkbox.checked = !isHidden;
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+                hiddenCourseIds.delete(courseId);
+            } else {
+                hiddenCourseIds.add(courseId);
+            }
+            localStorage.setItem(HIDDEN_COURSES_KEY, JSON.stringify([...hiddenCourseIds]));
+            if (typeof safeSendMessage === "function") safeSendMessage({ action: "broadcastSettingsChanged", settings: getAllSettings() });
+            if (typeof triggerReRender === "function") triggerReRender();
+        });
+
+        const dot = document.createElement("span");
+        dot.className = "settings-course-dot";
+        dot.style.backgroundColor = color;
+
+        const name = document.createElement("span");
+        name.className = "settings-course-name";
+        name.textContent = displayName;
+        name.title = course.name;
+
+        row.appendChild(checkbox);
+        row.appendChild(dot);
+        row.appendChild(name);
+        list.appendChild(row);
+    });
 }

@@ -283,6 +283,8 @@ export async function getCourseContent(tabUrl) {
     startDate.setDate(startDate.getDate() - 1); // Subtract 1 day from the start date
     endDate.setDate(endDate.getDate() + 1); // Add 1 day to the end date
 
+    // These URLs aren't actually used anymore since we fetch quizzes and assignments separately, 
+    // but leaving them in case we want to revert to a single fetch in the future.
     const nonGradedItemsUrl = baseURL +
     "/d2l/api/le/1.67/content/myItems/?startDateTime=null&endDateTime=null&orgUnitIdsCSV=" +
     courseIdsCSV;

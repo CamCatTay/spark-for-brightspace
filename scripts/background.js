@@ -2,6 +2,8 @@ import { getCourseContent } from "/scripts/brightspace.js";
 
 const SCROLL_POS_KEY = "spark-scroll-pos";
 const ACTIVE_TAB_KEY = "spark-active-panel-tab";
+const SETTINGS_OPEN_KEY = "spark-settings-open";
+const SETTINGS_VALUE_KEY = "spark-user-settings";
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action === "fetchCourses") {
@@ -70,6 +72,45 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             tabs.forEach(tab => {
                 if (tab.id !== sender.tab.id && tab.url && tab.url.includes("/d2l/")) {
                     chrome.tabs.sendMessage(tab.id, { action: "courseDataUpdated" }).catch(() => {});
+                }
+            });
+        });
+        return;
+    }
+
+    // Settings values changed on one tab — persist and relay to all other D2L tabs.
+    if (request.action === "broadcastSettingsChanged") {
+        chrome.storage.local.set({ [SETTINGS_VALUE_KEY]: request.settings });
+        chrome.tabs.query({}, function(tabs) {
+            tabs.forEach(tab => {
+                if (tab.id !== sender.tab.id && tab.url && tab.url.includes("/d2l/")) {
+                    chrome.tabs.sendMessage(tab.id, { action: "settingsChanged", settings: request.settings }).catch(() => {});
+                }
+            });
+        });
+        return;
+    }
+
+    // Settings panel opened on one tab — sync to all other D2L tabs.
+    if (request.action === "broadcastSettingsOpened") {
+        chrome.storage.local.set({ [SETTINGS_OPEN_KEY]: true });
+        chrome.tabs.query({}, function(tabs) {
+            tabs.forEach(tab => {
+                if (tab.id !== sender.tab.id && tab.url && tab.url.includes("/d2l/")) {
+                    chrome.tabs.sendMessage(tab.id, { action: "settingsOpened" }).catch(() => {});
+                }
+            });
+        });
+        return;
+    }
+
+    // Settings panel closed on one tab — sync to all other D2L tabs.
+    if (request.action === "broadcastSettingsClosed") {
+        chrome.storage.local.set({ [SETTINGS_OPEN_KEY]: false });
+        chrome.tabs.query({}, function(tabs) {
+            tabs.forEach(tab => {
+                if (tab.id !== sender.tab.id && tab.url && tab.url.includes("/d2l/")) {
+                    chrome.tabs.sendMessage(tab.id, { action: "settingsClosed" }).catch(() => {});
                 }
             });
         });

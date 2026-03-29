@@ -16,6 +16,9 @@ const CALENDAR_START_DAYS_BACK_STORAGE_KEY = "d2l-todolist-calendar-start-days-b
 let CALENDAR_START_DAYS_BACK = parseInt(localStorage.getItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY) ?? "7", 10);
 if (!Number.isFinite(CALENDAR_START_DAYS_BACK) || CALENDAR_START_DAYS_BACK < 0) CALENDAR_START_DAYS_BACK = 7;
 
+const HIDDEN_COURSES_KEY = "d2l-todolist-hidden-courses";
+let hiddenCourseIds = new Set(JSON.parse(localStorage.getItem(HIDDEN_COURSES_KEY) || "[]"));
+
 // Toggle to show/hide the "Last fetched" timestamp in the frequency chart.
 const SHOW_LAST_FETCHED = true;
 
@@ -212,6 +215,7 @@ function updateGUI(courseData, isFromCache = false) {
     if (!calendarContainer) return;
 
     ensureCourseColorsAssigned(courseData);
+    updateSettingsCourseList(courseData);
 
     const existingChart = calendarContainer.querySelector("#frequency-chart");
     const preservedWeekOffset = existingChart ? (existingChart._weekOffset || 0) : 0;
@@ -226,6 +230,8 @@ function updateGUI(courseData, isFromCache = false) {
 
     Object.keys(courseData).forEach((courseId) => {
         const course = courseData[courseId];
+
+        if (hiddenCourseIds.has(courseId)) return;
 
         const itemCollections = [
             { items: course.assignments, showCompleted: true },
@@ -257,6 +263,8 @@ function updateGUI(courseData, isFromCache = false) {
 
     // Empty state
     if (!minDate || !maxDate) {
+        const existingIndicator = calendarContainer.parentElement.querySelector(".scrollbar-indicator");
+        if (existingIndicator) existingIndicator.remove();
         const emptyMessage = document.createElement("div");
         emptyMessage.id = "loading-indicator";
         emptyMessage.textContent = "No upcoming assignments";
@@ -683,7 +691,75 @@ function buildSettingsPanel() {
     section.appendChild(description);
     section.appendChild(input);
     body.appendChild(section);
+
+    // Courses section (populated by updateSettingsCourseList)
+    const coursesSection = document.createElement("div");
+    coursesSection.className = "settings-section";
+    coursesSection.id = "spark-settings-courses";
+
+    const coursesLabel = document.createElement("div");
+    coursesLabel.className = "settings-label";
+    coursesLabel.textContent = "Visible courses";
+
+    const coursesDescription = document.createElement("p");
+    coursesDescription.className = "settings-description";
+    coursesDescription.textContent = "Uncheck a course to hide it from the calendar.";
+
+    const coursesList = document.createElement("div");
+    coursesList.id = "spark-settings-courses-list";
+    coursesList.className = "settings-courses-list";
+
+    coursesSection.appendChild(coursesLabel);
+    coursesSection.appendChild(coursesDescription);
+    coursesSection.appendChild(coursesList);
+    body.appendChild(coursesSection);
+
     panel.appendChild(body);
 
     return panel;
+}
+
+function updateSettingsCourseList(courseData) {
+    const list = document.getElementById("spark-settings-courses-list");
+    if (!list) return;
+
+    list.innerHTML = "";
+
+    Object.keys(courseData).forEach((courseId) => {
+        const course = courseData[courseId];
+        const displayName = truncateCourseName(course.name) || course.name;
+        const color = getCourseColor(course.name);
+        const isHidden = hiddenCourseIds.has(courseId);
+
+        const row = document.createElement("label");
+        row.className = "settings-course-row";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "settings-course-checkbox";
+        checkbox.checked = !isHidden;
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+                hiddenCourseIds.delete(courseId);
+            } else {
+                hiddenCourseIds.add(courseId);
+            }
+            localStorage.setItem(HIDDEN_COURSES_KEY, JSON.stringify([...hiddenCourseIds]));
+            if (typeof triggerReRender === "function") triggerReRender();
+        });
+
+        const dot = document.createElement("span");
+        dot.className = "settings-course-dot";
+        dot.style.backgroundColor = color;
+
+        const name = document.createElement("span");
+        name.className = "settings-course-name";
+        name.textContent = displayName;
+        name.title = course.name;
+
+        row.appendChild(checkbox);
+        row.appendChild(dot);
+        row.appendChild(name);
+        list.appendChild(row);
+    });
 }

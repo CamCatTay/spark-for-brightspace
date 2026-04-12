@@ -17,7 +17,11 @@ This extension fixes that by pulling your assignments and displaying them in a c
 Note: This extension will work on ANY Chromium based browser.
 (Google Chrome, Microsoft Edge, Opera, Brave, ect)
 
-Not yet published to the Chrome Web Store. Install manually:
+Install from Google Web Store:
+Search "Spark for Brightspace" or use the link below
+[S](https://chromewebstore.google.com/detail/spark-for-brightspace/blajgfkdhpfijoemghigapachifplibd)
+
+Install manually:
 
 1. Clone or download this repo
 ```bash

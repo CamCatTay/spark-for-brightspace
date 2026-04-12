@@ -18,6 +18,7 @@ Note: This extension will work on ANY Chromium based browser.
 (Google Chrome, Microsoft Edge, Opera, Brave, ect)
 
 Install from Google Web Store:
+
 Search "Spark for Brightspace" or use this [Link](https://chromewebstore.google.com/detail/spark-for-brightspace/blajgfkdhpfijoemghigapachifplibd)
 
 Install manually:

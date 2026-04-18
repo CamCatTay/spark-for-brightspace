@@ -1,3 +1,6 @@
+// color-utils.js
+// Assigns and retrieves consistent hex colors for courses using a fixed color pool.
+
 // Color pool as direct hex values for easy fine-tuning
 const COLOR_POOL = [
     "#e05555",  // Red

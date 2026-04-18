@@ -1,3 +1,7 @@
+// content.js
+// Injected into Brightspace pages. Bootstraps the side panel, triggers data
+// fetches via the background worker, and manages panel lifecycle.
+
 const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
 const SETTINGS_OPEN_KEY = "spark-settings-open";

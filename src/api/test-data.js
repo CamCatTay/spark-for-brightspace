@@ -1,3 +1,7 @@
+// test-data.js
+// Provides static fake course data used during development to avoid hitting
+// the live Brightspace API.
+
 /**
  * @typedef {Object} BrightspaceItem
  * @property {string} UserId

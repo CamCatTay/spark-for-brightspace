@@ -1,3 +1,7 @@
+// components.js
+// Reusable UI component factories: course cards, item rows, date headers,
+// settings panel, and course name formatting utilities.
+
 // Words that mark the start of administrative suffixes in course names.
 // Everything from the first matching word onward will be stripped.
 const COURSE_NAME_TRIM_WORDS = [

@@ -1,3 +1,7 @@
+// brightspace.js
+// Fetches and transforms course data from the Brightspace REST API into
+// structured Course and Item objects consumed by the UI.
+
 /**
  * @typedef {Object} BrightspaceItem
  * @property {string} UserId
@@ -15,10 +19,10 @@
  * @property {boolean} IsExempt
  */
 
-import { getTestCourseContent } from './test-data.js';
+// import { getTestCourseContent } from './test-data.js';
 
 // TEST MODE: Set to true to use fake course data for testing
-const TEST_MODE = false;
+// const TEST_MODE = false;
 
 class Course {
     constructor(id, name, url) {
@@ -59,6 +63,7 @@ class Item {
     }
 }
 
+// Returns the base URL (protocol + host) from a full URL string (e.g. "https://example.com" )
 export async function getBaseURL(tabUrl) {
     const url = new URL(tabUrl);
     return url.protocol + "//" + url.host;
@@ -267,9 +272,11 @@ export async function getQuizAttemptCount(baseURL, quizId, orgId) {
 
 export async function getCourseContent(tabUrl) {
     // Return fake data if in test mode
+    /*
     if (TEST_MODE) {
         return getTestCourseContent(mapData);
     }
+    */
 
     const baseURL = await getBaseURL(tabUrl);
     const allCourses = await getBrightspaceCourses(baseURL);

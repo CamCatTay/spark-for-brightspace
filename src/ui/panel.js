@@ -1,3 +1,7 @@
+// panel.js
+// Builds and controls the side panel DOM: tab switching, resize handling,
+// scroll persistence, and rendering course content into the panel.
+
 const EXPANSION_STATE_KEY = "d2l-todolist-expanded";
 const PANEL_WIDTH_KEY = "d2l-todolist-width";
 

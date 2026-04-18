@@ -4,7 +4,7 @@ A Chrome extension that adds a side panel to D2L (Brightspace) showing your upco
 
 ## What It Does
 
-D2L buries assignment due dates across multiple pages and course tabs. 
+D2L buries assignment due dates across multiple pages and course tabs.
 This extension fixes that by pulling your assignments and displaying them in a clean side panel right when you need them.
 
 - Fetches all assignments for a course automatically
@@ -35,7 +35,7 @@ git clone https://github.com/CamCatTay/spark-for-brightspace.git
 
 ## How It Works
 
-The extension runs on D2L (Brightspace) pages and uses the D2L API to read assignment data for the active course. 
+The extension runs on D2L (Brightspace) pages and uses the D2L API to read assignment data for the active course.
 Results are displayed in a persistent side panel so you can stay oriented without leaving the page.
 
 ## Roadmap
@@ -55,12 +55,5 @@ Found a bug or have a feature idea? Open an issue. This is a side project but fe
 
 ## License
 
-Copyright (c) 2026 CamCatTay and yousef-0614. All rights reserved.
-
-This project is free to use for personal and educational purposes. 
-However, you may not redistribute, republish, rebrand, or submit any 
-version of this project modified or unmodified to the Chrome Web Store 
-or any other platform under your own name or any other identity. Forks 
-for private personal use are permitted, but public redistribution of 
-derivative works is not. Ownership and authorship of this project remain 
-exclusively with the original creators.
+See [LICENSE](LICENSE) for full terms. Personal and educational use is permitted.
+Redistribution and publishing under another identity is not.

@@ -1,3 +1,7 @@
+// background.js
+// Handles the background service worker: fetches course data, manages caching,
+// and responds to messages from the content script.
+
 import { getCourseContent } from "/src/api/brightspace.js";
 
 const SCROLL_POS_KEY = "spark-scroll-pos";

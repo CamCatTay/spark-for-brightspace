@@ -1,3 +1,6 @@
+// date-utils.js
+// Date formatting and comparison helpers used across the UI layer.
+
 function formatTimeFromDate(dateString) {
     if (!dateString) return "No time";
     try {

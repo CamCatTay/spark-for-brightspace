@@ -86,3 +86,30 @@ if (item.type === ActivityType.DROPBOX) { ... }
 Use `Object.freeze` in JavaScript whenever a value belongs to a logical group (types, states, HTTP codes, API versions, limits, etc.). Even a single opaque value with no related siblings must be assigned to a named `const`.
 
 This rule applies to all file types in the project — JavaScript, CSS (e.g. z-index values, breakpoints), JSON config values referenced in code, etc.
+
+## Test Files
+
+Test files follow all the same conventions above. Additional rules:
+
+- **File header**: same short comment block describing what is being tested and any key setup notes (e.g. how the module is loaded).
+- **Section banners**: one full-width `// ===...===` banner per `describe` block. The banner label matches the function or feature name exactly.
+- **Mock Helpers section**: group all mock/factory helper functions (`mock_json`, `make_tab`, etc.) under a `// Mock Helpers` banner near the top. Each helper gets a brief comment.
+- **Setup section**: `beforeEach`/`afterEach` blocks live under a `// Setup` banner, between Mock Helpers and the first describe block.
+- **Named constants for fixture values**: any constant, enum, or typed value used in a test that originates in the source file **must be exported from the source file and imported in the test**. Never duplicate a value. Parity between a file and its test is critical — if the value changes in the source, the test must automatically reflect that without any manual edits.
+
+  Add a `module.exports` compat block to any source file whose test needs its constants:
+
+  ```js
+  // At the bottom of the source file
+  if (typeof module !== 'undefined' && module.exports) {
+      module.exports = { MY_CONSTANT, MyEnum };
+  }
+  ```
+
+  Then in the test file, destructure from the required module:
+
+  ```js
+  const { MY_CONSTANT, MyEnum } = require('../src/my-file.js');
+  ```
+
+  Only use a locally-defined constant in a test for values that have no corresponding definition in the source (e.g. API shape fields like `OrgUnit.Type.Id` that are never defined in JS).

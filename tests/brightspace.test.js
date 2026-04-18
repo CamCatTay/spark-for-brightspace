@@ -3,6 +3,7 @@
 // Internal functions are exposed via the module.exports compat block at the bottom of the source.
 
 let brightspace;
+let ActivityType;
 
 // ============================================================
 // Mock Helpers
@@ -26,7 +27,8 @@ function mock_text(html, ok = true) {
 beforeEach(() => {
     jest.resetModules();
     global.fetch = jest.fn();
-    brightspace = require('../src/api/brightspace.js');
+    brightspace   = require('../src/api/brightspace.js');
+    ActivityType  = brightspace.ActivityType;
 });
 
 afterEach(() => {
@@ -261,9 +263,12 @@ describe('get_assignment_submissions_from_history', () => {
 // build_course_data
 // ============================================================
 
+// Must match the OrgUnit Type.Id for a standard course section in the Brightspace API
+const COURSE_ORG_UNIT_TYPE_ID = 3;
+
 const MOCK_COURSES = [
     {
-        OrgUnit: { Id: 101, Name: 'Math 101', Type: { Id: 3 } },
+        OrgUnit: { Id: 101, Name: 'Math 101', Type: { Id: COURSE_ORG_UNIT_TYPE_ID } },
         HomeUrl: 'https://example.com/d2l/home/101',
         Access: { CanAccess: true, IsActive: true, StartDate: '2026-01-01', EndDate: '2026-05-15' },
     },
@@ -279,7 +284,7 @@ function make_item(overrides) {
         EndDate: null,
         DateCompleted: null,
         StartDate: null,
-        ActivityType: 4, // Quiz by default
+        ActivityType: ActivityType.QUIZ,
         ...overrides,
     };
 }
@@ -294,7 +299,7 @@ describe('build_course_data', () => {
     });
 
     test('adds a quiz to the correct course', async () => {
-        const items = [make_item({ ItemId: 1, ItemName: 'Quiz 1', ActivityType: 4 })];
+        const items = [make_item({ ItemId: 1, ItemName: 'Quiz 1', ActivityType: ActivityType.QUIZ })];
         const result = await brightspace.build_course_data(MOCK_COURSES, items);
 
         expect(result[101].quizzes[1]).toBeDefined();
@@ -302,7 +307,7 @@ describe('build_course_data', () => {
     });
 
     test('adds an assignment to the correct course', async () => {
-        const items = [make_item({ ItemId: 10, ItemName: 'Assignment 1', ActivityType: 3 })];
+        const items = [make_item({ ItemId: 10, ItemName: 'Assignment 1', ActivityType: ActivityType.DROPBOX })];
         const result = await brightspace.build_course_data(MOCK_COURSES, items);
 
         expect(result[101].assignments[10]).toBeDefined();
@@ -310,7 +315,7 @@ describe('build_course_data', () => {
     });
 
     test('adds a discussion to the correct course', async () => {
-        const items = [make_item({ ItemId: 200, ItemName: 'Topic 1', ActivityType: 5 })];
+        const items = [make_item({ ItemId: 200, ItemName: 'Topic 1', ActivityType: ActivityType.DISCUSSION })];
         const result = await brightspace.build_course_data(MOCK_COURSES, items);
 
         expect(result[101].discussions[200]).toBeDefined();
@@ -318,7 +323,7 @@ describe('build_course_data', () => {
     });
 
     test('marks item as completed when DateCompleted is set', async () => {
-        const items = [make_item({ DateCompleted: new Date().toISOString(), ActivityType: 3 })];
+        const items = [make_item({ DateCompleted: new Date().toISOString(), ActivityType: ActivityType.DROPBOX })];
         const result = await brightspace.build_course_data(MOCK_COURSES, items);
 
         expect(result[101].assignments[1].completed).toBe(true);
@@ -466,12 +471,12 @@ describe('get_course_content', () => {
                 PagingInfo: { HasMoreItems: false },
                 Items: [
                     {
-                        OrgUnit: { Id: 101, Name: 'Active Course', Type: { Id: 3 } },
+                        OrgUnit: { Id: 101, Name: 'Active Course', Type: { Id: COURSE_ORG_UNIT_TYPE_ID } },
                         HomeUrl: `${BASE_URL}/d2l/home/101`,
                         Access: { CanAccess: true, IsActive: true, StartDate: '2026-01-01T00:00:00Z', EndDate: '2026-05-15T23:59:59Z' },
                     },
                     {
-                        OrgUnit: { Id: 202, Name: 'Inactive Course', Type: { Id: 3 } },
+                        OrgUnit: { Id: 202, Name: 'Inactive Course', Type: { Id: COURSE_ORG_UNIT_TYPE_ID } },
                         HomeUrl: `${BASE_URL}/d2l/home/202`,
                         Access: { CanAccess: true, IsActive: false, StartDate: '2025-01-01T00:00:00Z', EndDate: '2025-05-15T23:59:59Z' },
                     },

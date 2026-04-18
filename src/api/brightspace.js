@@ -462,6 +462,7 @@ export async function get_course_content(tabUrl) {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
+        ActivityType,
         get_course_content,
         build_course_data,
         clear_past_start_date,

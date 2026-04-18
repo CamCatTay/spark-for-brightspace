@@ -18,6 +18,10 @@
     "testEnvironment": "node",
     "testMatch": [
       "**/tests/**/*.test.js"
-    ]
+    ],
+    "_comment": "handles absolute imports, relative paths being used I think so may not be needed",
+    "moduleNameMapper": {
+      "^/src/(.*)$": "<rootDir>/src/$1"
+    }
   }
 }

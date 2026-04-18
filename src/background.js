@@ -122,3 +122,14 @@ chrome.action.onClicked.addListener((tab) => {
         chrome.tabs.sendMessage(tab.id, { action: "togglePanel" });
     }
 });
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        SCROLL_POS_KEY,
+        ACTIVE_TAB_KEY,
+        SETTINGS_OPEN_KEY,
+        SETTINGS_VALUE_KEY,
+        D2L_URL_FILTER,
+        FAQ_URL,
+    };
+}

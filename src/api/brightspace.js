@@ -59,7 +59,7 @@ class Item {
     }
 }
 
-// Returns the base URL (protocol + host) from a full URL string (e.g. "https://example.com" )
+// Fetches the base URL (protocol + host) from a full URL string (e.g. "https://example.com" )
 export async function getBaseURL(tabUrl) {
     const url = new URL(tabUrl);
     return url.protocol + "//" + url.host;
@@ -90,14 +90,6 @@ export async function getBrightspaceData(url) {
     return data.Items || data.Object || data.Objects || [];
 }
 
-// yeah .join was better approach. benchmarked both and this is nearly 2x faster
-export async function getCourseIds(courses) {
-    return courses.map(
-        function(course) {
-            return course.OrgUnit.Id
-        }).join(",");
-}
-
 /**
  * Clears a start date if it's already in the past (item is already available).
  * @param {string|null} startDate - ISO date string or null
@@ -112,7 +104,7 @@ function clearPastStartDate(startDate) {
     return startDateOnly <= nowOnly ? null : startDate;
 }
 
-// utility for getCourseContent
+// Fetch active courses
 export async function getBrightspaceCourses(baseURL) {
     const coursesURL = baseURL + "/d2l/api/lp/1.43/enrollments/myenrollments/";
     const allCourses = await getBrightspaceData(coursesURL);
@@ -121,34 +113,33 @@ export async function getBrightspaceCourses(baseURL) {
     });
 }
 
-// Fetch quizzes and tests for a specific course
-export async function getBrightspaceQuizzes(baseURL, courseId) {
-    const quizzesURL = baseURL + `/d2l/api/le/1.67/${courseId}/quizzes/`;
+// --- Course Item Fetching Logic ---
+
+// Fetch items from a Brightspace API endpoint for a specific course
+async function fetchCourseData(baseURL, endpoint) {
     try {
-        const quizzes = await getBrightspaceData(quizzesURL);
-        return Array.isArray(quizzes) ? quizzes : [];
+        const data = await getBrightspaceData(baseURL + endpoint);
+        return Array.isArray(data) ? data : [];
     } catch (error) {
-        console.warn(`Failed to fetch quizzes for course ${courseId}:`, error);
+        console.warn(`Failed to fetch ${endpoint}:`, error);
         return [];
     }
 }
 
-// Fetch assignments (dropbox folders) for a specific course
-export async function getBrightspaceAssignments(baseURL, courseId) {
-    const assignmentsURL = baseURL + `/d2l/api/le/1.82/${courseId}/dropbox/folders/`;
-    try {
-        const assignments = await getBrightspaceData(assignmentsURL);
-        return Array.isArray(assignments) ? assignments : [];
-    } catch (error) {
-        console.warn(`Failed to fetch assignments for course ${courseId}:`, error);
-        return [];
-    }
+// Fetch quizzes and tests for a specific course
+async function getBrightspaceQuizzes(baseURL, courseId) {
+    return fetchCourseData(baseURL, `/d2l/api/le/1.67/${courseId}/quizzes/`);
+}
+
+// Fetch assignments (contain dropbox folders) for a specific course
+async function getBrightspaceAssignments(baseURL, courseId) {
+    return fetchCourseData(baseURL, `/d2l/api/le/1.82/${courseId}/dropbox/folders/`);
 }
 
 // Fetch submissions for a specific dropbox folder (assignment).
 // If the API returns an error (e.g. professor closed the folder), falls back to
 // scraping the submission history page and checking for any submission rows.
-export async function getAssignmentSubmissions(baseURL, courseId, assignmentId) {
+async function getAssignmentSubmissions(baseURL, courseId, assignmentId) {
     try {
         const submissionsURL = baseURL + `/d2l/api/le/1.82/${courseId}/dropbox/folders/${assignmentId}/submissions/`;
         const response = await fetch(submissionsURL);
@@ -277,7 +268,7 @@ export async function getCourseContent(tabUrl) {
 
     const baseURL = await getBaseURL(tabUrl);
     const allCourses = await getBrightspaceCourses(baseURL);
-    const courseIdsCSV = await getCourseIds(allCourses);
+    const courseIdsCSV = await allCourses.map(course => course.OrgUnit.Id).join(","); // e.g courseId1, courseId2, ...
     const currentUserId = await getCurrentUserId(baseURL);
 
     // Increase the date range by 1 day on either side to account for time zone differences

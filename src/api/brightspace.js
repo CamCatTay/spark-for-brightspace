@@ -437,13 +437,13 @@ export async function getCourseContent(tabUrl) {
         }
     }
 
-    const courseMap = await mapData(allCourses, courseItems);
+    const courseMap = await buildCourseData(allCourses, courseItems);
 
     return courseMap;
 }
 
-async function mapData(courses, items) {
-    const courseMap = {};
+async function buildCourseData(courses, items) {
+    const course_data = {};
 
     // Iterate through courses and convert them into Course objects
     courses.forEach(courseData => {
@@ -452,7 +452,7 @@ async function mapData(courses, items) {
             courseData.OrgUnit.Name,
             courseData.HomeUrl
         );
-        courseMap[course.id] = course;
+        course_data[course.id] = course;
 
     });
 
@@ -467,7 +467,7 @@ async function mapData(courses, items) {
             itemData.StartDate || null // Start date when item becomes available
         );
 
-        const course = courseMap[itemData.OrgUnitId];
+        const course = course_data[itemData.OrgUnitId];
 
         // Add the item to the appropriate course map
         if (course) {
@@ -491,5 +491,5 @@ async function mapData(courses, items) {
     });
 
     // Return the processed data
-    return courseMap;
+    return course_data;
 }

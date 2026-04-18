@@ -33,6 +33,17 @@
  */
 
 // ============================================================
+// "Enums"
+// ============================================================
+
+const ActivityType = Object.freeze({
+    FILE: 1,
+    DROPBOX: 3,
+    QUIZ: 4,
+    DISCUSSION: 5
+});
+
+// ============================================================
 // Classes
 // ============================================================
 class Course {
@@ -311,39 +322,7 @@ export async function get_course_content(tabUrl) {
     const course_ids_csv = await all_courses.map(course => course.OrgUnit.Id).join(","); // e.g courseId1, courseId2, ...
     const current_user_id = await get_current_user_id(base_url);
 
-    // Increase the date range by 1 day on either side to account for time zone differences
-    let start_date = new Date(all_courses[0].Access.StartDate);
-    let end_date = new Date(all_courses[0].Access.EndDate);
-
-    start_date.setDate(start_date.getDate() - 1); // Subtract 1 day from the start date
-    end_date.setDate(end_date.getDate() + 1); // Add 1 day to the end date
-
-    // These URLs aren't actually used anymore since we fetch quizzes and assignments separately,
-    // but leaving them in case we want to revert to a single fetch in the future.
-    const non_graded_items_url = base_url +
-    "/d2l/api/le/1.67/content/myItems/?startDateTime=null&endDateTime=null&orgUnitIdsCSV=" +
-    course_ids_csv;
-
-    const graded_items_url = base_url +
-    "/d2l/api/le/1.67/content/myItems/?startDateTime=" +
-    start_date +
-    "&endDateTime=" +
-    end_date +
-    "&orgUnitIdsCSV=" +
-    course_ids_csv;
-
-    const graded_items = await get_brightspace_data(graded_items_url);
-    let non_graded_items = await get_brightspace_data(non_graded_items_url);
-    non_graded_items = non_graded_items.filter(function(item) {
-        return item.ActivityType === 1;
-    });
-
-    // Filter out quizzes (ActivityType 4), assignments (ActivityType 3), and discussions (ActivityType 5) from both lists - we'll fetch them separately
-    const filtered_graded_items = graded_items.filter(function(item) {
-        return item.ActivityType !== 4 && item.ActivityType !== 3 && item.ActivityType !== 5;
-    });
-
-    let course_items = filtered_graded_items.concat(non_graded_items);
+    let course_items = [];
 
     // Fetch quizzes and assignments for each course and add them to courseItems
     for (const course of all_courses) {

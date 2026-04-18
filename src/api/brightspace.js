@@ -24,12 +24,9 @@
  * @property {number} ItemType
  * @property {string} [ItemUrl]
  * @property {string} [StartDate]
- * @property {string} [EndDate]
  * @property {string} [DueDate]
- * @property {number} CompletionType
  * @property {string} [DateCompleted]
  * @property {number} ActivityType
- * @property {boolean} IsExempt
  */
 
 // ============================================================
@@ -324,11 +321,13 @@ export async function get_course_content(tabUrl) {
 
     let course_items = [];
 
-    // Fetch quizzes and assignments for each course and add them to courseItems
+    // Fetch quizzes and assignments for each course and add them to course_items
     for (const course of all_courses) {
         const course_quizzes = await get_brightspace_quizzes(base_url, course.OrgUnit.Id);
 
         // Fetch attempt counts for all quizzes in this course in parallel
+        // attempt count > 0 means the quiz has been completed at least once, so
+        // we manually add a completion date causing the quiz to be marked completed in calendar
         const attempt_counts = await Promise.all(
             course_quizzes.map(quiz => get_quiz_attempt_count(base_url, quiz.QuizId, course.OrgUnit.Id))
         );
@@ -340,14 +339,11 @@ export async function get_course_content(tabUrl) {
                 OrgUnitId: course.OrgUnit.Id,
                 ItemId: quiz.QuizId,
                 ItemName: quiz.Name,
-                ItemType: 4, // Quiz
+                ItemType: ActivityType.QUIZ,
                 ItemUrl: base_url + `/d2l/lms/quizzing/user/quiz_summary.d2l?ou=${course.OrgUnit.Id}&qi=${quiz.QuizId}&cfql=0`,
                 StartDate: clear_past_start_date(quiz.StartDate),
-                EndDate: quiz.EndDate,
                 DueDate: quiz.DueDate || quiz.EndDate, // Use EndDate if DueDate is null
-                CompletionType: 1,
-                ActivityType: 4, // Quiz
-                IsExempt: false,
+                ActivityType: ActivityType.QUIZ,
                 DateCompleted: attempt_count > 0 ? new Date().toISOString() : null
             };
         });
@@ -368,14 +364,11 @@ export async function get_course_content(tabUrl) {
                 OrgUnitId: course.OrgUnit.Id,
                 ItemId: assignment.Id,
                 ItemName: assignment.Name,
-                ItemType: 3, // Assignment
+                ItemType: ActivityType.DROPBOX,
                 ItemUrl: base_url + `/d2l/lms/dropbox/user/folder_submit_files.d2l?db=${assignment.Id}&grpid=0&isprv=0&bp=0&ou=${course.OrgUnit.Id}`,
                 StartDate: clear_past_start_date(assignment.Availability?.StartDate),
-                EndDate: assignment.Availability?.EndDate,
                 DueDate: assignment.DueDate || assignment.Availability?.EndDate,
-                CompletionType: assignment.CompletionType,
-                ActivityType: 3, // Assignment
-                IsExempt: false,
+                ActivityType: ActivityType.DROPBOX,
                 DateCompleted: has_submission ? new Date().toISOString() : null
             };
             return item;
@@ -400,14 +393,11 @@ export async function get_course_content(tabUrl) {
                     OrgUnitId: course.OrgUnit.Id,
                     ItemId: topic.TopicId,
                     ItemName: topic.Name,
-                    ItemType: 5, // Discussion
+                    ItemType: ActivityType.DISCUSSION,
                     ItemUrl: base_url + `/d2l/le/${course.OrgUnit.Id}/discussions/topics/${topic.TopicId}/View`,
                     StartDate: clear_past_start_date(topic.StartDate),
-                    EndDate: topic.EndDate,
                     DueDate: topic.EndDate || topic.StartDate,
-                    CompletionType: 0,
-                    ActivityType: 5, // Discussion
-                    IsExempt: false,
+                    ActivityType: ActivityType.DISCUSSION,
                     DateCompleted: has_posted ? new Date().toISOString() : null
                 };
                 return item;

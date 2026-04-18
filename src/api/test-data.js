@@ -4,7 +4,6 @@
 
 /**
  * @typedef {Object} BrightspaceItem
- * @property {string} UserId
  * @property {string} OrgUnitId
  * @property {number} ItemId
  * @property {string} ItemName
@@ -13,7 +12,6 @@
  * @property {string} [StartDate]
  * @property {string} [EndDate]
  * @property {string} [DueDate]
- * @property {number} CompletionType
  * @property {string} [DateCompleted]
  * @property {number} ActivityType
  * @property {boolean} IsExempt
@@ -107,14 +105,12 @@ function generateFakeBrightspaceItem(itemId, courseId, activityType = 3) {
     const name = pickRandom(namePool);
 
     return {
-        UserId: "user123",
         OrgUnitId: courseId.toString(),
         ItemId: itemId,
         ItemName: name,
         ItemType: activityType,
         ItemUrl: `https://example.brightspace.com/d2l/le/content/${courseId}/viewContent/${itemId}`,
         DueDate: dueDate.toISOString(),
-        CompletionType: 1,
         ActivityType: activityType,
         IsExempt: false
     };

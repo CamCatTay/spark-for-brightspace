@@ -1,4 +1,5 @@
 .vscode/
+.VSCodeCounter
 
 # Jest dependencies
 node_modules/

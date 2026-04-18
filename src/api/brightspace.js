@@ -459,3 +459,15 @@ export async function get_course_content(tabUrl) {
 
     return course_data;
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        get_course_content,
+        build_course_data,
+        clear_past_start_date,
+        get_brightspace_data,
+        get_quiz_attempt_count,
+        get_assignment_submissions,
+        get_assignment_submissions_from_history,
+    };
+}

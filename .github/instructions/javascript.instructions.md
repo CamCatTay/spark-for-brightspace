@@ -59,14 +59,17 @@ async function get_brightspace_data(url) { ... }
 
 ## No Magic Numbers or Strings
 
-Never use literal numbers (or opaque strings) inline in logic. The goal is that anyone reading the code later can immediately understand what a value represents without needing external context.
+Never use numeric literals or opaque coded strings inline in logic. The goal is that anyone reading the code later can immediately understand what a value represents without needing external context.
+
+**This rule applies to values that carry no inherent meaning on their own** — numbers, single-character codes, status codes, API version strings, etc. It does NOT apply to self-descriptive string literals where the string itself already communicates intent (e.g. `"fetchCourses"`, `"click"`, `"DOMContentLoaded"`).
 
 Always assign bare values to a named constant or include them in an `Object.freeze` enum (JavaScript) or equivalent named constant group in other languages.
 
 **Wrong:**
 ```js
-if (item.type === 3) { ... }
-if (status === 'db') { ... }
+if (item.type === 3) { ... }         // 3 is meaningless without context
+if (status === 'db') { ... }         // 'db' is an opaque abbreviation
+const url = base + "/d2l/api/lp/1.49/...";  // version string buried in a URL
 ```
 
 **Right:**
@@ -80,6 +83,6 @@ const ActivityType = Object.freeze({
 if (item.type === ActivityType.DROPBOX) { ... }
 ```
 
-Use `Object.freeze` in JavaScript whenever a value belongs to a logical group (types, states, HTTP codes, API versions, limits, etc.). Even a single "magic" value with no related siblings must be assigned to a named `const`.
+Use `Object.freeze` in JavaScript whenever a value belongs to a logical group (types, states, HTTP codes, API versions, limits, etc.). Even a single opaque value with no related siblings must be assigned to a named `const`.
 
 This rule applies to all file types in the project — JavaScript, CSS (e.g. z-index values, breakpoints), JSON config values referenced in code, etc.

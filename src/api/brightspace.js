@@ -33,7 +33,6 @@ class Course {
         this.quizzes = {};
         this.assignments = {};
         this.discussions = {};
-        this.checklist = {};
     }
     addFile(item) {
         this.files[item.id] = item;
@@ -46,9 +45,6 @@ class Course {
     }
     addDiscussion(item) {
         this.discussions[item.id] = item;
-    }
-    addChecklist(item) {
-        this.checklist[item.id] = item;
     }
 }
 
@@ -455,9 +451,6 @@ export async function mapData(courses, items) {
                     break;
                 case 5: // DiscussionForum
                     course.addDiscussion(item);
-                    break;
-                case 10: // Checklist
-                    course.addChecklist(item);
                     break;
                 default:
                     console.warn(`Unused ActivityType: ${itemData.ActivityType}`);

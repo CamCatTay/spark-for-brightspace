@@ -10,7 +10,6 @@ import { Action } from "./shared/actions";
 // ============================================================
 
 const SCROLL_POS_KEY = "spark-scroll-pos";
-const SETTINGS_OPEN_KEY = "spark-settings-open";
 const SETTINGS_VALUE_KEY = "spark-user-settings";
 const D2L_URL_FILTER = "/d2l/";
 const FAQ_URL = "https://camcattay.github.io/spark-for-brightspace/faq.html";
@@ -72,24 +71,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         return;
     }
 
-    // Settings values changed on one tab — persist and relay to all other D2L tabs.
+    // Settings values changed on one tab — persist synced settings and relay to all other D2L tabs.
     if (request.action === Action.BROADCAST_SETTINGS_CHANGED) {
         chrome.storage.local.set({ [SETTINGS_VALUE_KEY]: request.settings });
         broadcast_to_d2l_tabs(sender.tab.id, { action: Action.SETTINGS_CHANGED, settings: request.settings });
-        return;
-    }
-
-    // Settings panel opened on one tab — sync to all other D2L tabs.
-    if (request.action === Action.BROADCAST_SETTINGS_OPENED) {
-        chrome.storage.local.set({ [SETTINGS_OPEN_KEY]: true });
-        broadcast_to_d2l_tabs(sender.tab.id, { action: Action.SETTINGS_OPENED });
-        return;
-    }
-
-    // Settings panel closed on one tab — sync to all other D2L tabs.
-    if (request.action === Action.BROADCAST_SETTINGS_CLOSED) {
-        chrome.storage.local.set({ [SETTINGS_OPEN_KEY]: false });
-        broadcast_to_d2l_tabs(sender.tab.id, { action: Action.SETTINGS_CLOSED });
         return;
     }
 });
@@ -108,7 +93,6 @@ chrome.action.onClicked.addListener((tab) => {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         SCROLL_POS_KEY,
-        SETTINGS_OPEN_KEY,
         SETTINGS_VALUE_KEY,
         D2L_URL_FILTER,
         FAQ_URL,

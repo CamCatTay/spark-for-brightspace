@@ -259,23 +259,8 @@ export function toggle_panel() {
                 setTimeout(() => { is_animating = false; }, SETTINGS_TRANSITION_MS);
             }, PANEL_SLIDE_IN_MS);
         } else {
-            // Panel slide-in is ~PANEL_SLIDE_IN_MS; then check if settings should be open globally
-            setTimeout(() => {
-                chrome.storage.local.get(["spark-settings-open"], function(result) {
-                    if (result["spark-settings-open"]) {
-                        let sp = document.getElementById("spark-settings-panel");
-                        if (!sp) {
-                            sp = build_settings_panel();
-                            document.body.appendChild(sp);
-                        }
-                        sp.style.right = panel_width + "px";
-                        sp.classList.add("open");
-                        setTimeout(() => { is_animating = false; }, SETTINGS_TRANSITION_MS);
-                    } else {
-                        is_animating = false;
-                    }
-                });
-            }, PANEL_SLIDE_IN_MS);
+            // Wait for the panel slide-in animation to finish, then unblock interactions.
+            setTimeout(() => { is_animating = false; }, PANEL_SLIDE_IN_MS);
         }
     }
 }
@@ -304,6 +289,10 @@ export function inject_embedded_ui() {
         toggle_btn.style.top = saved_top + "px";
         toggle_btn.style.transform = "none";
     }
+
+    // Remove the legacy cross-tab settings-open key so it can never incorrectly
+    // auto-open the settings panel on a fresh load.
+    chrome.storage.local.remove("spark-settings-open");
 
     const should_show_panel = sessionStorage.getItem(EXPANSION_STATE_KEY) === "true";
 

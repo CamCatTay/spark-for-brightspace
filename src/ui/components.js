@@ -52,10 +52,12 @@ const ITEM_TYPES = [
     { key: "discussions", label: "Discussions" },
 ];
 
-// Local Storage Keys
+// Storage Keys
+// Synced across tabs via chrome.storage.local + broadcast:
 const CALENDAR_START_DAYS_BACK_STORAGE_KEY = "d2l-todolist-calendar-start-days-back";
-const HIDDEN_COURSES_STORAGE_KEY = "d2l-todolist-hidden-courses";
-const HIDDEN_TYPES_STORAGE_KEY = "d2l-todolist-hidden-types";
+// Tab-local, session-scoped (sessionStorage — NOT synced across tabs):
+const HIDDEN_COURSES_SESSION_KEY = "spark-hidden-courses";
+const HIDDEN_TYPES_SESSION_KEY = "spark-hidden-types";
 
 // ============================================================
 // Module State
@@ -67,8 +69,8 @@ let _on_rerender = null;
 
 let _last_course_data = {};
 let last_fetched_time = null;
-let hidden_course_ids = new Set(JSON.parse(localStorage.getItem(HIDDEN_COURSES_STORAGE_KEY) || "[]"));
-let hidden_types = new Set(JSON.parse(localStorage.getItem(HIDDEN_TYPES_STORAGE_KEY) || "[]"));
+let hidden_course_ids = new Set(JSON.parse(sessionStorage.getItem(HIDDEN_COURSES_SESSION_KEY) || "[]"));
+let hidden_types = new Set(JSON.parse(sessionStorage.getItem(HIDDEN_TYPES_SESSION_KEY) || "[]"));
 
 let CALENDAR_START_DAYS_BACK = parseInt(localStorage.getItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY) ?? "7", 10);
 if (!Number.isFinite(CALENDAR_START_DAYS_BACK) || CALENDAR_START_DAYS_BACK < 0) CALENDAR_START_DAYS_BACK = 7;
@@ -447,8 +449,6 @@ function create_frequency_chart(calendar_container, items_by_date, initial_week_
         }
         settings_panel.classList.toggle("open");
         settings_panel.style.right = panel_width + "px";
-        const is_open = settings_panel.classList.contains("open");
-        safe_send_message({ action: is_open ? Action.BROADCAST_SETTINGS_OPENED : Action.BROADCAST_SETTINGS_CLOSED });
     });
     week_label_row.appendChild(settings_btn);
 
@@ -716,37 +716,23 @@ export function register_ui_callbacks({ on_refresh, on_rerender }) {
     _on_rerender = on_rerender;
 }
 
-// Returns a plain object snapshot of all user-configurable settings.
-function get_all_settings() {
+// Returns a plain object snapshot of settings that are synced across tabs.
+function get_synced_settings() {
     return {
         days_back: CALENDAR_START_DAYS_BACK,
-        hidden_courses: [...hidden_course_ids],
-        hidden_types_arr: [...hidden_types],
     };
 }
 
-// Applies a settings object (from chrome.storage or a broadcast message) to
+// Applies synced settings (from chrome.storage or a broadcast message) to
 // in-memory state, localStorage, and any currently-open settings panel UI.
-export function apply_settings({ days_back, hidden_courses, hidden_types_arr }) {
+// Only covers settings that are cross-tab synced. Tab-local filters (hidden
+// courses, hidden types) are managed independently via sessionStorage.
+export function apply_settings({ days_back }) {
     CALENDAR_START_DAYS_BACK = days_back;
-    hidden_course_ids = new Set(hidden_courses);
-    hidden_types = new Set(hidden_types_arr);
-
-    // Keep localStorage in sync so the initial module-level reads stay warm.
     localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, days_back.toString());
-    localStorage.setItem(HIDDEN_COURSES_STORAGE_KEY, JSON.stringify(hidden_courses));
-    localStorage.setItem(HIDDEN_TYPES_STORAGE_KEY, JSON.stringify(hidden_types_arr));
 
-    // Sync the settings panel UI if it is currently rendered.
     const days_input = document.getElementById("spark-setting-days-back");
     if (days_input) days_input.value = days_back.toString();
-
-    ITEM_TYPES.forEach(({ key }) => {
-        const cb = document.querySelector(`.settings-course-checkbox[data-setting-type="${key}"]`);
-        if (cb) cb.checked = !hidden_types.has(key);
-    });
-
-    update_settings_course_list(_last_course_data);
 }
 
 // Builds and returns the settings panel DOM element.
@@ -794,7 +780,7 @@ export function build_settings_panel() {
         input.value = val.toString();
         CALENDAR_START_DAYS_BACK = val;
         localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, val.toString());
-        safe_send_message({ action: Action.BROADCAST_SETTINGS_CHANGED, settings: get_all_settings() });
+        safe_send_message({ action: Action.BROADCAST_SETTINGS_CHANGED, settings: get_synced_settings() });
         if (_on_rerender) _on_rerender();
     });
 
@@ -833,8 +819,7 @@ export function build_settings_panel() {
             } else {
                 hidden_types.add(key);
             }
-            localStorage.setItem(HIDDEN_TYPES_STORAGE_KEY, JSON.stringify([...hidden_types]));
-            safe_send_message({ action: Action.BROADCAST_SETTINGS_CHANGED, settings: get_all_settings() });
+            sessionStorage.setItem(HIDDEN_TYPES_SESSION_KEY, JSON.stringify([...hidden_types]));
             if (_on_rerender) _on_rerender();
         });
 
@@ -913,8 +898,7 @@ function update_settings_course_list(course_data, list_el = null) {
             } else {
                 hidden_course_ids.add(course_id);
             }
-            localStorage.setItem(HIDDEN_COURSES_STORAGE_KEY, JSON.stringify([...hidden_course_ids]));
-            safe_send_message({ action: Action.BROADCAST_SETTINGS_CHANGED, settings: get_all_settings() });
+            sessionStorage.setItem(HIDDEN_COURSES_SESSION_KEY, JSON.stringify([...hidden_course_ids]));
             if (_on_rerender) _on_rerender();
         });
 

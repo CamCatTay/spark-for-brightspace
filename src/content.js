@@ -14,7 +14,6 @@ import {
     initialize_gui,
     update_gui,
     add_data_status_indicator,
-    build_settings_panel,
     apply_settings,
     set_last_fetched_time,
     register_ui_callbacks,
@@ -26,7 +25,6 @@ import {
 
 const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
-const SETTINGS_OPEN_KEY = "spark-settings-open";
 const SETTINGS_VALUE_KEY = "spark-user-settings";
 
 // ============================================================
@@ -88,9 +86,8 @@ window.addEventListener("load", () => {
     // When this tab's panel is restored after being silently closed by another
     // tab, re-render the in-memory data so the panel is never blank.
     register_panel_restore_callback(() => {
-        // Re-apply settings then re-render so display is correct even if settings
-        // changed on another tab while this panel was silently closed.
-        chrome.storage.local.get([SETTINGS_OPEN_KEY, SETTINGS_VALUE_KEY], function(result) {
+        // Re-apply synced settings then re-render with in-memory data.
+        chrome.storage.local.get([SETTINGS_VALUE_KEY], function(result) {
             if (result[SETTINGS_VALUE_KEY]) {
                 apply_settings(result[SETTINGS_VALUE_KEY]);
             }
@@ -98,24 +95,13 @@ window.addEventListener("load", () => {
                 update_gui(course_data, fetch_in_flight || global_fetch_in_flight);
                 restore_scroll_position();
             }
-            let sp = document.getElementById("spark-settings-panel");
-            if (result[SETTINGS_OPEN_KEY]) {
-                if (!sp) {
-                    sp = build_settings_panel();
-                    document.body.appendChild(sp);
-                }
-                sp.style.right = panel_width + "px";
-                sp.classList.add("open");
-            } else if (sp) {
-                sp.classList.remove("open");
-            }
         });
     });
 
     // -- Initial data load --
 
     // Load stored data first for immediate display
-    chrome.storage.local.get([COURSE_DATA_KEY, LAST_FETCHED_KEY, SETTINGS_OPEN_KEY, SETTINGS_VALUE_KEY], function(result) {
+    chrome.storage.local.get([COURSE_DATA_KEY, LAST_FETCHED_KEY, SETTINGS_VALUE_KEY], function(result) {
         if (result[SETTINGS_VALUE_KEY]) {
             apply_settings(result[SETTINGS_VALUE_KEY]);
         }
@@ -126,18 +112,6 @@ window.addEventListener("load", () => {
             course_data = JSON.parse(JSON.stringify(result[COURSE_DATA_KEY]));
             update_gui(course_data, true);
             restore_scroll_position();
-        }
-        if (result[SETTINGS_OPEN_KEY]) {
-            const widget = document.getElementById("d2l-todolist-widget");
-            if (widget && !widget.classList.contains("hidden") && widget.style.display !== "none") {
-                let sp = document.getElementById("spark-settings-panel");
-                if (!sp) {
-                    sp = build_settings_panel();
-                    document.body.appendChild(sp);
-                }
-                sp.style.right = panel_width + "px";
-                sp.classList.add("open");
-            }
         }
     });
 
@@ -209,23 +183,6 @@ chrome.runtime.onMessage.addListener(function(request) {
         toggle_panel();
     }
 
-    if (request.action === Action.SETTINGS_OPENED) {
-        // Don't open the settings panel on a tab whose main panel is currently hidden
-        // (e.g. the inactive side of a split-screen setup).
-        const widget = document.getElementById("d2l-todolist-widget");
-        if (!widget || widget.classList.contains("hidden") || widget.style.display === "none") return;
-        let settings_panel = document.getElementById("spark-settings-panel");
-        if (!settings_panel) {
-            settings_panel = build_settings_panel();
-            document.body.appendChild(settings_panel);
-        }
-        settings_panel.style.right = panel_width + "px";
-        settings_panel.classList.add("open");
-    }
-    if (request.action === Action.SETTINGS_CLOSED) {
-        const settings_panel = document.getElementById("spark-settings-panel");
-        if (settings_panel) settings_panel.classList.remove("open");
-    }
     if (request.action === Action.SETTINGS_CHANGED) {
         apply_settings(request.settings);
         trigger_rerender();

@@ -55,6 +55,7 @@ const ITEM_TYPES = [
 // Storage Keys
 // Synced across tabs via chrome.storage.local + broadcast:
 const CALENDAR_START_DAYS_BACK_STORAGE_KEY = "d2l-todolist-calendar-start-days-back";
+const SHOW_COMPLETED_STORAGE_KEY = "d2l-todolist-show-completed";
 // Tab-local, session-scoped (sessionStorage — NOT synced across tabs):
 const HIDDEN_COURSES_SESSION_KEY = "spark-hidden-courses";
 const HIDDEN_TYPES_SESSION_KEY = "spark-hidden-types";
@@ -74,6 +75,9 @@ let hidden_types = new Set(JSON.parse(sessionStorage.getItem(HIDDEN_TYPES_SESSIO
 
 let CALENDAR_START_DAYS_BACK = parseInt(localStorage.getItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY) ?? "7", 10);
 if (!Number.isFinite(CALENDAR_START_DAYS_BACK) || CALENDAR_START_DAYS_BACK < 0) CALENDAR_START_DAYS_BACK = 7;
+
+// Default true: show completed items unless the user has explicitly turned it off.
+let show_completed_items = localStorage.getItem(SHOW_COMPLETED_STORAGE_KEY) !== "false";
 
 // ============================================================
 // Internal Helpers
@@ -293,9 +297,9 @@ export function update_gui(course_data, is_from_cache = false) {
         if (hidden_course_ids.has(course_id)) return;
 
         const item_collections = [
-            { items: course.assignments, type: "assignments", show_completed: true },
-            { items: course.quizzes, type: "quizzes", show_completed: true },
-            { items: course.discussions, type: "discussions", show_completed: true }
+            { items: course.assignments, type: "assignments", show_completed: show_completed_items },
+            { items: course.quizzes, type: "quizzes", show_completed: show_completed_items },
+            { items: course.discussions, type: "discussions", show_completed: show_completed_items }
         ];
 
         item_collections.forEach(({ items, type, show_completed }) => {
@@ -727,6 +731,7 @@ export function register_ui_callbacks({ on_refresh, on_rerender }) {
 function get_synced_settings() {
     return {
         days_back: CALENDAR_START_DAYS_BACK,
+        show_completed: show_completed_items,
     };
 }
 
@@ -734,12 +739,20 @@ function get_synced_settings() {
 // in-memory state, localStorage, and any currently-open settings panel UI.
 // Only covers settings that are cross-tab synced. Tab-local filters (hidden
 // courses, hidden types) are managed independently via sessionStorage.
-export function apply_settings({ days_back }) {
+export function apply_settings({ days_back, show_completed }) {
     CALENDAR_START_DAYS_BACK = days_back;
     localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, days_back.toString());
 
+    if (show_completed !== undefined) {
+        show_completed_items = show_completed;
+        localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, show_completed.toString());
+    }
+
     const days_input = document.getElementById("spark-setting-days-back");
     if (days_input) days_input.value = days_back.toString();
+
+    const completed_toggle = document.getElementById("spark-setting-show-completed");
+    if (completed_toggle) completed_toggle.checked = show_completed_items;
 }
 
 // Builds and returns the settings panel DOM element.
@@ -795,6 +808,41 @@ export function build_settings_panel() {
     section.appendChild(description);
     section.appendChild(input);
     body.appendChild(section);
+
+    // Show completed items toggle
+    const completed_section = document.createElement("div");
+    completed_section.className = "settings-section";
+
+    const completed_row = document.createElement("label");
+    completed_row.className = "settings-course-row";
+
+    const completed_checkbox = document.createElement("input");
+    completed_checkbox.type = "checkbox";
+    completed_checkbox.id = "spark-setting-show-completed";
+    completed_checkbox.className = "settings-course-checkbox";
+    completed_checkbox.checked = show_completed_items;
+    completed_checkbox.addEventListener("change", () => {
+        show_completed_items = completed_checkbox.checked;
+        localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, show_completed_items.toString());
+        safe_send_message({ action: Action.BROADCAST_SETTINGS_CHANGED, settings: get_synced_settings() });
+        if (_on_rerender) _on_rerender();
+    });
+
+    const completed_name = document.createElement("span");
+    completed_name.className = "settings-course-name";
+    completed_name.textContent = "Show completed items";
+
+    completed_row.appendChild(completed_checkbox);
+    completed_row.appendChild(completed_name);
+    completed_section.appendChild(completed_row);
+
+    const completed_description = document.createElement("p");
+    completed_description.className = "settings-description";
+    completed_description.style.marginTop = "6px";
+    completed_description.textContent = "When off, only incomplete items are shown in the calendar.";
+    completed_section.appendChild(completed_description);
+
+    body.appendChild(completed_section);
 
     // Assignment types section
     const types_section = document.createElement("div");

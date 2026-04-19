@@ -5,9 +5,110 @@
 import { Action } from "../shared/actions.js";
 import { build_settings_panel } from "./components.js";
 
+// ============================================================
+// Constants
+// ============================================================
+
 const EXPANSION_STATE_KEY = "d2l-todolist-expanded";
 const PANEL_WIDTH_KEY = "d2l-todolist-width";
+const DEFAULT_PANEL_WIDTH = 350;
+const MIN_PANEL_WIDTH = 250;
+const PANEL_SLIDE_IN_MS = 400;
+const SETTINGS_TRANSITION_MS = 250;
 
+// ============================================================
+// Module State
+// ============================================================
+
+export let panel_width = DEFAULT_PANEL_WIDTH;
+let container;
+let is_animating = false;
+let settings_was_open = false;
+// True when the panel was closed by another tab taking over (not by the user).
+let was_closed_silently = false;
+// Callback invoked when the panel is restored after a silent close.
+let _on_panel_restore = null;
+
+// ============================================================
+// Internal Helpers
+// ============================================================
+
+// Updates the document body's right margin to match the current panel width.
+function update_body_margin() {
+    document.body.style.marginRight = panel_width + "px";
+}
+
+// Creates the panel DOM structure and wires up resize dragging.
+// Returns { container, calendar_container, panel } DOM elements.
+function create_embedded_calendar_ui() {
+    const new_container = document.createElement("div");
+    new_container.id = "d2l-todolist-widget";
+    new_container.style.width = panel_width + "px";
+
+    const panel = document.createElement("div");
+    panel.id = "d2l-todolist-panel";
+    panel.style.width = panel_width + "px";
+
+    const resize_handle = document.createElement("div");
+    resize_handle.className = "d2l-todolist-resize-handle";
+
+    const calendar_container = document.createElement("div");
+    calendar_container.id = "calendar-container";
+
+    panel.appendChild(resize_handle);
+    panel.appendChild(calendar_container);
+    new_container.appendChild(panel);
+
+    // -- Resize --
+    let is_resizing = false;
+    let start_x = 0;
+    let start_width = panel_width;
+
+    resize_handle.addEventListener("mousedown", function(e) {
+        is_resizing = true;
+        start_x = e.clientX;
+        start_width = panel_width;
+        document.body.style.userSelect = "none";
+        document.body.style.cursor = "col-resize";
+    });
+
+    document.addEventListener("mousemove", function(e) {
+        if (!is_resizing) return;
+
+        const delta_x = e.clientX - start_x;
+        const new_width = Math.max(MIN_PANEL_WIDTH, start_width - delta_x);
+
+        panel_width = new_width;
+        new_container.style.width = new_width + "px";
+        panel.style.width = new_width + "px";
+        update_body_margin();
+
+        const sp = document.getElementById("spark-settings-panel");
+        if (sp) sp.style.right = new_width + "px";
+
+        localStorage.setItem(PANEL_WIDTH_KEY, new_width.toString());
+    });
+
+    document.addEventListener("mouseup", function() {
+        if (is_resizing) {
+            is_resizing = false;
+            document.body.style.userSelect = "";
+            document.body.style.cursor = "";
+        }
+    });
+
+    return { container: new_container, calendar_container, panel };
+}
+
+// ============================================================
+// Exports
+// ============================================================
+
+/**
+ * Sends a message to the extension runtime, swallowing invalidated-context errors.
+ * @param {Object} message - The message object to send.
+ * @param {Function} [callback] - Optional response callback.
+ */
 export function safe_send_message(message, callback) {
     try {
         if (callback) {
@@ -22,66 +123,60 @@ export function safe_send_message(message, callback) {
     }
 }
 
-export let panel_width = 350;
-let container;
-let isAnimating = false;
-let settingsWasOpen = false;
-// True when the panel was closed by another tab taking over (not by the user).
-let wasClosedSilently = false;
-// Callback invoked when the panel is restored after a silent close.
-let _onPanelRestore = null;
-
+/**
+ * Registers a callback to be invoked when the panel is restored after a silent close.
+ * @param {Function} fn - The callback to register.
+ */
 export function register_panel_restore_callback(fn) {
-    _onPanelRestore = fn;
+    _on_panel_restore = fn;
 }
 
-function updateBodyMargin() {
-    document.body.style.marginRight = panel_width + "px";
-}
-
+/**
+ * Toggles the panel open or closed, handling settings panel state and animations.
+ */
 export function toggle_panel() {
-    if (!container || isAnimating) return;
-    isAnimating = true;
+    if (!container || is_animating) return;
+    is_animating = true;
 
-    const willHide = !container.classList.contains("hidden");
+    const will_hide = !container.classList.contains("hidden");
 
-    if (willHide) {
+    if (will_hide) {
         // If closing, check if settings panel is open first
         const sp = document.getElementById("spark-settings-panel");
-        const settingsOpen = sp && sp.classList.contains("open");
+        const settings_open = sp && sp.classList.contains("open");
 
-        const doClose = () => {
+        const do_close = () => {
             container.classList.add("hidden");
             localStorage.setItem(EXPANSION_STATE_KEY, "false");
-            wasClosedSilently = false;
+            was_closed_silently = false;
             safe_send_message({ action: Action.PANEL_CLOSED });
             document.body.style.marginRight = "0";
-            const animationHandler = () => {
+            const animation_handler = () => {
                 container.style.display = "none";
-                container.removeEventListener("animationend", animationHandler);
-                isAnimating = false;
+                container.removeEventListener("animationend", animation_handler);
+                is_animating = false;
             };
-            container.addEventListener("animationend", animationHandler);
+            container.addEventListener("animationend", animation_handler);
         };
 
-        if (settingsOpen) {
-            settingsWasOpen = true;
+        if (settings_open) {
+            settings_was_open = true;
             sp.classList.remove("open");
-            setTimeout(doClose, 250);
+            setTimeout(do_close, SETTINGS_TRANSITION_MS);
         } else {
-            settingsWasOpen = false;
-            doClose();
+            settings_was_open = false;
+            do_close();
         }
     } else {
         container.classList.remove("hidden");
         localStorage.setItem(EXPANSION_STATE_KEY, "true");
-        wasClosedSilently = false;
+        was_closed_silently = false;
         safe_send_message({ action: Action.PANEL_OPENED });
         container.style.display = "flex";
-        updateBodyMargin();
+        update_body_margin();
 
-        if (settingsWasOpen) {
-            settingsWasOpen = false;
+        if (settings_was_open) {
+            settings_was_open = false;
             // Wait for the panel slide-in to finish before opening settings
             setTimeout(() => {
                 let sp = document.getElementById("spark-settings-panel");
@@ -89,13 +184,13 @@ export function toggle_panel() {
                     sp = build_settings_panel();
                     document.body.appendChild(sp);
                 }
-                sp.style.right = (typeof panel_width !== "undefined" ? panel_width : 350) + "px";
+                sp.style.right = (typeof panel_width !== "undefined" ? panel_width : DEFAULT_PANEL_WIDTH) + "px";
                 sp.classList.add("open");
-                // Settings transition completes after another 250ms
-                setTimeout(() => { isAnimating = false; }, 250);
-            }, 400);
+                // Settings transition completes after another SETTINGS_TRANSITION_MS
+                setTimeout(() => { is_animating = false; }, SETTINGS_TRANSITION_MS);
+            }, PANEL_SLIDE_IN_MS);
         } else {
-            // Panel slide-in is ~400ms; then check if settings should be open globally
+            // Panel slide-in is ~PANEL_SLIDE_IN_MS; then check if settings should be open globally
             setTimeout(() => {
                 chrome.storage.local.get(["spark-settings-open"], function(result) {
                     if (result["spark-settings-open"]) {
@@ -106,22 +201,24 @@ export function toggle_panel() {
                         }
                         sp.style.right = panel_width + "px";
                         sp.classList.add("open");
-                        setTimeout(() => { isAnimating = false; }, 250);
+                        setTimeout(() => { is_animating = false; }, SETTINGS_TRANSITION_MS);
                     } else {
-                        isAnimating = false;
+                        is_animating = false;
                     }
                 });
-            }, 400);
+            }, PANEL_SLIDE_IN_MS);
         }
     }
 }
 
-// Close the panel without changing the user's saved preference.
-// Used when another tab takes over as the active panel.
-// Deliberately skips animation — the user is not watching this tab.
+/**
+ * Closes the panel without changing the user's saved preference.
+ * Used when another tab takes over as the active panel.
+ * Deliberately skips animation — the user is not watching this tab.
+ */
 export function close_panel_silently() {
     if (!container || container.classList.contains("hidden")) return;
-    wasClosedSilently = true;
+    was_closed_silently = true;
     container.classList.add("hidden");
     container.style.display = "none";
     document.body.style.marginRight = "0";
@@ -133,88 +230,32 @@ export function close_panel_silently() {
     }
 }
 
-function createEmbeddedCalendarUI() {
-    const newContainer = document.createElement("div");
-    newContainer.id = "d2l-todolist-widget";
-    newContainer.style.width = panel_width + "px";
-
-    const panel = document.createElement("div");
-    panel.id = "d2l-todolist-panel";
-    panel.style.width = panel_width + "px";
-
-    const resizeHandle = document.createElement("div");
-    resizeHandle.className = "d2l-todolist-resize-handle";
-
-    const calendarContainer = document.createElement("div");
-    calendarContainer.id = "calendar-container";
-
-    panel.appendChild(resizeHandle);
-    panel.appendChild(calendarContainer);
-    newContainer.appendChild(panel);
-
-    // Resize functionality
-    let isResizing = false;
-    let startX = 0;
-    let startWidth = panel_width;
-
-    resizeHandle.addEventListener("mousedown", function(e) {
-        isResizing = true;
-        startX = e.clientX;
-        startWidth = panel_width;
-        document.body.style.userSelect = "none";
-        document.body.style.cursor = "col-resize";
-    });
-
-    document.addEventListener("mousemove", function(e) {
-        if (!isResizing) return;
-
-        const deltaX = e.clientX - startX;
-        const newWidth = Math.max(250, startWidth - deltaX);
-
-        panel_width = newWidth;
-        newContainer.style.width = newWidth + "px";
-        panel.style.width = newWidth + "px";
-        updateBodyMargin();
-
-        const sp = document.getElementById("spark-settings-panel");
-        if (sp) sp.style.right = newWidth + "px";
-
-        localStorage.setItem(PANEL_WIDTH_KEY, newWidth.toString());
-    });
-
-    document.addEventListener("mouseup", function() {
-        if (isResizing) {
-            isResizing = false;
-            document.body.style.userSelect = "";
-            document.body.style.cursor = "";
-        }
-    });
-
-    return { container: newContainer, calendarContainer, panel };
-}
-
+/**
+ * Injects the side panel widget into the page and wires up visibility-change handling.
+ * @returns {HTMLElement} The calendar container element where content should be rendered.
+ */
 export function inject_embedded_ui() {
     const existing = document.getElementById("d2l-todolist-widget");
     if (existing) existing.remove();
 
-    const savedWidth = localStorage.getItem(PANEL_WIDTH_KEY);
-    if (savedWidth) {
-        panel_width = parseInt(savedWidth, 10);
+    const saved_width = localStorage.getItem(PANEL_WIDTH_KEY);
+    if (saved_width) {
+        panel_width = parseInt(saved_width, 10);
     }
 
-    const { container: newContainer, calendarContainer } = createEmbeddedCalendarUI();
-    container = newContainer;
+    const { container: new_container, calendar_container } = create_embedded_calendar_ui();
+    container = new_container;
 
-    const savedState = localStorage.getItem(EXPANSION_STATE_KEY);
-    const shouldShowPanel = savedState === null || savedState === "true";
+    const saved_state = localStorage.getItem(EXPANSION_STATE_KEY);
+    const should_show_panel = saved_state === null || saved_state === "true";
 
-    if (!shouldShowPanel) {
+    if (!should_show_panel) {
         container.style.display = "none";
         container.classList.add("hidden");
     }
 
-    if (shouldShowPanel) {
-        updateBodyMargin();
+    if (should_show_panel) {
+        update_body_margin();
     } else {
         document.body.style.marginRight = "0";
     }
@@ -222,7 +263,7 @@ export function inject_embedded_ui() {
     document.body.appendChild(container);
 
     // Claim the active panel slot if starting visible.
-    if (shouldShowPanel) {
+    if (should_show_panel) {
         safe_send_message({ action: Action.PANEL_OPENED });
     }
 
@@ -230,27 +271,27 @@ export function inject_embedded_ui() {
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState !== "visible") return;
 
-        if (wasClosedSilently) {
+        if (was_closed_silently) {
             // This tab's panel was closed by a simultaneously-visible tab.
             // Restore it and reclaim the active slot.
             const state = localStorage.getItem(EXPANSION_STATE_KEY);
             if (state === null || state === "true") {
-                wasClosedSilently = false;
-                isAnimating = false;
+                was_closed_silently = false;
+                is_animating = false;
                 container.style.display = "flex";
                 container.classList.remove("hidden");
-                updateBodyMargin();
+                update_body_margin();
                 safe_send_message({ action: Action.PANEL_OPENED });
-                if (_onPanelRestore) _onPanelRestore();
+                if (_on_panel_restore) _on_panel_restore();
             }
         } else if (container && !container.classList.contains("hidden")) {
             // Panel was open when the user switched away — it was never closed.
             // Reclaim the active slot (closes any other tab's panel if visible)
             // and refresh data without any animation.
             safe_send_message({ action: Action.PANEL_OPENED });
-            if (_onPanelRestore) _onPanelRestore();
+            if (_on_panel_restore) _on_panel_restore();
         }
     });
 
-    return calendarContainer;
+    return calendar_container;
 }

@@ -10,6 +10,7 @@ export const Action = Object.freeze({
     SETTINGS_OPENED: "settings_opened",
     SETTINGS_CLOSED: "settings_closed",
     TOGGLE_PANEL: "toggle_panel",
+    OPEN_URL: "open_url",
 
     // Content
     SAVE_SCROLL_POSITION: "save_scroll_position",

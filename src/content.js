@@ -30,10 +30,6 @@ const LAST_FETCHED_KEY = "spark-last-fetched";
 const SETTINGS_OPEN_KEY = "spark-settings-open";
 const SETTINGS_VALUE_KEY = "spark-user-settings";
 
-// Legacy action string sent by the page context to open a URL in a new tab.
-// Not in the Action enum because it originates outside the extension message bus.
-const OPEN_URL_ACTION = "openUrl";
-
 // ============================================================
 // State
 // ============================================================

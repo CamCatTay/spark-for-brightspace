@@ -13,7 +13,7 @@ const version = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'ut
 const outFile = path.join(root, `spark-for-brightspace-v${version}.zip`);
 
 // Files and folders that belong in the extension package
-const include = ['manifest.json', 'src', 'styles', 'icons'];
+const include = ['manifest.json', 'dist', 'styles', 'icons'];
 
 if (fs.existsSync(outFile)) {
     fs.rmSync(outFile);

@@ -9,7 +9,7 @@
     "128": "/icons/spark_logo.png"
   },
   "background": {
-    "service_worker": "/src/background.js",
+    "service_worker": "/dist/background.js",
     "type": "module"
   },
   "permissions": [
@@ -21,11 +21,7 @@
       "matches": ["https://*/d2l/*"],
       "all_frames": false,
       "js": [
-        "/src/utils/date-utils.js",
-        "/src/utils/color-utils.js",
-        "/src/ui/panel.js",
-        "/src/ui/components.js",
-        "/src/content.js"
+        "/dist/content.js"
       ],
       "css": ["/styles/sidepanel.css"]
     }

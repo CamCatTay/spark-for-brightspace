@@ -2,12 +2,13 @@
 // Builds and controls the side panel DOM: tab switching, resize handling,
 // scroll persistence, and rendering course content into the panel.
 
-import { Action } from "../shared/actions";
+import { Action } from "../shared/actions.js";
+import { buildSettingsPanel } from "./components.js";
 
 const EXPANSION_STATE_KEY = "d2l-todolist-expanded";
 const PANEL_WIDTH_KEY = "d2l-todolist-width";
 
-function safeSendMessage(message, callback) {
+export function safeSendMessage(message, callback) {
     try {
         if (callback) {
             chrome.runtime.sendMessage(message, callback);
@@ -21,7 +22,7 @@ function safeSendMessage(message, callback) {
     }
 }
 
-let panelWidth = 350;
+export let panelWidth = 350;
 let container;
 let isAnimating = false;
 let settingsWasOpen = false;
@@ -30,7 +31,7 @@ let wasClosedSilently = false;
 // Callback invoked when the panel is restored after a silent close.
 let _onPanelRestore = null;
 
-function registerPanelRestoreCallback(fn) {
+export function registerPanelRestoreCallback(fn) {
     _onPanelRestore = fn;
 }
 
@@ -38,7 +39,7 @@ function updateBodyMargin() {
     document.body.style.marginRight = panelWidth + "px";
 }
 
-function togglePanel() {
+export function togglePanel() {
     if (!container || isAnimating) return;
     isAnimating = true;
 
@@ -118,7 +119,7 @@ function togglePanel() {
 // Close the panel without changing the user's saved preference.
 // Used when another tab takes over as the active panel.
 // Deliberately skips animation — the user is not watching this tab.
-function closePanelSilently() {
+export function closePanelSilently() {
     if (!container || container.classList.contains("hidden")) return;
     wasClosedSilently = true;
     container.classList.add("hidden");
@@ -192,7 +193,7 @@ function createEmbeddedCalendarUI() {
     return { container: newContainer, calendarContainer, panel };
 }
 
-function injectEmbeddedUI() {
+export function injectEmbeddedUI() {
     const existing = document.getElementById("d2l-todolist-widget");
     if (existing) existing.remove();
 

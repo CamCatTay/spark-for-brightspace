@@ -1,7 +1,7 @@
 // date-utils.js
 // Date formatting and comparison helpers used across the UI layer.
 
-function formatTimeFromDate(dateString) {
+export function formatTimeFromDate(dateString) {
     if (!dateString) return "No time";
     try {
         const date = new Date(dateString);
@@ -11,7 +11,7 @@ function formatTimeFromDate(dateString) {
     }
 }
 
-function formatFullDatetime(dateString) {
+export function formatFullDatetime(dateString) {
     if (!dateString) return "No date";
     try {
         const date = new Date(dateString);
@@ -24,7 +24,7 @@ function formatFullDatetime(dateString) {
     }
 }
 
-function getDateOnly(dateString) {
+export function getDateOnly(dateString) {
     if (!dateString) return null;
     try {
         const date = new Date(dateString);
@@ -34,7 +34,7 @@ function getDateOnly(dateString) {
     }
 }
 
-function formatDateHeader(date) {
+export function formatDateHeader(date) {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -58,14 +58,14 @@ function formatDateHeader(date) {
     return `${title} · ${label}`;
 }
 
-function getWeekStart(date) {
+export function getWeekStart(date) {
     const d = new Date(date);
     const day = d.getDay();
     const diff = d.getDate() - day;
     return new Date(d.getFullYear(), d.getMonth(), diff);
 }
 
-function getDateKey(date) {
+export function getDateKey(date) {
     return date.toISOString().split('T')[0];
 }
 

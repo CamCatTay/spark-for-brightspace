@@ -2,7 +2,24 @@
 // Injected into Brightspace pages. Bootstraps the side panel, triggers data
 // fetches via the background worker, and manages panel lifecycle.
 
-import { Action } from "./shared/actions";
+import { Action } from "./shared/actions.js";
+import {
+    safeSendMessage,
+    injectEmbeddedUI,
+    registerPanelRestoreCallback,
+    togglePanel,
+    closePanelSilently,
+    panelWidth,
+} from "./ui/panel.js";
+import {
+    initializeGUI,
+    updateGUI,
+    addDataStatusIndicator,
+    buildSettingsPanel,
+    applySettings,
+    set_last_fetched_time,
+    register_ui_callbacks,
+} from "./ui/components.js";
 
 const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
@@ -69,7 +86,7 @@ window.addEventListener("load", () => {
                     sp = buildSettingsPanel();
                     document.body.appendChild(sp);
                 }
-                sp.style.right = (typeof panelWidth !== "undefined" ? panelWidth : 350) + "px";
+                sp.style.right = panelWidth + "px";
                 sp.classList.add("open");
             } else if (sp) {
                 sp.classList.remove("open");
@@ -83,7 +100,7 @@ window.addEventListener("load", () => {
             applySettings(result[SETTINGS_VALUE_KEY]);
         }
         if (result[LAST_FETCHED_KEY]) {
-            lastFetchedTime = new Date(result[LAST_FETCHED_KEY]);
+            set_last_fetched_time(new Date(result[LAST_FETCHED_KEY]));
         }
         if (result.courseData) {
             courseData = JSON.parse(JSON.stringify(result.courseData));
@@ -98,7 +115,7 @@ window.addEventListener("load", () => {
                     sp = buildSettingsPanel();
                     document.body.appendChild(sp);
                 }
-                sp.style.right = (typeof panelWidth !== "undefined" ? panelWidth : 350) + "px";
+                sp.style.right = panelWidth + "px";
                 sp.classList.add("open");
             }
         }
@@ -114,9 +131,10 @@ window.addEventListener("load", () => {
             fetchInFlight = false;
             if (response) {
                 courseData = JSON.parse(JSON.stringify(response));
-                lastFetchedTime = new Date();
+                const fetch_time = new Date();
+                set_last_fetched_time(fetch_time);
 
-                chrome.storage.local.set({ courseData: courseData, [LAST_FETCHED_KEY]: lastFetchedTime.toISOString() }, function() {
+                chrome.storage.local.set({ courseData: courseData, [LAST_FETCHED_KEY]: fetch_time.toISOString() }, function() {
                     updateGUI(courseData, false);
                     restoreScrollPosition();
                     safeSendMessage({ action: Action.BROADCAST_COURSE_DATA_UPDATED });
@@ -131,6 +149,9 @@ window.addEventListener("load", () => {
             updateGUI(courseData, fetchInFlight || globalFetchInFlight);
         }
     };
+
+    // Register refresh/re-render callbacks so the settings UI in components.js can trigger them
+    register_ui_callbacks({ on_refresh: triggerRefresh, on_rerender: triggerReRender });
 
     // Fetch fresh data from API
     _refreshFn();
@@ -147,7 +168,7 @@ chrome.runtime.onMessage.addListener(function(request) {
         globalFetchInFlight = false;
         chrome.storage.local.get([COURSE_DATA_KEY, LAST_FETCHED_KEY], function(result) {
             if (result[LAST_FETCHED_KEY]) {
-                lastFetchedTime = new Date(result[LAST_FETCHED_KEY]);
+                set_last_fetched_time(new Date(result[LAST_FETCHED_KEY]));
             }
             if (result.courseData) {
                 updateGUI(JSON.parse(JSON.stringify(result.courseData)), fetchInFlight);
@@ -179,7 +200,7 @@ chrome.runtime.onMessage.addListener(function(request) {
             settingsPanel = buildSettingsPanel();
             document.body.appendChild(settingsPanel);
         }
-        settingsPanel.style.right = (typeof panelWidth !== "undefined" ? panelWidth : 350) + "px";
+        settingsPanel.style.right = panelWidth + "px";
         settingsPanel.classList.add("open");
     }
     if (request.action === Action.SETTINGS_CLOSED) {

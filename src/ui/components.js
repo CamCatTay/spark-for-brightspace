@@ -152,6 +152,7 @@ function update_scrollbar_indicator(calendar_container) {
 // course is expected to have a name property.
 function create_assignment_element(item, course) {
     const assignment_container = document.createElement("a");
+    assignment_container.href = item.url;
     assignment_container.className = "calendar-item";
 
     const now = new Date();
@@ -229,10 +230,13 @@ function create_assignment_element(item, course) {
     item_content.appendChild(item_meta);
     assignment_container.appendChild(item_content);
 
+    /*
+    // Redirect to assignments page when user clicks
     assignment_container.addEventListener("click", function(e) {
         e.preventDefault();
-        window.open(item.url, "_blank");
+        //window.open(item.url);
     });
+    */
 
     const badge = document.createElement("div");
     badge.className = item.completed ? "item-completed-badge" : "item-incomplete-dot";

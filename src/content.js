@@ -203,7 +203,7 @@ chrome.runtime.onMessage.addListener(function(request) {
             }
         });
     }
-    if (request.action === OPEN_URL_ACTION) {
+    if (request.action === Action.OPEN_URL) {
         window.open(request.url, "_blank");
     }
     if (request.action === Action.TOGGLE_PANEL) {

@@ -135,6 +135,7 @@ export function register_panel_restore_callback(fn) {
  * Toggles the panel open or closed, handling settings panel state and animations.
  */
 export function toggle_panel() {
+    console.log("toggling side panel");
     if (!container || is_animating) return;
     is_animating = true;
 

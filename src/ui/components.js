@@ -230,14 +230,6 @@ function create_assignment_element(item, course) {
     item_content.appendChild(item_meta);
     assignment_container.appendChild(item_content);
 
-    /*
-    // Redirect to assignments page when user clicks
-    assignment_container.addEventListener("click", function(e) {
-        e.preventDefault();
-        //window.open(item.url);
-    });
-    */
-
     const badge = document.createElement("div");
     badge.className = item.completed ? "item-completed-badge" : "item-incomplete-dot";
     badge.textContent = item.completed ? "✓" : "•";

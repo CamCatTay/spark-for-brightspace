@@ -245,22 +245,22 @@ export function initialize_gui() {
     update_gui({}, true);
 }
 
-// Shows or removes the "Fetching latest data..." loading indicator in the calendar.
-// Prefers appending to the frequency chart container, falling back to the calendar container.
+// Shows or removes the inline "Fetching..." label and spinner in the last-fetched footer.
+// When is_stale is true, appends a .fetch-status span and tints the footer orange.
+// When is_stale is false, removes the label and restores the default footer color.
 export function add_data_status_indicator(is_stale) {
-    const chart_container = document.getElementById("frequency-chart");
-    const calendar_container = document.getElementById("calendar-container");
-    const target_container = chart_container || calendar_container;
-    if (!target_container) return;
+    const existing_status = document.querySelector(".fetch-status");
+    if (existing_status) existing_status.remove();
 
-    const existing_indicator = document.querySelector(".data-status-indicator");
-    if (existing_indicator) existing_indicator.remove();
+    const last_fetched_el = document.querySelector(".frequency-chart-last-fetched");
+    if (last_fetched_el) last_fetched_el.classList.remove("fetching");
 
-    if (is_stale) {
-        const indicator = document.createElement("div");
-        indicator.className = "data-status-indicator loading";
-        indicator.innerHTML = '<span class="spinner"></span> Fetching latest data...';
-        target_container.appendChild(indicator);
+    if (is_stale && last_fetched_el) {
+        const fetch_status = document.createElement("span");
+        fetch_status.className = "fetch-status";
+        fetch_status.innerHTML = ' — Fetching...<span class="fetch-spinner"></span>';
+        last_fetched_el.appendChild(fetch_status);
+        last_fetched_el.classList.add("fetching");
     }
 }
 

@@ -24,9 +24,7 @@ export let panel_width = DEFAULT_PANEL_WIDTH;
 let container;
 let is_animating = false;
 let settings_was_open = false;
-// True when the panel was closed by another tab taking over (not by the user).
-let was_closed_silently = false;
-// Callback invoked when the panel is restored after a silent close.
+// Callback invoked when the tab becomes visible with the panel open.
 let _on_panel_restore = null;
 
 // ============================================================
@@ -124,7 +122,7 @@ export function safe_send_message(message, callback) {
 }
 
 /**
- * Registers a callback to be invoked when the panel is restored after a silent close.
+ * Registers a callback to be invoked when the tab becomes visible with the panel open.
  * @param {Function} fn - The callback to register.
  */
 export function register_panel_restore_callback(fn) {
@@ -135,7 +133,6 @@ export function register_panel_restore_callback(fn) {
  * Toggles the panel open or closed, handling settings panel state and animations.
  */
 export function toggle_panel() {
-    console.log("toggling side panel");
     if (!container || is_animating) return;
     is_animating = true;
 
@@ -148,9 +145,7 @@ export function toggle_panel() {
 
         const do_close = () => {
             container.classList.add("hidden");
-            localStorage.setItem(EXPANSION_STATE_KEY, "false");
-            was_closed_silently = false;
-            safe_send_message({ action: Action.PANEL_CLOSED });
+            sessionStorage.setItem(EXPANSION_STATE_KEY, "false");
             document.body.style.marginRight = "0";
             const animation_handler = () => {
                 container.style.display = "none";
@@ -170,9 +165,7 @@ export function toggle_panel() {
         }
     } else {
         container.classList.remove("hidden");
-        localStorage.setItem(EXPANSION_STATE_KEY, "true");
-        was_closed_silently = false;
-        safe_send_message({ action: Action.PANEL_OPENED });
+        sessionStorage.setItem(EXPANSION_STATE_KEY, "true");
         container.style.display = "flex";
         update_body_margin();
 
@@ -213,25 +206,6 @@ export function toggle_panel() {
 }
 
 /**
- * Closes the panel without changing the user's saved preference.
- * Used when another tab takes over as the active panel.
- * Deliberately skips animation — the user is not watching this tab.
- */
-export function close_panel_silently() {
-    if (!container || container.classList.contains("hidden")) return;
-    was_closed_silently = true;
-    container.classList.add("hidden");
-    container.style.display = "none";
-    document.body.style.marginRight = "0";
-    const sp = document.getElementById("spark-settings-panel");
-    if (sp) {
-        sp.style.transition = "none";
-        sp.classList.remove("open");
-        requestAnimationFrame(() => { sp.style.transition = ""; });
-    }
-}
-
-/**
  * Injects the side panel widget into the page and wires up visibility-change handling.
  * @returns {HTMLElement} The calendar container element where content should be rendered.
  */
@@ -247,49 +221,26 @@ export function inject_embedded_ui() {
     const { container: new_container, calendar_container } = create_embedded_calendar_ui();
     container = new_container;
 
-    const saved_state = localStorage.getItem(EXPANSION_STATE_KEY);
-    const should_show_panel = saved_state === null || saved_state === "true";
+    const should_show_panel = sessionStorage.getItem(EXPANSION_STATE_KEY);
 
-    if (!should_show_panel) {
-        container.style.display = "none";
-        container.classList.add("hidden");
-    }
+    console.log("Should show panel?: ", should_show_panel);
 
     if (should_show_panel) {
         update_body_margin();
     } else {
+        container.style.display = "none";
+        container.classList.add("hidden");
         document.body.style.marginRight = "0";
     }
 
     document.body.appendChild(container);
 
-    // Claim the active panel slot if starting visible.
-    if (should_show_panel) {
-        safe_send_message({ action: Action.PANEL_OPENED });
-    }
-
     // Handle tab visibility changes.
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState !== "visible") return;
 
-        if (was_closed_silently) {
-            // This tab's panel was closed by a simultaneously-visible tab.
-            // Restore it and reclaim the active slot.
-            const state = localStorage.getItem(EXPANSION_STATE_KEY);
-            if (state === null || state === "true") {
-                was_closed_silently = false;
-                is_animating = false;
-                container.style.display = "flex";
-                container.classList.remove("hidden");
-                update_body_margin();
-                safe_send_message({ action: Action.PANEL_OPENED });
-                if (_on_panel_restore) _on_panel_restore();
-            }
-        } else if (container && !container.classList.contains("hidden")) {
-            // Panel was open when the user switched away — it was never closed.
-            // Reclaim the active slot (closes any other tab's panel if visible)
-            // and refresh data without any animation.
-            safe_send_message({ action: Action.PANEL_OPENED });
+        if (container && !container.classList.contains("hidden")) {
+            // Panel is open — refresh data when the user switches back to this tab.
             if (_on_panel_restore) _on_panel_restore();
         }
     });

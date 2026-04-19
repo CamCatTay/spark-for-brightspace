@@ -8,7 +8,6 @@ import {
     inject_embedded_ui,
     register_panel_restore_callback,
     toggle_panel,
-    close_panel_silently,
     panel_width,
 } from "./ui/panel.js";
 import {
@@ -209,15 +208,7 @@ chrome.runtime.onMessage.addListener(function(request) {
     if (request.action === Action.TOGGLE_PANEL) {
         toggle_panel();
     }
-    if (request.action === Action.CLOSE_PANEL) {
-        // Only close if this tab is currently visible — that means another tab
-        // is open side-by-side (e.g. separate window). If this tab is hidden
-        // (normal tab switch), leave the panel alone so it's still there when
-        // the user comes back.
-        if (document.visibilityState === "visible") {
-            close_panel_silently();
-        }
-    }
+
     if (request.action === Action.SETTINGS_OPENED) {
         // Don't open the settings panel on a tab whose main panel is currently hidden
         // (e.g. the inactive side of a split-screen setup).

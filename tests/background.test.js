@@ -2,6 +2,7 @@
 // Tests for src/background.js
 // Verifies message handler dispatch, chrome API calls, cross-tab broadcasting,
 // and the action button handler.
+// Note: panel open/closed state is managed per-tab via sessionStorage — no cross-tab panel sync.
 
 jest.mock('/src/api/brightspace.js', () => ({
     get_course_content: jest.fn()
@@ -23,7 +24,6 @@ global.chrome = {
 // Imported directly from background.js to guarantee parity — never duplicate these here
 const {
     SCROLL_POS_KEY,
-    ACTIVE_TAB_KEY,
     SETTINGS_OPEN_KEY,
     SETTINGS_VALUE_KEY,
     D2L_URL_FILTER,
@@ -119,69 +119,6 @@ describe(Action.OPEN_FAQ, () => {
     test('opens a new tab pointing to the FAQ URL', () => {
         on_message({ action: Action.OPEN_FAQ }, { tab: { id: 1 } }, jest.fn());
         expect(chrome.tabs.create).toHaveBeenCalledWith({ url: FAQ_URL });
-    });
-});
-
-// ============================================================
-// panelOpened
-// ============================================================
-
-describe(Action.PANEL_OPENED, () => {
-    test('stores the sender tab ID as the active tab', () => {
-        chrome.tabs.query.mockImplementation((q, cb) => cb([]));
-
-        on_message({ action: Action.PANEL_OPENED }, { tab: { id: 5 } }, jest.fn());
-
-        expect(chrome.storage.local.set).toHaveBeenCalledWith({ [ACTIVE_TAB_KEY]: 5 });
-    });
-
-    test('sends closePanel to other D2L tabs', () => {
-        const other_d2l_tab = make_d2l_tab(2);
-        chrome.tabs.query.mockImplementation((q, cb) => cb([other_d2l_tab]));
-
-        on_message({ action: Action.PANEL_OPENED }, { tab: { id: 5 } }, jest.fn());
-
-        expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(2, { action: Action.CLOSE_PANEL });
-    });
-
-    test('does not send closePanel back to the sender tab', () => {
-        const sender_tab = make_d2l_tab(5);
-        chrome.tabs.query.mockImplementation((q, cb) => cb([sender_tab]));
-
-        on_message({ action: Action.PANEL_OPENED }, { tab: { id: 5 } }, jest.fn());
-
-        expect(chrome.tabs.sendMessage).not.toHaveBeenCalled();
-    });
-
-    test('does not send closePanel to non-D2L tabs', () => {
-        const non_d2l = make_other_tab(9);
-        chrome.tabs.query.mockImplementation((q, cb) => cb([non_d2l]));
-
-        on_message({ action: Action.PANEL_OPENED }, { tab: { id: 5 } }, jest.fn());
-
-        expect(chrome.tabs.sendMessage).not.toHaveBeenCalled();
-    });
-});
-
-// ============================================================
-// panelClosed
-// ============================================================
-
-describe(Action.PANEL_CLOSED, () => {
-    test('removes the active tab key when the sender is the recorded active tab', () => {
-        chrome.storage.local.get.mockImplementation((keys, cb) => cb({ [ACTIVE_TAB_KEY]: 7 }));
-
-        on_message({ action: Action.PANEL_CLOSED }, { tab: { id: 7 } }, jest.fn());
-
-        expect(chrome.storage.local.remove).toHaveBeenCalledWith(ACTIVE_TAB_KEY);
-    });
-
-    test('does not remove the key when the sender is a different tab', () => {
-        chrome.storage.local.get.mockImplementation((keys, cb) => cb({ [ACTIVE_TAB_KEY]: 7 }));
-
-        on_message({ action: Action.PANEL_CLOSED }, { tab: { id: 99 } }, jest.fn());
-
-        expect(chrome.storage.local.remove).not.toHaveBeenCalled();
     });
 });
 

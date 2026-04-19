@@ -3,7 +3,6 @@
 
 export const Action = Object.freeze({
     // Background
-    CLOSE_PANEL: "close_panel",
     FETCH_STARTED: "fetch_started",
     COURSE_DATA_UPDATED: "course_data_updated",
     SETTINGS_CHANGED: "settings_changed",
@@ -24,10 +23,6 @@ export const Action = Object.freeze({
     BROADCAST_SETTINGS_CLOSED: "broadcast_settings_closed",
     OPEN_FAQ: "open_faq",
     BROADCAST_SETTINGS_CHANGED: "broadcast_settings_changed",
-
-    // Panel
-    PANEL_CLOSED: "panel_closed",
-    PANEL_OPENED: "panel_opened",
 })
 
 // Exports for testing

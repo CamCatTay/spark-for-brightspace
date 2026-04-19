@@ -10,7 +10,6 @@ import { Action } from "./shared/actions";
 // ============================================================
 
 const SCROLL_POS_KEY = "spark-scroll-pos";
-const ACTIVE_TAB_KEY = "spark-active-panel-tab";
 const SETTINGS_OPEN_KEY = "spark-settings-open";
 const SETTINGS_VALUE_KEY = "spark-user-settings";
 const D2L_URL_FILTER = "/d2l/";
@@ -46,24 +45,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
     if (request.action === Action.OPEN_FAQ) {
         chrome.tabs.create({ url: FAQ_URL });
-        return;
-    }
-
-    // A tab opened its panel — record it and tell every other D2L tab to close.
-    if (request.action === Action.PANEL_OPENED) {
-        const active_tab_id = sender.tab.id;
-        chrome.storage.local.set({ [ACTIVE_TAB_KEY]: active_tab_id });
-        broadcast_to_d2l_tabs(active_tab_id, { action: Action.CLOSE_PANEL });
-        return;
-    }
-
-    // A tab explicitly closed its panel — clear the active record.
-    if (request.action === Action.PANEL_CLOSED) {
-        chrome.storage.local.get([ACTIVE_TAB_KEY], function(result) {
-            if (result[ACTIVE_TAB_KEY] === sender.tab.id) {
-                chrome.storage.local.remove(ACTIVE_TAB_KEY);
-            }
-        });
         return;
     }
 
@@ -127,7 +108,6 @@ chrome.action.onClicked.addListener((tab) => {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         SCROLL_POS_KEY,
-        ACTIVE_TAB_KEY,
         SETTINGS_OPEN_KEY,
         SETTINGS_VALUE_KEY,
         D2L_URL_FILTER,

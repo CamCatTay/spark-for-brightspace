@@ -226,10 +226,8 @@ export function inject_embedded_ui() {
     console.log("Should show panel?: ", should_show_panel);
 
     if (should_show_panel) {
-        console.log("Showing!");
         update_body_margin();
     } else {
-        console.log("Hiding!");
         container.style.display = "none";
         container.classList.add("hidden");
         document.body.style.marginRight = "0";

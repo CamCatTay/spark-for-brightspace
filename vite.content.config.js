@@ -7,6 +7,7 @@ import { resolve } from "path";
 
 export default defineConfig({
     build: {
+        minify: false,
         outDir: "dist",
         emptyOutDir: false,
         rollupOptions: {

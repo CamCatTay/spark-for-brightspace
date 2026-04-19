@@ -4,33 +4,35 @@
 //
 // Usage: npm run package
 
-const fs        = require('fs');
-const path      = require('path');
-const AdmZip    = require('adm-zip');
+const fs      = require("fs");
+const path    = require("path");
+const AdmZip  = require("adm-zip");
 
-const root    = path.join(__dirname, '..');
-const version = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8')).version;
-const outFile = path.join(root, `spark-for-brightspace-v${version}.zip`);
+const FILE_ENCODING = "utf8";
+
+const ROOT     = path.join(__dirname, "..");
+const VERSION  = JSON.parse(fs.readFileSync(path.join(ROOT, "manifest.json"), FILE_ENCODING)).version;
+const OUT_FILE = path.join(ROOT, `spark-for-brightspace-v${VERSION}.zip`);
 
 // Files and folders that belong in the extension package
-const include = ['manifest.json', 'dist', 'styles', 'icons'];
+const INCLUDE = ["manifest.json", "dist", "styles", "icons"];
 
-if (fs.existsSync(outFile)) {
-    fs.rmSync(outFile);
-    console.log(`Removed existing ${path.basename(outFile)}`);
+if (fs.existsSync(OUT_FILE)) {
+    fs.rmSync(OUT_FILE);
+    console.log(`Removed existing ${path.basename(OUT_FILE)}`);
 }
 
-const zip = new AdmZip();
+const ZIP = new AdmZip();
 
-for (const entry of include) {
-    const entryPath = path.join(root, entry);
-    const stat = fs.statSync(entryPath);
+for (const entry of INCLUDE) {
+    const entry_path = path.join(ROOT, entry);
+    const stat = fs.statSync(entry_path);
     if (stat.isDirectory()) {
-        zip.addLocalFolder(entryPath, entry);
+        ZIP.addLocalFolder(entry_path, entry);
     } else {
-        zip.addLocalFile(entryPath);
+        ZIP.addLocalFile(entry_path);
     }
 }
 
-zip.writeZip(outFile);
-console.log(`\nRelease package created: spark-for-brightspace-v${version}.zip`);
+ZIP.writeZip(OUT_FILE);
+console.log(`\nRelease package created: spark-for-brightspace-v${VERSION}.zip`);

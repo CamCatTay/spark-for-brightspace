@@ -86,8 +86,6 @@ function on_page_ready() {
     // Returns nothing. Reads the stored scroll position and applies it to the calendar container.
     // Falls back to scrolling to today's date on first open when no position has been saved.
     function restore_scroll_position() {
-        // May enable later not sure if I like the undeterministic nature of it
-        return
         const saved = parseInt(sessionStorage.getItem(SCROLL_POS_SESSION_KEY) || "0", 10);
         console.log(saved);
         if (saved > 0) {
@@ -111,7 +109,7 @@ function on_page_ready() {
             }
             if (course_data && Object.keys(course_data).length > 0) {
                 update_gui(course_data, fetch_in_flight || global_fetch_in_flight);
-                restore_scroll_position()
+                // restore_scroll_position()
             }
         });
     });
@@ -151,7 +149,7 @@ function on_page_ready() {
                 chrome.storage.local.set({ [COURSE_DATA_KEY]: course_data, [LAST_FETCHED_KEY]: fetch_time.toISOString() }, function() {
                     last_completed_fetch_time = Date.now();
                     update_gui(course_data, false);
-                    restore_scroll_position();
+                    // restore_scroll_position();
                     safe_send_message({ action: Action.BROADCAST_COURSE_DATA_UPDATED });
                 });
             }
@@ -171,7 +169,7 @@ function on_page_ready() {
     // Restore scroll position whenever the panel is opened (including first open on a new tab).
     /*
     register_panel_open_callback(() => {
-        restore_scroll_position();
+        // restore_scroll_position(); Commented out in a few places because Im not sure I like how they function
     });
     */
 

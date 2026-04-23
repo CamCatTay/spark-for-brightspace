@@ -7,8 +7,6 @@ const {
     getDateKey
 } = require('../src/utils/date-utils.js');
 
-// ─── formatTimeFromDate ───────────────────────────────────────────────────────
-
 describe('formatTimeFromDate', () => {
     test('returns "No time" for null', () => {
         expect(formatTimeFromDate(null)).toBe('No time');
@@ -30,8 +28,6 @@ describe('formatTimeFromDate', () => {
     });
 });
 
-// ─── formatFullDatetime ───────────────────────────────────────────────────────
-
 describe('formatFullDatetime', () => {
     test('returns "No date" for null', () => {
         expect(formatFullDatetime(null)).toBe('No date');
@@ -52,8 +48,6 @@ describe('formatFullDatetime', () => {
         expect(result).toMatch(/Jan/);
     });
 });
-
-// ─── getDateOnly ──────────────────────────────────────────────────────────────
 
 describe('getDateOnly', () => {
     test('returns null for null input', () => {
@@ -80,16 +74,12 @@ describe('getDateOnly', () => {
     });
 });
 
-// ─── getDateKey ───────────────────────────────────────────────────────────────
-
 describe('getDateKey', () => {
     test('returns a YYYY-MM-DD formatted string', () => {
         const date = new Date('2025-11-03T00:00:00.000Z');
         expect(getDateKey(date)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
 });
-
-// ─── getWeekStart ─────────────────────────────────────────────────────────────
 
 describe('getWeekStart', () => {
     test('returns a Sunday for a Wednesday input', () => {
@@ -105,8 +95,6 @@ describe('getWeekStart', () => {
         expect(result.getDate()).toBe(13);
     });
 });
-
-// ─── formatDateHeader ─────────────────────────────────────────────────────────
 
 describe('formatDateHeader', () => {
     test('labels today as "Today"', () => {

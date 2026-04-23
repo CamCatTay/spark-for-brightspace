@@ -8,8 +8,6 @@ beforeEach(() => {
     colorUtils = require('../src/utils/color-utils.js');
 });
 
-// ─── COLOR_POOL ───────────────────────────────────────────────────────────────
-
 describe('COLOR_POOL', () => {
     test('contains at least one color', () => {
         expect(colorUtils.COLOR_POOL.length).toBeGreaterThan(0);
@@ -21,8 +19,6 @@ describe('COLOR_POOL', () => {
         });
     });
 });
-
-// ─── getColorFromPool ─────────────────────────────────────────────────────────
 
 describe('getColorFromPool', () => {
     test('returns the first color for index 0', () => {
@@ -40,8 +36,6 @@ describe('getColorFromPool', () => {
         expect(result).toMatch(/^#[0-9a-fA-F]{6}$/);
     });
 });
-
-// ─── ensureCourseColorsAssigned ───────────────────────────────────────────────
 
 describe('ensureCourseColorsAssigned', () => {
     test('assigns a color to each course', () => {
@@ -75,8 +69,6 @@ describe('ensureCourseColorsAssigned', () => {
         expect(colorUtils.getCourseColor('Stable Course')).toBe(firstColor);
     });
 });
-
-// ─── getCourseColor ───────────────────────────────────────────────────────────
 
 describe('getCourseColor', () => {
     test('returns the grey fallback for an unknown course', () => {

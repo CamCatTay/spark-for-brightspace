@@ -1,13 +1,7 @@
-// brightspace.test.js
-// Tests for src/api/brightspace.js
 // Internal functions are exposed via the module.exports compat block at the bottom of the source.
 
 let brightspace;
 let ActivityType;
-
-// ============================================================
-// Mock Helpers
-// ============================================================
 
 // Simulates a fetch response that returns JSON (no .ok check needed by caller)
 function mock_json(data) {
@@ -35,10 +29,6 @@ afterEach(() => {
     jest.restoreAllMocks();
 });
 
-// ============================================================
-// clear_past_start_date
-// ============================================================
-
 describe('clear_past_start_date', () => {
     test('returns null for null input', () => {
         expect(brightspace.clear_past_start_date(null)).toBeNull();
@@ -63,10 +53,6 @@ describe('clear_past_start_date', () => {
         expect(brightspace.clear_past_start_date(future)).toBe(future);
     });
 });
-
-// ============================================================
-// get_brightspace_data
-// ============================================================
 
 describe('get_brightspace_data', () => {
     test('returns a plain array response directly', async () => {
@@ -120,10 +106,6 @@ describe('get_brightspace_data', () => {
     });
 });
 
-// ============================================================
-// get_quiz_attempt_count
-// ============================================================
-
 describe('get_quiz_attempt_count', () => {
     test('returns 0 when the HTTP response is not OK', async () => {
         global.fetch.mockResolvedValue({ ok: false, text: jest.fn() });
@@ -173,10 +155,6 @@ describe('get_quiz_attempt_count', () => {
     });
 });
 
-// ============================================================
-// get_assignment_submissions
-// ============================================================
-
 describe('get_assignment_submissions', () => {
     test('returns the submissions array on success', async () => {
         const submissions = [{ Submissions: [{ Id: '1' }] }];
@@ -223,10 +201,6 @@ describe('get_assignment_submissions', () => {
     });
 });
 
-// ============================================================
-// get_assignment_submissions_from_history
-// ============================================================
-
 describe('get_assignment_submissions_from_history', () => {
     test('returns a synthetic submission when the history table has a data row', async () => {
         const html = `<table><tr><td class="d_gn d_gt">file.pdf</td></tr></table>`;
@@ -258,10 +232,6 @@ describe('get_assignment_submissions_from_history', () => {
         expect(result).toEqual([]);
     });
 });
-
-// ============================================================
-// build_course_data
-// ============================================================
 
 // Must match the OrgUnit Type.Id for a standard course section in the Brightspace API
 const COURSE_ORG_UNIT_TYPE_ID = 3;
@@ -358,10 +328,6 @@ describe('build_course_data', () => {
         expect(spy).toHaveBeenCalledWith(expect.stringContaining('99'));
     });
 });
-
-// ============================================================
-// get_course_content
-// ============================================================
 
 describe('get_course_content', () => {
     const BASE_URL = 'https://learn.example.com';

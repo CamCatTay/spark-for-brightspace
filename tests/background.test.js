@@ -1,5 +1,3 @@
-// background.test.js
-// Tests for src/background.js
 // Verifies message handler dispatch, chrome API calls, cross-tab broadcasting,
 // and the action button handler.
 // Note: panel open/closed state is managed per-tab via sessionStorage — no cross-tab panel sync.
@@ -7,10 +5,6 @@
 jest.mock('/src/api/brightspace.js', () => ({
     get_course_content: jest.fn()
 }));
-
-// ============================================================
-// Constants
-// ============================================================
 
 // Stub chrome before the require so background.js side effects don't throw.
 // beforeEach replaces this with proper jest mocks for each test.
@@ -30,10 +24,6 @@ const {
 
 const { Action } = require("../src/shared/actions.js");
 
-// ============================================================
-// Mock Helpers
-// ============================================================
-
 // Returns a fake tab whose URL contains D2L_URL_FILTER
 function make_d2l_tab(id) {
     return { id, url: `https://example.com${D2L_URL_FILTER}home` };
@@ -43,10 +33,6 @@ function make_d2l_tab(id) {
 function make_other_tab(id) {
     return { id, url: 'https://example.com/other' };
 }
-
-// ============================================================
-// Setup
-// ============================================================
 
 let on_message;
 let on_action_clicked;
@@ -84,10 +70,6 @@ afterEach(() => {
     jest.restoreAllMocks();
 });
 
-// ============================================================
-// fetchCourses
-// ============================================================
-
 describe(Action.FETCH_COURSES, () => {
     test('calls get_course_content with the sender tab URL and sends the result back', async () => {
         const course_data  = { 101: { name: 'Math 101' } };
@@ -109,20 +91,12 @@ describe(Action.FETCH_COURSES, () => {
     });
 });
 
-// ============================================================
-// openFaq
-// ============================================================
-
 describe(Action.OPEN_FAQ, () => {
     test('opens a new tab pointing to the FAQ URL', () => {
         on_message({ action: Action.OPEN_FAQ }, { tab: { id: 1 } }, jest.fn());
         expect(chrome.tabs.create).toHaveBeenCalledWith({ url: FAQ_URL });
     });
 });
-
-// ============================================================
-// broadcastFetchStarted
-// ============================================================
 
 describe(Action.BROADCAST_FETCH_STARTED, () => {
     test('sends fetchStarted to other D2L tabs', () => {
@@ -135,10 +109,6 @@ describe(Action.BROADCAST_FETCH_STARTED, () => {
     });
 });
 
-// ============================================================
-// broadcastCourseDataUpdated
-// ============================================================
-
 describe(Action.BROADCAST_COURSE_DATA_UPDATED, () => {
     test('sends courseDataUpdated to other D2L tabs', () => {
         const other_d2l_tab = make_d2l_tab(2);
@@ -149,10 +119,6 @@ describe(Action.BROADCAST_COURSE_DATA_UPDATED, () => {
         expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(2, { action: Action.COURSE_DATA_UPDATED });
     });
 });
-
-// ============================================================
-// broadcastSettingsChanged
-// ============================================================
 
 describe(Action.BROADCAST_SETTINGS_CHANGED, () => {
     test('persists the new settings object to local storage', () => {
@@ -174,10 +140,6 @@ describe(Action.BROADCAST_SETTINGS_CHANGED, () => {
         expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(2, { action: Action.SETTINGS_CHANGED, settings });
     });
 });
-
-// ============================================================
-// Action Button Handler
-// ============================================================
 
 describe('chrome.action.onClicked', () => {
     test('sends toggle_panel when the clicked tab is a D2L tab', () => {

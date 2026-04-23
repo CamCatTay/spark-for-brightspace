@@ -1,4 +1,3 @@
-// actions.js
 // contains the enums used for chrome message passing
 
 export const Action = Object.freeze({

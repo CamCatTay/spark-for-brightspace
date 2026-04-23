@@ -1,4 +1,3 @@
-// components.js
 // Reusable UI component factories: course cards, item rows, date headers,
 // settings panel, and course name formatting utilities.
 
@@ -7,12 +6,6 @@ import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader, 
 import { getCourseColor, ensureCourseColorsAssigned } from "../utils/color-utils.js";
 import { safe_send_message, panel_width } from "./panel.js";
 
-// ============================================================
-// Constants
-// ============================================================
-
-// Words that mark the start of administrative suffixes in course names.
-// Everything from the first matching word onward will be stripped.
 const COURSE_NAME_TRIM_WORDS = [
     "Section",
     "XLS",
@@ -27,25 +20,13 @@ const DAYS_IN_WEEK = 7;
 const CALENDAR_DAYS_BACK_DEFAULT = 7;
 const SETTINGS_MAX_DAYS_BACK = 365;
 
-// Toggle to show/hide the "Last fetched" timestamp in the frequency chart.
-const SHOW_LAST_FETCHED = true;
-
-// Color applied to due times when the item is due today.
+const SHOW_LAST_FETCHED = true; // Show last fetched time stamp
 const DUE_TODAY_COLOR = "#e8900c";
-
-// Color applied to due times when the item is due tomorrow.
 const DUE_TOMORROW_COLOR = "#e7c21d";
-
-// Color applied to due times when the item is incomplete and past due.
 const OVERDUE_COLOR = "#e84040";
-
-// Short month names used for display in the frequency chart week label and date matching.
 const MONTH_NAMES_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-// Short day abbreviations used as column labels in the frequency chart.
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// How the key is displayed visually
 const ITEM_TYPES = [
     { key: "assignments", label: "Assignments" },
     { key: "quizzes", label: "Quizzes" },
@@ -59,10 +40,6 @@ const SHOW_COMPLETED_STORAGE_KEY = "d2l-todolist-show-completed";
 // Tab-local, session-scoped (sessionStorage — NOT synced across tabs):
 const HIDDEN_COURSES_SESSION_KEY = "spark-hidden-courses";
 const HIDDEN_TYPES_SESSION_KEY = "spark-hidden-types";
-
-// ============================================================
-// Module State
-// ============================================================
 
 // Callbacks registered by content.js so settings UI can trigger refresh/re-render
 let _on_refresh = null;
@@ -79,11 +56,6 @@ if (!Number.isFinite(CALENDAR_START_DAYS_BACK) || CALENDAR_START_DAYS_BACK < 0) 
 // Default true: show completed items unless the user has explicitly turned it off.
 let show_completed_items = localStorage.getItem(SHOW_COMPLETED_STORAGE_KEY) !== "false";
 
-// ============================================================
-// Internal Helpers
-// ============================================================
-
-// Returns raw course name without section and other course details
 function truncate_course_name(name) {
     if (!name) return name;
     const pattern = COURSE_NAME_TRIM_WORDS
@@ -92,12 +64,6 @@ function truncate_course_name(name) {
     return name.replace(new RegExp(`\\s*(${pattern})\\b.*$`, "i"), "").trim();
 }
 
-// ============================================================
-// GUI
-// ============================================================
-
-// Builds and appends a color-coded scrollbar indicator into calendar_container's parent,
-// with one notch per calendar item. Registers a scroll listener to keep positions in sync.
 function create_scrollbar_indicator(calendar_container) {
     const existing_indicator = calendar_container.parentElement.querySelector(".scrollbar-indicator");
     if (existing_indicator) existing_indicator.remove();
@@ -135,7 +101,6 @@ function create_scrollbar_indicator(calendar_container) {
     });
 }
 
-// Recalculates and updates the top position of each notch after calendar content has been re-rendered.
 function update_scrollbar_indicator(calendar_container) {
     const indicator = calendar_container.parentElement.querySelector(".scrollbar-indicator");
     if (!indicator) return;
@@ -153,9 +118,6 @@ function update_scrollbar_indicator(calendar_container) {
     });
 }
 
-// Builds and returns a calendar item element for the given item and course.
-// item is expected to have due_date, name, url, completed, and optionally start_date.
-// course is expected to have a name property.
 function create_assignment_element(item, course) {
     const assignment_container = document.createElement("a");
     assignment_container.href = item.url;
@@ -244,14 +206,10 @@ function create_assignment_element(item, course) {
     return assignment_container;
 }
 
-// Renders the GUI in an empty initial state, which shows the stale/loading indicator.
 export function initialize_gui() {
     update_gui({}, true);
 }
 
-// Shows or removes the inline "Fetching..." label and spinner in the last-fetched footer.
-// When is_stale is true, appends a .fetch-status span and tints the footer orange.
-// When is_stale is false, removes the label and restores the default footer color.
 export function add_data_status_indicator(is_stale) {
     const existing_status = document.querySelector(".fetch-status");
     if (existing_status) existing_status.remove();
@@ -268,11 +226,6 @@ export function add_data_status_indicator(is_stale) {
     }
 }
 
-/**
- * Re-renders the full calendar panel from the provided course data.
- * @param {Object} course_data - Map of courseId → course object with assignments/quizzes/discussions.
- * @param {boolean} is_from_cache - When true, shows the "Fetching latest data..." stale indicator.
- */
 export function update_gui(course_data, is_from_cache = false) {
     const calendar_container = document.getElementById("calendar-container");
     if (!calendar_container) return;
@@ -388,17 +341,10 @@ export function update_gui(course_data, is_from_cache = false) {
     create_scrollbar_indicator(calendar_container);
 }
 
-// ============================================================
-// Frequency Chart
-// ============================================================
-
-// Updates the last-fetched timestamp used by the frequency chart footer
 export function set_last_fetched_time(t) {
     last_fetched_time = t;
 }
 
-// Builds the frequency chart widget and inserts it at the top of calendar_container.
-// items_by_date is a map of ISO date string → array of { item, course } objects.
 function create_frequency_chart(calendar_container, items_by_date, initial_week_offset = 0) {
     // Get the week containing today
     const today = new Date();
@@ -545,8 +491,6 @@ function create_frequency_chart(calendar_container, items_by_date, initial_week_
     }
 }
 
-// Renders the frequency chart grid for the given week offset into chart_container.
-// today_week_start may be a Date or a numeric timestamp.
 function render_frequency_chart(chart_container, items_by_date, today_week_start, week_offset, calendar_container) {
     try {
         const grid = chart_container.querySelector("#frequency-chart-grid");
@@ -642,7 +586,6 @@ function render_frequency_chart(chart_container, items_by_date, today_week_start
     }
 }
 
-// Scrolls calendar_container to the date header matching target_date.
 function scroll_to_date(calendar_container, target_date) {
     try {
         const date_headers = Array.from(calendar_container.querySelectorAll(".calendar-date-header"));
@@ -691,7 +634,6 @@ function scroll_to_date(calendar_container, target_date) {
     }
 }
 
-// Updates the prev/next navigation buttons based on the current week offset.
 function update_frequency_nav_buttons(chart_container) {
     try {
         const prev_btn = chart_container.querySelector("#frequency-chart-prev");
@@ -710,24 +652,16 @@ function update_frequency_nav_buttons(chart_container) {
     }
 }
 
-// ============================================================
-// Settings
-
-// Scrolls the calendar to today's date. Used on first panel open when no scroll
-// position has been saved yet for this session.
 export function scroll_to_today() {
     const cal = document.getElementById("calendar-container");
     if (cal) scroll_to_date(cal, new Date());
 }
-// ============================================================
 
-// Registers the refresh and re-render callbacks provided by content.js
 export function register_ui_callbacks({ on_refresh, on_rerender }) {
     _on_refresh = on_refresh;
     _on_rerender = on_rerender;
 }
 
-// Returns a plain object snapshot of settings that are synced across tabs.
 function get_synced_settings() {
     return {
         days_back: CALENDAR_START_DAYS_BACK,
@@ -735,10 +669,6 @@ function get_synced_settings() {
     };
 }
 
-// Applies synced settings (from chrome.storage or a broadcast message) to
-// in-memory state, localStorage, and any currently-open settings panel UI.
-// Only covers settings that are cross-tab synced. Tab-local filters (hidden
-// courses, hidden types) are managed independently via sessionStorage.
 export function apply_settings({ days_back, show_completed }) {
     CALENDAR_START_DAYS_BACK = days_back;
     localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, days_back.toString());
@@ -755,7 +685,6 @@ export function apply_settings({ days_back, show_completed }) {
     if (completed_toggle) completed_toggle.checked = show_completed_items;
 }
 
-// Builds and returns the settings panel DOM element.
 export function build_settings_panel() {
     const panel = document.createElement("div");
     panel.id = "spark-settings-panel";
@@ -925,9 +854,6 @@ export function build_settings_panel() {
     return panel;
 }
 
-// Populates list_el (or the DOM element "spark-settings-courses-list") with a
-// checkbox row for each course in course_data. list_el is passed directly when
-// the panel isn't yet in the DOM.
 function update_settings_course_list(course_data, list_el = null) {
     const list = list_el || document.getElementById("spark-settings-courses-list");
     if (!list) return;

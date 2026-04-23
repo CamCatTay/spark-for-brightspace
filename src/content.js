@@ -1,4 +1,3 @@
-// content.js
 // Injected into Brightspace pages. Bootstraps the side panel, triggers data
 // fetches via the background worker, and manages panel lifecycle.
 
@@ -21,38 +20,24 @@ import {
     scroll_to_today,
 } from "./ui/components.js";
 
-// ============================================================
-// Constants
-// ============================================================
-
 const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
 const SETTINGS_VALUE_KEY = "spark-user-settings";
 // Tab-local, session-scoped (sessionStorage — NOT synced across tabs):
 const SCROLL_POS_SESSION_KEY = "spark-scroll-pos";
 
-// ============================================================
-// State
-// ============================================================
-
 let fetch_in_flight = false;
 let global_fetch_in_flight = false; // true when another tab's fetch is still running
 let _refresh_fn = null;
 let _rerender_fn = null;
 
-// Returns nothing. Calls the registered refresh function if one has been set.
 function trigger_refresh() {
     if (_refresh_fn) _refresh_fn();
 }
 
-// Returns nothing. Calls the registered re-render function if one has been set.
 function trigger_rerender() {
     if (_rerender_fn) _rerender_fn();
 }
-
-// ============================================================
-// Page Load
-// ============================================================
 
 window.addEventListener("load", () => {
     let course_data = {};
@@ -160,10 +145,6 @@ window.addEventListener("load", () => {
     // Fetch fresh data from API
     _refresh_fn();
 });
-
-// ============================================================
-// Message Handler
-// ============================================================
 
 // Listens for messages from the background service worker and dispatches to the appropriate handler
 chrome.runtime.onMessage.addListener(function(request) {

@@ -1,70 +1,70 @@
 # Spark for Brightspace
 
-A Chrome extension that adds a side panel to D2L (Brightspace) showing all your upcoming due dates across every enrolled course, without digging through individual course pages.
+A Chrome extension that aggregates assignment due dates, quizzes, and discussion deadlines from all your enrolled D2L/Brightspace courses into a single chronological side panel.
 
-## What It Does
+D2L buries due dates across individual course pages. This fixes that.
 
-D2L buries assignment due dates across multiple pages and course tabs.
-This extension fixes that by aggregating assignments, quizzes, and discussion deadlines from all your enrolled courses into a single chronological view.
+**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/spark-for-brightspace/blajgfkdhpfijoemghigapachifplibd)** · Works on any Chromium browser (Chrome, Edge, Brave, Opera)
 
-- Fetches assignments, quizzes, and discussions from all enrolled courses
-- Chronological calendar view with date headers and color-coded course indicators
-- Frequency bar chart showing which days of the week have the most work due
-- Color-coded urgency indicators (due soon, overdue)
-- Persistent side panel — stays visible as you navigate between pages
-- Works directly on D2L without any extra setup
+---
 
-## Installation (Manual or Web Store)
+## Features
 
-Note: This extension will work on any Chromium-based browser.
-(Google Chrome, Microsoft Edge, Opera, Brave, etc.)
+- All upcoming due dates from every enrolled course in one view
+- Chronological calendar with date headers ("Today", "Tomorrow")
+- Color-coded course indicators — consistent colors per course
+- Urgency highlighting: due today (orange), due tomorrow (yellow), overdue (red)
+- Frequency bar chart — see which days of the week are the most loaded
+- Resizable, persistent side panel that stays visible as you navigate
+- Syncs across multiple open D2L tabs (only one panel active at a time)
+- Settings: hide specific courses or item types, adjust how far back to look
 
-Install from Google Web Store:
+---
 
-Search "Spark for Brightspace" or use this [Link](https://chromewebstore.google.com/detail/spark-for-brightspace/blajgfkdhpfijoemghigapachifplibd)
+## Install Manually (for development)
 
-Install manually:
-
-1. Clone or download this repo
 ```bash
 git clone https://github.com/CamCatTay/spark-for-brightspace.git
-```
-
-2. Install dependencies and build the extension
-```bash
+cd spark-for-brightspace
 npm install
 npm run build
 ```
 
-3. Open Chrome and navigate to `chrome://extensions/`
-4. Enable Developer Mode
-5. Click Load unpacked and select the project folder
-6. Navigate to any D2L course page — the side panel icon will appear
+1. Open `chrome://extensions/`
+2. Enable **Developer Mode**
+3. Click **Load unpacked** → select the repo root
+4. Navigate to any D2L page — the Spark icon appears in the toolbar
 
-After any source change, run `npm run build` again and click the reload icon on the extension card.
+After any source change: `npm run build`, then click the reload icon on the extension card in `chrome://extensions/`.
 
-## How It Works
+---
 
-The extension runs on D2L (Brightspace) pages and uses the D2L REST API to fetch enrollment and activity data for all your courses.
-Results are displayed in a persistent side panel so you can stay oriented without leaving the page.
-A background service worker handles API calls and keeps the panel in sync across multiple open D2L tabs.
+## Docs
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — how to work on this project
+- [ARCHITECTURE.md](ARCHITECTURE.md) — how the code is structured and why
+
+---
 
 ## Roadmap
 
-- [x] Fetch assignments from all courses
-- [x] Side panel with due date display
-- [x] Frequency graph to see what days of the week are the most dense
-- [x] Color coded course names and notch indicators on scroll bar
-- [x] Color-coded urgency indicators (due soon, overdue)
+- [x] Fetch assignments, quizzes, and discussions from all courses
+- [x] Chronological calendar view
+- [x] Frequency chart
+- [x] Color-coded courses + scrollbar notch indicators
+- [x] Urgency indicators
 - [ ] Grade display alongside assignments
 - [ ] Notifications / reminders for upcoming deadlines
 - [ ] Export to calendar (Google Calendar / .ics)
 
-## Contributing
+---
+
+## Feedback
 
 Found a bug or have a feature idea? Open an issue. This is a side project but feedback is welcome.
 
+---
+
 ## License
 
-See [LICENSE](LICENSE) for full terms. Personal and educational use is permitted.
-Redistribution and publishing under another identity is not.
+See [LICENSE](LICENSE). Personal and educational use is permitted. Redistribution or publishing under another identity is not.

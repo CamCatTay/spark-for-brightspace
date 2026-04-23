@@ -1,13 +1,8 @@
-// panel.js
 // Builds and controls the side panel DOM: tab switching, resize handling,
 // scroll persistence, and rendering course content into the panel.
 
 import { Action } from "../shared/actions.js";
 import { build_settings_panel } from "./components.js";
-
-// ============================================================
-// Constants
-// ============================================================
 
 const EXPANSION_STATE_KEY = "d2l-todolist-expanded";
 const PANEL_WIDTH_KEY = "d2l-todolist-width";
@@ -18,23 +13,14 @@ const MIN_PANEL_WIDTH = 250;
 const PANEL_SLIDE_IN_MS = 400;
 const SETTINGS_TRANSITION_MS = 250;
 
-// ============================================================
-// Module State
-// ============================================================
-
 export let panel_width = DEFAULT_PANEL_WIDTH;
 let container;
 let toggle_btn = null;
 let is_animating = false;
 let settings_was_open = false;
-// Callback invoked when the tab becomes visible with the panel open.
 let _on_panel_restore = null;
-// Callback invoked whenever the panel is opened (toggled open or restored).
 let _on_panel_open = null;
 
-// ============================================================
-// Internal Helpers
-// ============================================================
 
 // Updates the document body's right margin to match the current panel width.
 function update_body_margin() {
@@ -120,7 +106,6 @@ function set_toggle_top(top_px) {
     localStorage.setItem(TOGGLE_BTN_TOP_KEY, clamped.toString());
 }
 
-// Creates and returns the toggle button DOM element that sits at the panel edge.
 function create_toggle_button() {
     const existing = document.getElementById(TOGGLE_BTN_ID);
     if (existing) existing.remove();
@@ -169,10 +154,6 @@ function create_toggle_button() {
 
     return btn;
 }
-
-// ============================================================
-// Exports
-// ============================================================
 
 /**
  * Sends a message to the extension runtime, swallowing invalidated-context errors.

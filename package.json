@@ -1,6 +1,6 @@
 {
   "name": "spark-for-brightspace",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A productivity extension for Brightspace.",
   "scripts": {
     "test": "jest",

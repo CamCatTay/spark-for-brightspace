@@ -7,6 +7,8 @@ import { Action } from "./shared/actions";
 const SETTINGS_VALUE_KEY = "spark-user-settings";
 const D2L_URL_FILTER = "/d2l/";
 const FAQ_URL = "https://camcattay.github.io/spark-for-brightspace/faq.html";
+const SPARK_INITIALIZED_FLAG = "__spark_initialized__";
+const SESSION_WORKER_INITIALIZED_KEY = "worker_initialized";
 
 function broadcast_to_d2l_tabs(sender_tab_id, message) {
     chrome.tabs.query({}, function(tabs) {
@@ -58,10 +60,41 @@ chrome.action.onClicked.addListener((tab) => {
     }
 });
 
+// Runs once per service-worker lifecycle (session storage is wiped on first install,
+// extension re-enable, and browser restart). Injects the content script into any
+// already-open D2L tabs that don't have it yet, so users never need to reload.
+chrome.storage.session.get([SESSION_WORKER_INITIALIZED_KEY], (result) => {
+    if (result[SESSION_WORKER_INITIALIZED_KEY]) return;
+    chrome.storage.session.set({ [SESSION_WORKER_INITIALIZED_KEY]: true });
+    chrome.tabs.query({}, function(tabs) {
+        tabs.forEach(tab => {
+            if (!tab.url || !tab.url.includes(D2L_URL_FILTER)) return;
+            // Check if the content script is already running before injecting to avoid duplicates.
+            chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: (flag) => window[flag] === true,
+                args: [SPARK_INITIALIZED_FLAG],
+            }).then(results => {
+                if (results && results[0] && results[0].result === true) return;
+                chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ["/dist/content.js"]
+                }).catch(() => {});
+                chrome.scripting.insertCSS({
+                    target: { tabId: tab.id },
+                    files: ["/styles/sidepanel.css"]
+                }).catch(() => {});
+            }).catch(() => {});
+        });
+    });
+});
+
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         SETTINGS_VALUE_KEY,
         D2L_URL_FILTER,
         FAQ_URL,
+        SPARK_INITIALIZED_FLAG,
+        SESSION_WORKER_INITIALIZED_KEY,
     };
 }

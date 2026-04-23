@@ -11,7 +11,10 @@ jest.mock('/src/api/brightspace.js', () => ({
 global.chrome = {
     runtime: { onMessage: { addListener: () => {} } },
     tabs:    { query: () => {}, sendMessage: () => {}, create: () => {} },
-    storage: { local: { set: () => {}, get: () => {}, remove: () => {} } },
+    storage: {
+        local:   { set: () => {}, get: () => {}, remove: () => {} },
+        session: { set: () => {}, get: (_keys, cb) => cb({}) }
+    },
     action:  { onClicked: { addListener: () => {} } }
 };
 
@@ -53,6 +56,10 @@ beforeEach(() => {
                 set: jest.fn(),
                 get: jest.fn(),
                 remove: jest.fn()
+            },
+            session: {
+                set: jest.fn(),
+                get: jest.fn().mockImplementation((_keys, cb) => cb({}))
             }
         },
         action: { onClicked: { addListener: jest.fn() } }

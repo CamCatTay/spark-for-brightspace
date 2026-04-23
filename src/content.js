@@ -25,11 +25,20 @@ const LAST_FETCHED_KEY = "spark-last-fetched";
 const SETTINGS_VALUE_KEY = "spark-user-settings";
 // Tab-local, session-scoped (sessionStorage — NOT synced across tabs):
 const SCROLL_POS_SESSION_KEY = "spark-scroll-pos";
+// Window-scoped flag read by the background worker to detect if this tab is already initialized.
+const SPARK_INITIALIZED_FLAG = "__spark_initialized__";
+
+// Minimum time between smart-triggered fetches (tab focus, page interaction).
+// Page load and manual refresh always bypass this cooldown.
+const FETCH_COOLDOWN_MS = 5 * 60 * 1000;
+const INTERACTION_DEBOUNCE_MS = 2000;
 
 let fetch_in_flight = false;
 let global_fetch_in_flight = false; // true when another tab's fetch is still running
 let _refresh_fn = null;
 let _rerender_fn = null;
+let last_completed_fetch_time = 0;
+let interaction_debounce_timer = null;
 
 function trigger_refresh() {
     if (_refresh_fn) _refresh_fn();
@@ -39,7 +48,24 @@ function trigger_rerender() {
     if (_rerender_fn) _rerender_fn();
 }
 
-window.addEventListener("load", () => {
+// Fetches only if the cooldown has lifted and no fetch is in flight.
+// Used by smart triggers (tab focus, page interaction) — never for manual refresh or page load.
+function try_smart_fetch() {
+    if (!_refresh_fn) return;
+    if (fetch_in_flight || global_fetch_in_flight) return;
+    if (Date.now() - last_completed_fetch_time < FETCH_COOLDOWN_MS) return;
+    _refresh_fn();
+}
+
+// Debounced wrapper for high-frequency events (mousemove, scroll).
+// Waits for activity to settle before attempting a smart fetch.
+function on_page_interaction() {
+    clearTimeout(interaction_debounce_timer);
+    interaction_debounce_timer = setTimeout(try_smart_fetch, INTERACTION_DEBOUNCE_MS);
+}
+
+function on_page_ready() {
+    window[SPARK_INITIALIZED_FLAG] = true;
     let course_data = {};
 
     const calendar_container = inject_embedded_ui();
@@ -52,6 +78,7 @@ window.addEventListener("load", () => {
     calendar_container.addEventListener("scroll", () => {
         clearTimeout(scroll_save_timer);
         scroll_save_timer = setTimeout(() => {
+            console.log(calendar_container.scrollTop.toString());
             sessionStorage.setItem(SCROLL_POS_SESSION_KEY, calendar_container.scrollTop.toString());
         }, 300);
     });
@@ -60,6 +87,7 @@ window.addEventListener("load", () => {
     // Falls back to scrolling to today's date on first open when no position has been saved.
     function restore_scroll_position() {
         const saved = parseInt(sessionStorage.getItem(SCROLL_POS_SESSION_KEY) || "0", 10);
+        console.log(saved);
         if (saved > 0) {
             requestAnimationFrame(() => {
                 calendar_container.scrollTop = saved;
@@ -81,7 +109,7 @@ window.addEventListener("load", () => {
             }
             if (course_data && Object.keys(course_data).length > 0) {
                 update_gui(course_data, fetch_in_flight || global_fetch_in_flight);
-                restore_scroll_position();
+                // restore_scroll_position()
             }
         });
     });
@@ -119,8 +147,9 @@ window.addEventListener("load", () => {
                 set_last_fetched_time(fetch_time);
 
                 chrome.storage.local.set({ [COURSE_DATA_KEY]: course_data, [LAST_FETCHED_KEY]: fetch_time.toISOString() }, function() {
+                    last_completed_fetch_time = Date.now();
                     update_gui(course_data, false);
-                    restore_scroll_position();
+                    // restore_scroll_position();
                     safe_send_message({ action: Action.BROADCAST_COURSE_DATA_UPDATED });
                 });
             }
@@ -138,13 +167,37 @@ window.addEventListener("load", () => {
     register_ui_callbacks({ on_refresh: trigger_refresh, on_rerender: trigger_rerender });
 
     // Restore scroll position whenever the panel is opened (including first open on a new tab).
+    /*
     register_panel_open_callback(() => {
-        restore_scroll_position();
+        // restore_scroll_position(); Commented out in a few places because Im not sure I like how they function
+    });
+    */
+
+    // -- Smart fetch triggers --
+
+    // Fetch when the user switches to this tab or returns to the browser window.
+    // Tab visibility is a discrete event so no debounce is needed.
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            try_smart_fetch();
+        }
     });
 
-    // Fetch fresh data from API
+    // Fetch when user interacts with the page (mouse movement or scrolling), debounced
+    // so that activity settling is what triggers the check rather than each raw event.
+    document.addEventListener("mousemove", on_page_interaction);
+    window.addEventListener("scroll", on_page_interaction);
+
+    // Fetch fresh data from API — unconditional on page load, bypasses cooldown.
     _refresh_fn();
-});
+}
+
+// Handles already-loaded pages (e.g. first install on an open tab where "load" won't re-fire).
+if (document.readyState === "complete") {
+    on_page_ready();
+} else {
+    window.addEventListener("load", on_page_ready);
+}
 
 // Listens for messages from the background service worker and dispatches to the appropriate handler
 chrome.runtime.onMessage.addListener(function(request) {

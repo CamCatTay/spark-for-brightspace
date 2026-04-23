@@ -4,7 +4,7 @@ status: active
 last-reviewed: 2026-04-22
 ---
 
-# Spark - for Brightspace
+# Spark for Brightspace
 
 ## Overview
 Spark is a Manifest V3 Chrome extension that injects a resizable side panel into any D2L/Brightspace page, aggregating assignment due dates, quizzes, and discussion deadlines from all enrolled courses into a single chronological calendar view. It targets students who find D2L's native interface poor at surfacing upcoming work across courses. The project uses the D2L REST API directly from the content script context, with HTML-scraping fallbacks for endpoints that can be closed or access-restricted by professors.

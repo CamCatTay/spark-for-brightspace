@@ -1,19 +1,5 @@
-// brightspace.js
 // Fetches and transforms course data from the Brightspace REST API into
 // structured Course and Item objects consumed by the UI.
-
-// ============================================================
-// Imports
-// ============================================================
-
-// import { getTestCourseContent } from './test-data.js';
-
-// TEST MODE: Set to true to use fake course data for testing
-// const TEST_MODE = false;
-
-// ============================================================
-// Type Definitions
-// ============================================================
 
 /**
  * @typedef {Object} BrightspaceItem
@@ -28,19 +14,11 @@
  * @property {number} ActivityType
  */
 
-// ============================================================
-// "Enums"
-// ============================================================
-
 const ActivityType = Object.freeze({
     DROPBOX: 3,
     QUIZ: 4,
     DISCUSSION: 5
 });
-
-// ============================================================
-// Classes
-// ============================================================
 class Course {
     constructor(id, name, url) {
         this.id = id;
@@ -72,10 +50,6 @@ class Item {
     }
 }
 
-// ============================================================
-// Course Item Fetching
-// ============================================================
-
 // Fetch items from a Brightspace API endpoint for a specific course
 async function fetch_course_data(base_url, endpoint) {
     try {
@@ -86,10 +60,6 @@ async function fetch_course_data(base_url, endpoint) {
         return [];
     }
 }
-
-// ============================================================
-// Quiz Fetching
-// ============================================================
 
 // Fetch quizzes and tests for a specific course
 async function get_brightspace_quizzes(base_url, course_id) {
@@ -129,10 +99,6 @@ async function get_quiz_attempt_count(base_url, quiz_id, org_id) {
         return 0;
     }
 }
-
-// ============================================================
-// Assignment Fetching
-// ============================================================
 
 // Fetch assignments (contain dropbox folders) for a specific course
 async function get_brightspace_assignments(base_url, course_id) {
@@ -177,10 +143,6 @@ async function get_assignment_submissions_from_history(base_url, course_id, assi
     }
 }
 
-// ============================================================
-// Discussion Post Fetching
-// ============================================================
-
 // Fetch posts for a specific discussion topic
 async function get_discussion_topic_posts(base_url, course_id, forum_id, topic_id) {
     try {
@@ -217,10 +179,6 @@ async function get_brightspace_discussion_topics(base_url, course_id, forum_id) 
     }
 }
 
-// ============================================================
-// UserID Fetching
-// ============================================================
-
 // Get the current user's numeric ID
 async function get_current_user_id(base_url) {
     try {
@@ -233,10 +191,6 @@ async function get_current_user_id(base_url) {
         return null;
     }
 }
-
-// ============================================================
-// Core Data Fetching
-// ============================================================
 
 // Fetches the base URL (protocol + host) from a full URL string (e.g. "https://example.com" )
 async function get_base_url(tab_url) {
@@ -269,10 +223,6 @@ async function get_brightspace_data(url) {
     return data.Items || data.Object || data.Objects || [];
 }
 
-// ============================================================
-// Course Filtering & Helpers
-// ============================================================
-
 /**
  * Clears a start date if it's already in the past (item is already available).
  * @param {string|null} start_date - ISO date string or null
@@ -295,10 +245,6 @@ async function get_brightspace_courses(base_url) {
         return course.Access.CanAccess && course.Access.IsActive && course.OrgUnit.Type.Id === 3;
     });
 }
-
-// ============================================================
-// Main Entry Point
-// ============================================================
 
 // Takes in processed course and item data, constructs Course objects with their associated items,
 // and returns them as a structured collection of course data for easy querying
@@ -352,13 +298,6 @@ async function build_course_data(all_courses, all_items) {
 }
 
 export async function get_course_content(tabUrl) {
-    // Return fake data if in test mode
-    /*
-    if (TEST_MODE) {
-        return getTestCourseContent(mapData);
-    }
-    */
-
     const base_url = await get_base_url(tabUrl);
     const all_courses = await get_brightspace_courses(base_url);
     const course_ids_csv = await all_courses.map(course => course.OrgUnit.Id).join(","); // e.g courseId1, courseId2, ...
@@ -368,8 +307,6 @@ export async function get_course_content(tabUrl) {
 
     // Fetch quizzes and assignments for each course and add them to course_items
     for (const course of all_courses) {
-
-        // -- Quizzes --
 
         const course_quizzes = await get_brightspace_quizzes(base_url, course.OrgUnit.Id);
 
@@ -396,8 +333,6 @@ export async function get_course_content(tabUrl) {
         });
         course_items = course_items.concat(quiz_items);
 
-        // -- Assignments --
-
         const course_assignments = await get_brightspace_assignments(base_url, course.OrgUnit.Id);
 
         // Fetch submissions for all assignments in this course in parallel
@@ -422,8 +357,6 @@ export async function get_course_content(tabUrl) {
             return item;
         });
         course_items = course_items.concat(assignment_items);
-
-        // -- Discussions --
 
         const discussion_forums = await get_brightspace_discussion_forums(base_url, course.OrgUnit.Id);
 

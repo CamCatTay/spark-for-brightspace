@@ -1,4 +1,3 @@
-// sync-version.js
 // Reads the version npm just wrote to package.json and mirrors it into manifest.json.
 // Runs automatically as part of "npm version <patch|minor|major>".
 

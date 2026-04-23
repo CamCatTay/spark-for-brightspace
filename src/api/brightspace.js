@@ -50,7 +50,6 @@ class Item {
     }
 }
 
-// Fetch items from a Brightspace API endpoint for a specific course
 async function fetch_course_data(base_url, endpoint) {
     try {
         const data = await get_brightspace_data(base_url + endpoint);
@@ -61,20 +60,10 @@ async function fetch_course_data(base_url, endpoint) {
     }
 }
 
-// Fetch quizzes and tests for a specific course
 async function get_brightspace_quizzes(base_url, course_id) {
     return fetch_course_data(base_url, `/d2l/api/le/1.67/${course_id}/quizzes/`);
 }
 
-/**
- * Fetches the number of completed attempts for a quiz from the quiz summary page.
- * Reads the server-rendered HTML and extracts the count from the element with id="z_l".
- * Falls back to regex matching anywhere in the page body.
- * @param {string} base_url - The base URL of the Brightspace instance
- * @param {number|string} quiz_id - The quiz ID (qi parameter)
- * @param {number|string} org_id - The org unit ID (ou parameter)
- * @returns {Promise<number>} The number of completed attempts, or 0 if not found
- */
 async function get_quiz_attempt_count(base_url, quiz_id, org_id) {
     try {
         const url = `${base_url}/d2l/lms/quizzing/user/quiz_summary.d2l?qi=${quiz_id}&ou=${org_id}`;
@@ -100,14 +89,10 @@ async function get_quiz_attempt_count(base_url, quiz_id, org_id) {
     }
 }
 
-// Fetch assignments (contain dropbox folders) for a specific course
 async function get_brightspace_assignments(base_url, course_id) {
     return fetch_course_data(base_url, `/d2l/api/le/1.82/${course_id}/dropbox/folders/`);
 }
 
-// Fetch submissions for a specific dropbox folder (assignment).
-// If the API returns an error (e.g. professor closed the folder), falls back to
-// scraping the submission history page and checking for any submission rows.
 async function get_assignment_submissions(base_url, course_id, assignment_id) {
     try {
         const submissions_url = base_url + `/d2l/api/le/1.82/${course_id}/dropbox/folders/${assignment_id}/submissions/`;
@@ -143,7 +128,6 @@ async function get_assignment_submissions_from_history(base_url, course_id, assi
     }
 }
 
-// Fetch posts for a specific discussion topic
 async function get_discussion_topic_posts(base_url, course_id, forum_id, topic_id) {
     try {
         const posts_url = base_url + `/d2l/api/le/1.82/${course_id}/discussions/forums/${forum_id}/topics/${topic_id}/posts/`;
@@ -155,7 +139,6 @@ async function get_discussion_topic_posts(base_url, course_id, forum_id, topic_i
     }
 }
 
-// Fetch discussion forums for a specific course
 async function get_brightspace_discussion_forums(base_url, course_id) {
     const forums_url = base_url + `/d2l/api/le/1.82/${course_id}/discussions/forums/`;
     try {
@@ -167,7 +150,6 @@ async function get_brightspace_discussion_forums(base_url, course_id) {
     }
 }
 
-// Fetch discussion topics for a specific forum
 async function get_brightspace_discussion_topics(base_url, course_id, forum_id) {
     const topics_url = base_url + `/d2l/api/le/1.82/${course_id}/discussions/forums/${forum_id}/topics/`;
     try {
@@ -179,7 +161,6 @@ async function get_brightspace_discussion_topics(base_url, course_id, forum_id) 
     }
 }
 
-// Get the current user's numeric ID
 async function get_current_user_id(base_url) {
     try {
         const response = await fetch(base_url + '/d2l/api/lp/1.49/users/whoami');
@@ -192,13 +173,11 @@ async function get_current_user_id(base_url) {
     }
 }
 
-// Fetches the base URL (protocol + host) from a full URL string (e.g. "https://example.com" )
 async function get_base_url(tab_url) {
     const url = new URL(tab_url);
     return url.protocol + "//" + url.host;
 }
 
-// Fetches all pages of a paginated Brightspace API endpoint and returns the combined results.
 async function get_brightspace_data(url) {
     const response = await fetch(url);
     const data = await response.json();
@@ -223,11 +202,6 @@ async function get_brightspace_data(url) {
     return data.Items || data.Object || data.Objects || [];
 }
 
-/**
- * Clears a start date if it's already in the past (item is already available).
- * @param {string|null} start_date - ISO date string or null
- * @returns {string|null} The original date if in the future, null if past or null
- */
 function clear_past_start_date(start_date) {
     if (!start_date) return null;
     const start_date_obj = new Date(start_date);
@@ -237,7 +211,6 @@ function clear_past_start_date(start_date) {
     return start_date_only <= now_only ? null : start_date;
 }
 
-// Fetch active courses
 async function get_brightspace_courses(base_url) {
     const courses_url = base_url + "/d2l/api/lp/1.43/enrollments/myenrollments/";
     const all_courses = await get_brightspace_data(courses_url);
@@ -246,8 +219,6 @@ async function get_brightspace_courses(base_url) {
     });
 }
 
-// Takes in processed course and item data, constructs Course objects with their associated items,
-// and returns them as a structured collection of course data for easy querying
 async function build_course_data(all_courses, all_items) {
     const course_data = {};
 
@@ -405,3 +376,4 @@ if (typeof module !== 'undefined' && module.exports) {
         get_assignment_submissions_from_history,
     };
 }
+

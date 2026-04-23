@@ -1,4 +1,3 @@
-// date-utils.js
 // Date formatting and comparison helpers used across the UI layer.
 
 export function formatTimeFromDate(dateString) {

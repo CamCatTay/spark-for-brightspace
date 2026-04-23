@@ -254,6 +254,17 @@ a {
     border-bottom: 1px solid #e8e8e8;
 }
 
+.install-cws {
+    margin-bottom: 48px;
+}
+
+.install-manual-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+}
+
 .install-steps {
     display: flex;
     flex-direction: column;

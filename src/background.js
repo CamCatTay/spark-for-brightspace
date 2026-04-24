@@ -11,7 +11,9 @@ const UNINSTALL_URL = "https://camcattay.github.io/spark-for-brightspace/uninsta
 const SPARK_INITIALIZED_FLAG = "__spark_initialized__";
 const SESSION_WORKER_INITIALIZED_KEY = "worker_initialized";
 
-chrome.runtime.setUninstallURL(UNINSTALL_URL);
+if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.setUninstallURL) {
+    chrome.runtime.setUninstallURL(UNINSTALL_URL);
+}
 
 function broadcast_to_d2l_tabs(sender_tab_id, message) {
     chrome.tabs.query({}, function(tabs) {

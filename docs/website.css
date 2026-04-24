@@ -210,6 +210,27 @@ a {
     margin-bottom: 40px;
 }
 
+/* ── Demo preview ───────────────────────────────────────── */
+.demo-section {
+    padding: 64px 0 56px;
+    text-align: center;
+    background: #f8f9fc;
+    border-top: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.demo-section .section-label {
+    margin-bottom: 24px;
+}
+
+.demo-gif {
+    max-width: 100%;
+    width: 720px;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
+}
+
 /* ── Features ────────────────────────────────────────────── */
 .features-grid {
     display: grid;

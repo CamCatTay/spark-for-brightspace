@@ -11,7 +11,7 @@
     "version": "node ./scripts/sync-version.js && git add manifest.json"
   },
   "devDependencies": {
-    "@types/chrome": "^0.1.40",
+    "@types/chrome": "^0.0.246",
     "adm-zip": "^0.5.17",
     "typescript": "^6.0.3",
     "vite": "^8.0.8",

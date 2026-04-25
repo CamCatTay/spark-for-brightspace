@@ -46,7 +46,7 @@ src/
     color-utils.ts     stable course → color assignment
     date-utils.ts      date formatting helpers
 styles/
-  sidepanel.css        all CSS for the panel, scoped under :where(#d2l-todolist-widget)
+  sidepanel.css        all CSS for the panel, scoped under :where(#spark-widget)
 dist/                  build output — do not edit directly
 tests/                 Vitest unit tests
 ```
@@ -123,7 +123,7 @@ This runs `scripts/sync-version.js` which copies the version from `package.json`
 
 **The `dist/` files are committed.** They need to be in the repo so the extension can be loaded without running a build step. Keep them up to date before committing source changes.
 
-**CSS specificity trick.** All panel styles are scoped under `:where(#d2l-todolist-widget) *`. The `:where()` pseudo-class has zero specificity, which means D2L's own styles always win in a conflict. If you add a style and it's not showing up, check whether D2L is overriding it — you may need to be more specific inside the widget selector.
+**CSS specificity trick.** All panel styles are scoped under `:where(#spark-widget) *`. The `:where()` pseudo-class has zero specificity, which means D2L's own styles always win in a conflict. If you add a style and it's not showing up, check whether D2L is overriding it — you may need to be more specific inside the widget selector.
 
 **API version strings are constants.** D2L REST API endpoints embed a version like `/d2l/api/le/1.82/...`. These are defined as named constants in `brightspace.ts` — don't inline new version numbers directly in endpoint strings.
 

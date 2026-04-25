@@ -1,4 +1,4 @@
-:where(#d2l-todolist-widget) * {
+:where(#spark-widget) * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -15,7 +15,7 @@ body {
     transition: margin-right 0.3s ease;
 }
 
-#d2l-todolist-widget {
+#spark-widget {
     position: fixed;
     top: 0;
     right: 0;
@@ -28,7 +28,7 @@ body {
     overflow: hidden;
 }
 
-#d2l-todolist-widget.hidden {
+#spark-widget.hidden {
     animation: slideOutPanel 0.3s linear;
     pointer-events: none;
 }
@@ -109,11 +109,11 @@ body {
     vertical-align: middle;
 }
 
-body:has(#d2l-todolist-widget.hidden) {
+body:has(#spark-widget.hidden) {
     margin-right: 0 !important;
 }
 
-#d2l-todolist-panel {
+#spark-panel {
     width: 350px;
     height: 100%;
     background-color: #ffffff;
@@ -123,7 +123,7 @@ body:has(#d2l-todolist-widget.hidden) {
     position: relative;
 }
 
-.d2l-todolist-resize-handle {
+.spark-resize-handle {
     position: absolute;
     left: 0;
     top: 0;
@@ -135,7 +135,7 @@ body:has(#d2l-todolist-widget.hidden) {
     z-index: 1000;
 }
 
-.d2l-todolist-resize-handle:hover {
+.spark-resize-handle:hover {
     background-color: #ccc;
 }
 

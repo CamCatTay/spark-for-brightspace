@@ -133,7 +133,7 @@ D2L endpoints embed version numbers: `/d2l/api/le/1.82/...`, `/d2l/api/lp/1.49/.
 
 ### `panel.ts` — the panel shell
 
-Owns the panel DOM: `#d2l-todolist-widget` (outer container) → `#d2l-todolist-panel` → `#calendar-container`. Also creates the floating toggle button (`#spark-toggle-btn`).
+Owns the panel DOM: `#spark-widget` (outer container) → `#spark-panel` → `#calendar-container`. Also creates the floating toggle button (`#spark-toggle-btn`).
 
 Key responsibilities:
 - **Resize**: A drag handle on the left edge lets users resize the panel. Min width is 250px. Width is persisted to `localStorage`.
@@ -165,9 +165,9 @@ Pure formatting helpers. No side effects. `formatDateHeader` is the one with the
 
 ### CSS scoping
 
-All panel styles are in `styles/sidepanel.css` and scoped under `:where(#d2l-todolist-widget) *`. The `:where()` pseudo-class has **zero specificity**, so D2L's own styles always win in a conflict with the panel. The panel's internal styles only apply within `#d2l-todolist-widget`. This was chosen to avoid accidentally overriding D2L's layout — the extension runs inside D2L's DOM, and any leaked style could break the page.
+All panel styles are in `styles/sidepanel.css` and scoped under `:where(#spark-widget) *`. The `:where()` pseudo-class has **zero specificity**, so D2L's own styles always win in a conflict with the panel. The panel's internal styles only apply within `#spark-widget`. This was chosen to avoid accidentally overriding D2L's layout — the extension runs inside D2L's DOM, and any leaked style could break the page.
 
-If you add a style and it's not applying, the most common cause is a D2L style with higher specificity winning. You may need to increase specificity within the widget selector, or use a more specific selector inside `#d2l-todolist-widget`.
+If you add a style and it's not applying, the most common cause is a D2L style with higher specificity winning. You may need to increase specificity within the widget selector, or use a more specific selector inside `#spark-widget`.
 
 ---
 

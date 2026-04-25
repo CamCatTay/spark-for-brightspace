@@ -10,8 +10,8 @@ export function register_settings_panel_builder(fn: () => HTMLElement): void {
     _build_settings_panel = fn;
 }
 
-const EXPANSION_STATE_KEY = "d2l-todolist-expanded";
-const PANEL_WIDTH_KEY = "d2l-todolist-width";
+const EXPANSION_STATE_KEY = "spark-expanded";
+const PANEL_WIDTH_KEY = "spark-width";
 const TOGGLE_BTN_TOP_KEY = "spark-toggle-btn-top";
 const TOGGLE_BTN_ID = "spark-toggle-btn";
 const DEFAULT_PANEL_WIDTH = 350;
@@ -38,15 +38,15 @@ function update_body_margin() {
 // Returns { container, calendar_container, panel } DOM elements.
 function create_embedded_calendar_ui() {
     const new_container = document.createElement("div");
-    new_container.id = "d2l-todolist-widget";
+    new_container.id = "spark-widget";
     new_container.style.width = panel_width + "px";
 
     const panel = document.createElement("div");
-    panel.id = "d2l-todolist-panel";
+    panel.id = "spark-panel";
     panel.style.width = panel_width + "px";
 
     const resize_handle = document.createElement("div");
-    resize_handle.className = "d2l-todolist-resize-handle";
+    resize_handle.className = "spark-resize-handle";
 
     const calendar_container = document.createElement("div");
     calendar_container.id = "calendar-container";
@@ -273,7 +273,7 @@ export function toggle_panel(): void {
  * @returns {HTMLElement} The calendar container element where content should be rendered.
  */
 export function inject_embedded_ui() {
-    const existing = document.getElementById("d2l-todolist-widget");
+    const existing = document.getElementById("spark-widget");
     if (existing) existing.remove();
 
     const saved_width = localStorage.getItem(PANEL_WIDTH_KEY);

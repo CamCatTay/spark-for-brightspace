@@ -27,8 +27,8 @@ export const ITEM_TYPES = [
 
 // --- Storage Keys ---
 // Synced across tabs via chrome.storage.local + broadcast:
-export const CALENDAR_START_DAYS_BACK_STORAGE_KEY = "d2l-todolist-calendar-start-days-back";
-export const SHOW_COMPLETED_STORAGE_KEY = "d2l-todolist-show-completed";
+export const CALENDAR_START_DAYS_BACK_STORAGE_KEY = "spark-calendar-start-days-back";
+export const SHOW_COMPLETED_STORAGE_KEY = "spark-show-completed";
 export const SHOW_ON_START_STORAGE_KEY = "spark-setting-show-on-start";
 // Tab-local, session-scoped (sessionStorage — NOT synced across tabs):
 export const HIDDEN_COURSES_SESSION_KEY = "spark-hidden-courses";

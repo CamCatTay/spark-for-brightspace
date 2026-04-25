@@ -5,6 +5,7 @@ import { Action } from "../shared/actions";
 import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader, getWeekStart, getDateKey } from "../utils/date-utils";
 import { getCourseColor, ensureCourseColorsAssigned } from "../utils/color-utils";
 import { safe_send_message, panel_width } from "./panel";
+import { create_toggle_setting } from "./settings-menu-utils";
 import type { CourseData, CourseShape, ItemShape } from "../shared/types";
 
 // Augmented HTMLDivElement for the frequency chart container, which stores
@@ -64,6 +65,7 @@ if (!Number.isFinite(CALENDAR_START_DAYS_BACK) || CALENDAR_START_DAYS_BACK < 0) 
 
 // Default true: show completed items unless the user has explicitly turned it off.
 let show_completed_items = localStorage.getItem(SHOW_COMPLETED_STORAGE_KEY) !== "false";
+let hide_on_start = false;
 
 function truncate_course_name(name: string): string {
     if (!name) return name;
@@ -744,40 +746,18 @@ export function build_settings_panel() {
     section.appendChild(input);
     body.appendChild(section);
 
-    // Show completed items toggle
-    const completed_section = document.createElement("div");
-    completed_section.className = "settings-section";
-
-    const completed_row = document.createElement("label");
-    completed_row.className = "settings-course-row";
-
-    const completed_checkbox = document.createElement("input");
-    completed_checkbox.type = "checkbox";
-    completed_checkbox.id = "spark-setting-show-completed";
-    completed_checkbox.className = "settings-course-checkbox";
-    completed_checkbox.checked = show_completed_items;
-    completed_checkbox.addEventListener("change", () => {
-        show_completed_items = completed_checkbox.checked;
-        localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, show_completed_items.toString());
-        safe_send_message({ action: Action.BROADCAST_SETTINGS_CHANGED, settings: get_synced_settings() });
-        if (_on_rerender) _on_rerender();
-    });
-
-    const completed_name = document.createElement("span");
-    completed_name.className = "settings-course-name";
-    completed_name.textContent = "Show completed items";
-
-    completed_row.appendChild(completed_checkbox);
-    completed_row.appendChild(completed_name);
-    completed_section.appendChild(completed_row);
-
-    const completed_description = document.createElement("p");
-    completed_description.className = "settings-description";
-    completed_description.style.marginTop = "6px";
-    completed_description.textContent = "When off, only incomplete items are shown in the calendar.";
-    completed_section.appendChild(completed_description);
-
-    body.appendChild(completed_section);
+    const show_complete_items_setting = create_toggle_setting(
+        "Show completed items",
+        "When off, only incomplete items are shown in the calendar.",
+        show_completed_items,
+        (checked) => {
+            show_completed_items = show_complete_items_setting.checkbox.checked;
+            localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, show_completed_items.toString());
+            safe_send_message({ action: Action.BROADCAST_SETTINGS_CHANGED, settings: get_synced_settings() });
+            if (_on_rerender) _on_rerender();
+        }
+    );
+    body.appendChild(show_complete_items_setting.section);
 
     // Assignment types section
     const types_section = document.createElement("div");

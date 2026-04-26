@@ -6,14 +6,29 @@ All notable changes to Spark for Brightspace are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- **"Show on start" setting.** A new toggle in the settings panel controls whether the extension panel opens automatically when you navigate to a Brightspace page. Previously the panel always opened on load.
+- **Settings state preserved across panel toggles.** If the settings panel is open when you collapse the main panel, it will reopen automatically when the main panel slides back in.
+- **Reload settings into already-open tabs.** Changing a setting now propagates to all other open Brightspace tabs immediately without requiring a page reload.
+
 ### Changed
 
-- **Migrated source to TypeScript.** All files in `src/` are now `.ts`. Vite still compiles to JavaScript for the browser — `dist/content.js` and `dist/background.js` are unchanged in format. Type checking runs separately via `tsc --noEmit`.
-- **Added `src/shared/types.ts`.** New file with shared plain-object interfaces (`CourseShape`, `ItemShape`, `CourseData`) used across the Chrome message boundary.
-- **Tests disabled pending rewrite.** The Jest test suite is inactive while the tests are rewritten for TypeScript. Existing test files are kept in `tests/` for reference.
+- **Default and minimum panel width increased.** The default width is now 400 px (up from 350 px). The minimum resize limit has also been raised to prevent visual artifacts at very narrow widths.
+- **Panel and toggle button animations synchronised.** The toggle button now uses matching keyframe animations for slide-in/out instead of a CSS `transition`, eliminating the visible lag between the button and the panel edge. Animation duration is driven by a single `--spark-slide-ms` CSS variable set from the JS constant, so the two are guaranteed to stay in sync.
+- **Simplified slide animations.** Replaced multi-stop `linear` keyframes with clean `from`/`to` keyframes using `ease-out` (slide in) and `ease-in` (slide out), removing per-frame layout calculations that caused lag during panel resizing.
+- **CSS animation timing unified.** All panel slide timings (`body` margin, `#spark-widget`, `#spark-toggle-btn`) now share a single `--spark-panel-width` and `--spark-slide-ms` CSS custom property driven from `panel.ts`.
 
-- **Uninstall feedback page.** When the extension is uninstalled Chrome now opens `docs/uninstall.html` — a "Sorry to see you go!" page that presents a short multiple-choice survey (with an "Other" free-text option) asking why the user left. Responses are collected by a Google Apps Script web app (`scripts/uninstall-feedback.gs`) and written to a private Google Sheet.
-- **Anonymous install analytics.** On first install the background service worker generates a random UUID via `crypto.randomUUID()` and persists it in `chrome.storage.local` under `spark-client-id`. The ID is stable for the lifetime of the installation and is used to distinguish unique installs in analytics. No personal data is involved — the ID is a locally-generated random value with no link to any account, device, or identity.
+### Fixed
+
+- **Settings panel failed to open** in certain cases after the TypeScript refactor. Fixed.
+
+### Internal
+
+- **Full TypeScript migration.** All files in `src/` converted from `.js` to `.ts`. Tests migrated from Jest to Vitest and rewritten against the TypeScript source.
+- **CSS class names extracted to `dom-constants.ts`.** All CSS class and ID strings used in JavaScript are now defined as frozen constants in `src/ui/dom-constants.ts`, eliminating scattered magic strings.
+- **Source files refactored for separation of concerns.** `panel.ts`, `calendar.ts`, `frequency-chart.ts`, `settings-menu.ts`, `ui-state.ts`, `background.ts`, and `content.ts` each refactored to own a single well-defined responsibility.
+- **Legal / repository hygiene.** `CONTRIBUTING.md` moved to repo root (GitHub canonical location) and updated with a Contributor License Agreement. `SECURITY.md` added. `LICENSE` updated to explicitly cover a future Pro tier and prohibit payment circumvention. Copyright headers added to all source files.
 
 ---
 

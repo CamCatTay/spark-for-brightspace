@@ -18,7 +18,10 @@ import { CalendarCss, FrequencyChartCss, PanelCss, SettingsCss } from "./dom-con
 import type { CourseData, CourseShape, ItemShape } from "../shared/types";
 
 const AVAILABLE_ON_PREFIX = "Available on ";
-const NO_ASSIGNMENTS_DUE = "No assignments due";
+
+const CREATE_EMPTY_DAY_NOTICE = false;
+const EMPTY_DAY_MESSAGE = "No assignments due";
+
 const NO_UPCOMING_ASSIGNMENTS = "No upcoming assignments";
 const META_SEPARATOR = "|";
 const COURSE_DOT_SYMBOL = "●";
@@ -177,7 +180,7 @@ function build_item_card(item: ItemShape, course: CourseShape): HTMLAnchorElemen
 function build_empty_day_notice(): HTMLDivElement {
     const notice = document.createElement("div");
     notice.className = CalendarCss.EMPTY_DAY_NOTICE;
-    notice.textContent = NO_ASSIGNMENTS_DUE;
+    notice.textContent = EMPTY_DAY_MESSAGE;
     return notice;
 }
 
@@ -194,7 +197,7 @@ function build_date_section(date: Date, items: Array<{ item: ItemShape; course: 
 
     const items_container = document.createElement("div");
     items_container.className = CalendarCss.ITEMS_CONTAINER;
-    if (items.length === 0) {
+    if (items.length === 0 && CREATE_EMPTY_DAY_NOTICE) {
         items_container.appendChild(build_empty_day_notice());
     } else {
         items.forEach(({ item, course }) => items_container.appendChild(build_item_card(item, course)));

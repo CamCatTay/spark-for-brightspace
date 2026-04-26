@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CamCatTay. All rights reserved.
+// See LICENSE file for terms of use.
+
 export function formatTimeFromDate(dateString: string | null | undefined): string {
     if (!dateString) return "No time";
     try {

@@ -2,6 +2,18 @@
 
 ---
 
+## Contributor License Agreement
+
+By submitting a pull request or otherwise contributing code, documentation, or other materials to this project, you agree to the following terms:
+
+1. **IP Assignment.** You irrevocably assign all intellectual property rights in your contribution — including copyright — to the project copyright holders (CamCatTay). This assignment takes effect automatically upon submission.
+2. **Original work.** You represent that your contribution is your own original work and that you have the right to make this assignment.
+3. **License terms.** Your contribution is governed by the same license as the rest of this project (see the [LICENSE](LICENSE) file). You understand that the copyright holders may use, relicense, or commercialize the project and your contribution without further notice or compensation.
+
+If you do not agree to these terms, do not submit a pull request.
+
+---
+
 ## Running locally
 
 ```bash

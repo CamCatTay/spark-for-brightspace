@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CamCatTay. All rights reserved.
+// See LICENSE file for terms of use.
+
 // Fetches and transforms course data from the Brightspace REST API into
 // structured Course and Item objects consumed by the UI.
 

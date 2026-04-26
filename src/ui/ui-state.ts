@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CamCatTay. All rights reserved.
+// See LICENSE file for terms of use.
+
 import type { CourseData } from "../shared/types";
 
 export const DAYS_IN_WEEK = 7;

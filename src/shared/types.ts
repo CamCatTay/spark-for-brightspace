@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CamCatTay. All rights reserved.
+// See LICENSE file for terms of use.
+
 // Shared plain-object shapes used across the message boundary (after JSON serialization).
 // The Course class in brightspace.ts is used during construction; these interfaces
 // represent the serialized form that content.ts and components.ts work with.

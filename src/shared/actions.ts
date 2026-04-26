@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CamCatTay. All rights reserved.
+// See LICENSE file for terms of use.
+
 // contains the enums used for chrome message passing
 
 export const Action = Object.freeze({

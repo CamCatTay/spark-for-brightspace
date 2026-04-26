@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CamCatTay. All rights reserved.
+// See LICENSE file for terms of use.
+
 import { Action } from "./shared/actions";
 import {
     safe_send_message,

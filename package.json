@@ -2,6 +2,7 @@
   "name": "spark-for-brightspace",
   "version": "1.2.1",
   "description": "A productivity extension for Brightspace.",
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "test": "vitest run",
     "build:content": "vite build --config vite.content.config.js",

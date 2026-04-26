@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CamCatTay. All rights reserved.
+// See LICENSE file for terms of use.
+
 export const SettingsCss = Object.freeze({
     BODY: "settings-body",
     COURSE_CHECKBOX: "settings-course-checkbox",

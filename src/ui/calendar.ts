@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CamCatTay. All rights reserved.
+// See LICENSE file for terms of use.
+
 import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader } from "../utils/date-utils";
 import { getCourseColor, ensureCourseColorsAssigned } from "../utils/color-utils";
 import { create_frequency_chart } from "./frequency-chart";

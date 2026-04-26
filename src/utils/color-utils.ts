@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CamCatTay. All rights reserved.
+// See LICENSE file for terms of use.
+
 export const COLOR_POOL = [
     "#e05555",
     "#e07c2e",

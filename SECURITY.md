@@ -29,6 +29,7 @@ This project is a browser extension. The primary attack surfaces of interest are
 - Unauthorized data access via the extension's Brightspace API calls
 - Cross-site scripting or content injection via the side panel DOM
 - Privilege escalation via the `chrome.scripting` or `chrome.storage` APIs
+- Bypassing, circumventing, or reverse-engineering Pro/premium license or payment checks
 - Supply chain issues in build dependencies
 
 Issues in third-party libraries should be reported to those projects directly, though we appreciate a heads-up.

@@ -1,12 +1,23 @@
 Spark for Brightspace — Restrictive Source License
 Copyright (c) 2026 CamCatTay. All rights reserved.
 
-1. PERMITTED USE
-   You may use this software solely for personal, non-commercial, or educational
-   purposes. You may fork this repository for private personal use.
+1. PERMITTED USE (FREE TIER)
+   You may use the free tier of this software solely for personal, non-commercial,
+   or educational purposes. You may fork this repository for private personal use
+   of the free tier only. No rights beyond those expressly stated in this section
+   are granted.
 
-2. RESTRICTIONS
-   You may not, without prior written permission from the copyright holders:
+2. PRO FEATURES
+   Certain features of this software are designated as "Pro" or "premium" features
+   and require a valid paid license or active subscription obtained directly from
+   the copyright holder. Access to Pro features through any means other than a
+   valid paid license — including but not limited to forking this repository,
+   modifying or removing license checks, circumventing payment mechanisms, or
+   reverse engineering Pro functionality — is strictly prohibited and constitutes
+   a material breach of this license.
+
+3. RESTRICTIONS
+   You may not, without prior written permission from the copyright holder:
 
    a. Distribute, publish, or otherwise make available this software or any
       derivative work, in whole or in part, to any third party;
@@ -16,16 +27,20 @@ Copyright (c) 2026 CamCatTay. All rights reserved.
       extension marketplace or software distribution platform;
 
    c. Rebrand, relabel, or otherwise represent this software as your own original
-      work under any name or identity.
+      work under any name or identity;
 
-3. OWNERSHIP
+   d. Remove, disable, bypass, or circumvent any licensing, payment, or feature-
+      gating mechanism in this software, whether implemented technically or
+      otherwise.
+
+4. OWNERSHIP
    All intellectual property rights in and to this software remain exclusively
-   with the original copyright holders. No license, right, or interest other than
-   those expressly stated in Section 1 is granted by implication, estoppel, or
+   with the copyright holder. No license, right, or interest other than those
+   expressly stated in Section 1 is granted by implication, estoppel, or
    otherwise.
 
-4. DISCLAIMER
+5. DISCLAIMER
    THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+   IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
    DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -11,6 +11,7 @@ export const SettingsCss = Object.freeze({
     DESCRIPTION: "settings-description",
     INPUT: "settings-input",
     LABEL: "settings-label",
+    OPEN: "spark-settings-open",
     PANEL_HEADER: "settings-header",
     PANEL_ID: "spark-settings-panel",
     PANEL_TITLE: "settings-title",
@@ -25,4 +26,35 @@ export const PanelCss = Object.freeze({
     TOGGLE_BTN_ID: "spark-toggle-btn",
     TOGGLE_BTN_TITLE: "Toggle Spark panel",
     WIDGET_HIDDEN: "hidden",
+});
+
+export const FrequencyChartCss = Object.freeze({
+    CONTAINER: "frequency-chart-container",
+    CONTAINER_ID: "frequency-chart",
+    NAV_BTN: "frequency-chart-btn",
+    PREV_BTN_ID: "frequency-chart-prev",
+    NEXT_BTN_ID: "frequency-chart-next",
+    GRID: "frequency-chart-grid",
+    HEADER_ROW: "frequency-chart-header-row",
+    WEEK_LABEL: "frequency-chart-week-label",
+    SETTINGS_BTN: "spark-settings-btn",
+    REFRESH_BTN: "spark-refresh-btn",
+    SPINNING: "spinning",
+    BTN_SPACER: "spark-btn-spacer",
+    FAQ_BTN: "faq-btn",
+    CHART_ROW: "frequency-chart-row",
+    LAST_FETCHED: "frequency-chart-last-fetched",
+    DAY: "frequency-day",
+    DAY_TODAY: "frequency-day--today",
+    DAY_LABEL: "frequency-day-label",
+    DAY_DATE: "frequency-day-date",
+    BAR_CONTAINER: "frequency-bar-container",
+    BAR: "frequency-bar",
+    DAY_COUNT: "frequency-day-count",
+});
+
+export const CalendarCss = Object.freeze({
+    DATE_HEADER: "calendar-date-header",
+    DATE_TITLE: "date-title",
+    ITEMS_CONTAINER: "calendar-items-container",
 });

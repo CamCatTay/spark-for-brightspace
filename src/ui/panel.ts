@@ -12,7 +12,7 @@ export function register_settings_panel_builder(fn: () => HTMLElement): void {
 const EXPANSION_STATE_KEY = "spark-expanded";
 const PANEL_WIDTH_KEY = "spark-width";
 const TOGGLE_BTN_TOP_KEY = "spark-toggle-btn-top";
-const SETTINGS_PANEL_OPEN_CLASS = "open";
+const SETTINGS_PANEL_OPEN_CLASS = SettingsCss.OPEN;
 
 const DEFAULT_PANEL_WIDTH = 400;
 const MIN_PANEL_WIDTH = 250;

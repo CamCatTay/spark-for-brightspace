@@ -8,6 +8,14 @@ Spark for Brightspace is a browser extension that displays your Brightspace cour
 
 Spark for Brightspace does **not** collect, transmit, or store any personal data on external servers. All data the extension reads remains on your device.
 
+The one exception is the **optional uninstall survey**. When the extension is uninstalled, Chrome opens a feedback page. If you choose to submit the form, the following information is sent to a private Google Sheet via a Google Apps Script web app:
+
+- The reason you selected from the multiple-choice list
+- A free-text explanation (only if you chose "Other", maximum 500 characters)
+- A timestamp indicating when the form was submitted
+
+This submission is entirely voluntary — you can close the page without filling in anything. No name, account, device identifier, or install ID is included in the submission. The data is used only to understand aggregate uninstall trends and improve the extension.
+
 ---
 
 ## Permission Justifications

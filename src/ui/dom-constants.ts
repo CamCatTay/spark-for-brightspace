@@ -61,6 +61,7 @@ export const FrequencyChartCss = Object.freeze({
 
 export const BrightspaceHtml = Object.freeze({
     QUIZ_SUMMARY_ELEMENT_ID: "z_l",
+    QUIZ_AVAILABILITY_ELEMENT_ID: "z_i",
     SUBMISSION_ROW_CLASS: "d_gn d_gt",
 });
 

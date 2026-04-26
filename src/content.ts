@@ -15,7 +15,7 @@ import {
     register_ui_callbacks,
 } from "./ui/calendar";
 import { scroll_to_today } from "./ui/frequency-chart";
-import { build_settings_panel } from "./ui/settings-menu";
+import { build_settings_panel, update_settings_panel } from "./ui/settings-menu";
 import type { CourseData } from "./shared/types";
 
 const COURSE_DATA_KEY = "courseData";
@@ -157,6 +157,7 @@ function register_smart_fetch_listeners() {
 function on_page_ready() {
     (window as unknown as { [key: string]: unknown })[SPARK_INITIALIZED_FLAG] = true;
     register_settings_panel_builder(build_settings_panel);
+    update_settings_panel();
     calendar_container = inject_embedded_ui();
     initialize_gui();
     setup_scroll_persistence();

@@ -261,6 +261,18 @@ export function build_settings_panel(): HTMLElement {
     return panel;
 }
 
+export function update_settings_panel(): void {
+    const existing = document.getElementById(SettingsCss.PANEL_ID);
+    if (!existing) return;
+
+    const new_panel = build_settings_panel();
+    new_panel.style.cssText = existing.style.cssText;
+    if (existing.classList.contains(SettingsCss.OPEN)) {
+        new_panel.classList.add(SettingsCss.OPEN);
+    }
+    existing.replaceWith(new_panel);
+}
+
 export function update_settings_course_list(course_data: CourseData, list_el: HTMLElement | null = null): void {
     const list = list_el || document.getElementById(SettingsCss.COURSES_LIST_ID);
     if (!list) return;

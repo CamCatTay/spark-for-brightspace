@@ -18,7 +18,7 @@ const TOGGLE_BTN_TOP_KEY = "spark-toggle-btn-top";
 
 const DEFAULT_PANEL_WIDTH = 400;
 const MIN_PANEL_WIDTH = 250;
-const PANEL_SLIDE_IN_MS = 400;
+const PANEL_SLIDE_IN_MS = 300;
 const SETTINGS_TRANSITION_MS = 250;
 const DRAG_MOVE_THRESHOLD_PX = 4;
 
@@ -34,6 +34,7 @@ let panel_restore_callback: (() => void) | null = null;
 let panel_open_callback: (() => void) | null = null;
 
 function sync_body_margin_to_panel_width(): void {
+    document.documentElement.style.setProperty("--spark-panel-width", panel_width + "px");
     document.body.style.marginRight = panel_width + "px";
     if (toggle_button) toggle_button.style.right = panel_width + "px";
 }
@@ -207,8 +208,15 @@ function hide_panel_immediately(): void {
     sessionStorage.setItem(EXPANSION_STATE_KEY, "false");
     document.body.style.marginRight = "0";
     if (toggle_button) {
-        toggle_button.style.right = "0px";
         toggle_button.textContent = CHEVRON_CLOSED;
+        toggle_button.classList.remove(PanelCss.TOGGLE_SLIDE_IN);
+        toggle_button.classList.add(PanelCss.TOGGLE_SLIDE_OUT);
+        const on_toggle_out = () => {
+            toggle_button!.classList.remove(PanelCss.TOGGLE_SLIDE_OUT);
+            toggle_button!.style.right = "0px";
+            toggle_button!.removeEventListener("animationend", on_toggle_out);
+        };
+        toggle_button.addEventListener("animationend", on_toggle_out);
     }
     const on_animation_end = () => {
         panel_container!.style.display = "none";
@@ -251,7 +259,16 @@ function open_panel(): void {
     sessionStorage.setItem(EXPANSION_STATE_KEY, "true");
     panel_container!.style.display = "flex";
     sync_body_margin_to_panel_width();
-    if (toggle_button) toggle_button.textContent = CHEVRON_OPEN;
+    if (toggle_button) {
+        toggle_button.textContent = CHEVRON_OPEN;
+        toggle_button.classList.remove(PanelCss.TOGGLE_SLIDE_OUT);
+        toggle_button.classList.add(PanelCss.TOGGLE_SLIDE_IN);
+        const on_toggle_in = () => {
+            toggle_button!.classList.remove(PanelCss.TOGGLE_SLIDE_IN);
+            toggle_button!.removeEventListener("animationend", on_toggle_in);
+        };
+        toggle_button.addEventListener("animationend", on_toggle_in);
+    }
 
     if (settings_was_open) {
         setTimeout(reopen_settings_after_panel_slides_in, PANEL_SLIDE_IN_MS);
@@ -320,7 +337,10 @@ export function inject_embedded_ui(): HTMLElement {
     const existing = document.getElementById(PanelCss.WIDGET_ID);
     if (existing) existing.remove();
 
+    document.documentElement.style.setProperty("--spark-slide-ms", PANEL_SLIDE_IN_MS + "ms");
+
     load_saved_panel_width();
+    document.documentElement.style.setProperty("--spark-panel-width", panel_width + "px");
 
     const { widget_container, calendar_container } = create_panel_widget();
     panel_container = widget_container;

@@ -29,6 +29,8 @@ export const PanelCss = Object.freeze({
     CALENDAR_CONTAINER_ID: "calendar-container",
     TOGGLE_BTN_ID: "spark-toggle-btn",
     TOGGLE_BTN_TITLE: "Toggle Spark panel",
+    TOGGLE_SLIDE_IN: "spark-toggle-slide-in",
+    TOGGLE_SLIDE_OUT: "spark-toggle-slide-out",
     WIDGET_HIDDEN: "hidden",
 });
 

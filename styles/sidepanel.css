@@ -12,7 +12,7 @@ html, body {
 
 body {
     margin-right: 350px;
-    transition: margin-right 0.3s ease;
+    transition: margin-right var(--spark-slide-ms) ease;
 }
 
 #spark-widget {
@@ -24,53 +24,53 @@ body {
     z-index: 9999;
     display: flex;
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-    animation: slideInPanel 0.3s linear;
+    animation: slideInPanel var(--spark-slide-ms) ease-out;
     overflow: hidden;
 }
 
 #spark-widget.hidden {
-    animation: slideOutPanel 0.3s linear;
+    animation: slideOutPanel var(--spark-slide-ms) ease-in;
     pointer-events: none;
 }
 
 @keyframes slideInPanel {
-    0% {
+    from {
         opacity: 0;
         transform: translateX(100%);
     }
-    25% {
-        transform: translateX(75%);
-    }
-    50% {
-        transform: translateX(25%);
-    }
-    75% {
-        transform: translateX(2%);
-    }
-    100% {
+    to {
         opacity: 1;
         transform: translateX(0);
     }
 }
 
 @keyframes slideOutPanel {
-    0% {
+    from {
         opacity: 1;
         transform: translateX(0);
     }
-    25% {
-        transform: translateX(2%);
-    }
-    50% {
-        transform: translateX(25%);
-    }
-    75% {
-        transform: translateX(75%);
-    }
-    100% {
+    to {
         opacity: 0;
         transform: translateX(100%);
     }
+}
+
+@keyframes slideInToggle {
+    from { right: 0px; }
+    to   { right: var(--spark-panel-width); }
+}
+
+@keyframes slideOutToggle {
+    from { right: var(--spark-panel-width); }
+    to   { right: 0px; }
+}
+
+.spark-toggle-slide-in {
+    animation: slideInToggle var(--spark-slide-ms) ease-out;
+}
+
+.spark-toggle-slide-out {
+    animation: slideOutToggle var(--spark-slide-ms) ease-in;
 }
 
 @keyframes spin {
@@ -761,7 +761,7 @@ body:has(#spark-widget.hidden) {
     align-items: center;
     justify-content: center;
     z-index: 10001;
-    transition: right 0.3s ease, filter 0.3s ease, background 0.3s ease;
+    transition: filter var(--spark-slide-ms) ease, background var(--spark-slide-ms) ease;
     color: #ffffff;
     font-size: 13px;
     line-height: 1;

@@ -349,7 +349,6 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
 }
 
 export function set_last_fetched_time(fetch_time: Date): void {
-    localStorage.setItem(LAST_FETCH_COMPLETED_AT_STORAGE_KEY, Date.now().toString());
     ui_state.last_fetched_time = fetch_time;
 }
 

@@ -81,7 +81,6 @@ export const ui_state = {
     show_on_start: read_enabled_flag(SHOW_ON_START_STORAGE_KEY),
     hidden_course_ids: read_session_set(HIDDEN_COURSES_SESSION_KEY),
     hidden_types: read_session_set(HIDDEN_TYPES_SESSION_KEY),
-    last_fetch_completed_at: read_last_fetch_completed_at(),
     last_fetched_time: null as Date | null,
     last_course_data: {} as CourseData,
     on_refresh: null as (() => void) | null,

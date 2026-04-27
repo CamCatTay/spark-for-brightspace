@@ -20,7 +20,7 @@ import {
 import { scroll_to_today } from "./ui/frequency-chart";
 import { build_settings_panel, update_settings_panel } from "./ui/settings-menu";
 import type { CourseData } from "./shared/types";
-import { ui_state } from "./ui/ui-state";
+import { read_last_fetch_completed_at, ui_state } from "./ui/ui-state";
 
 const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
@@ -40,7 +40,6 @@ let course_data: CourseData = {};
 let calendar_container: HTMLElement | null = null;
 let fetch_in_flight = false;
 let remote_fetch_in_flight = false;
-let last_fetch_completed_at = ui_state.last_fetch_completed_at;
 let interaction_debounce_timer: ReturnType<typeof setTimeout> | undefined;
 let scroll_save_debounce: ReturnType<typeof setTimeout> | undefined;
 
@@ -65,7 +64,6 @@ function on_fetch_response(response: unknown) {
 }
 
 function on_course_data_stored() {
-    last_fetch_completed_at = Date.now();
     update_gui(course_data, false);
     safe_send_message({ action: Action.BROADCAST_COURSE_DATA_UPDATED });
 }
@@ -81,6 +79,7 @@ function is_any_fetch_in_flight() {
 }
 
 function is_fetch_cooldown_active() {
+    const last_fetch_completed_at = read_last_fetch_completed_at()
     return Date.now() - last_fetch_completed_at < FETCH_COOLDOWN_MS;
 }
 

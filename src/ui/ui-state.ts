@@ -53,10 +53,8 @@ export function read_enabled_flag(key: string): boolean {
 }
 
 export function read_calendar_start_days_back(): number {
-    const raw = parseInt(
-        localStorage.getItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY) ?? String(CALENDAR_DAYS_BACK_DEFAULT),
-        10,
-    );
+    const raw = parseInt(localStorage.getItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY) ?? String(CALENDAR_DAYS_BACK_DEFAULT),10);
+    console.log(raw);
     return Number.isFinite(raw) && raw >= 0 ? raw : CALENDAR_DAYS_BACK_DEFAULT;
 }
 

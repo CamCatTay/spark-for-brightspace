@@ -2,6 +2,7 @@
 // See LICENSE file for terms of use.
 
 import { Action } from "./shared/actions";
+import { LAST_FETCH_COMPLETED_AT_STORAGE_KEY } from "./ui/ui-state";;
 import {
     safe_send_message,
     inject_embedded_ui,
@@ -44,6 +45,7 @@ let interaction_debounce_timer: ReturnType<typeof setTimeout> | undefined;
 let scroll_save_debounce: ReturnType<typeof setTimeout> | undefined;
 
 function fetch_and_store_courses() {
+    console.log(fetch_in_flight);
     if (fetch_in_flight) return;
     fetch_in_flight = true;
     add_data_status_indicator(true);
@@ -53,6 +55,7 @@ function fetch_and_store_courses() {
 
 function on_fetch_response(response: unknown) {
     fetch_in_flight = false;
+    localStorage.setItem(LAST_FETCH_COMPLETED_AT_STORAGE_KEY, Date.now().toString());
     if (!response) return;
     course_data = JSON.parse(JSON.stringify(response));
     const fetched_at = new Date();

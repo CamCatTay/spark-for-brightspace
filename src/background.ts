@@ -3,7 +3,6 @@
 
 import { get_course_content } from "./api/brightspace";
 import { Action } from "./shared/actions";
-import { LAST_FETCH_COMPLETED_AT_STORAGE_KEY } from "./ui/ui-state";
 
 export const SETTINGS_VALUE_KEY = "spark-user-settings";
 export const D2L_URL_FILTER = "/d2l/";
@@ -46,7 +45,6 @@ function handle_fetch_courses(sender: chrome.runtime.MessageSender, send_respons
     get_course_content(sender.tab?.url ?? "").then(function(data) {
         send_response(data);
     });
-    localStorage.setItem(LAST_FETCH_COMPLETED_AT_STORAGE_KEY, Date.now().toString());
     return true;
 }
 

@@ -30,7 +30,8 @@
         "/dist/content.js"
       ],
       "css": [
-        "/styles/sidepanel.css"
+        "/styles/sidepanel.css",
+        "/styles/brightspace.css"
       ]
     }
   ],

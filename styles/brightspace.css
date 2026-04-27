@@ -1,0 +1,16 @@
+:root {
+    --background-color: #333;
+    --widget-color: #2c2c2c;
+}
+
+.d2l-homepage {
+    background-color: var(--background-color);
+}
+
+.d2l-page-main-padding {
+    background-color: var(--background-color);
+}
+
+body .d2l-navigation-s {
+    background-color: var(--background-color);
+}

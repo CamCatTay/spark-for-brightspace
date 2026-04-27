@@ -1,3 +1,29 @@
+:root {
+    --muted-text-color: #808080;
+    --bold-text-color: #1a1a1a;
+    --regular-text-color: #5f5f5f;
+    --background-color: #ffffff;
+    --scrollbar-width: thin;
+    --scrollbar-color: #cecece #fff;
+    --section-border-color: #e0e0e0;
+    --regular-hover-color: #f9f9f9;
+    --regular-active-color: #ebebeb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --muted-text-color: #808080;
+    --bold-text-color: #ffffff;
+    --regular-text-color: #dddddd;
+    --background-color: #333333;
+    --scrollbar-width: thin;
+    --scrollbar-color: #585858 #2e2e2e;
+    --section-border-color: #575757;
+    --regular-hover-color: #2c2c2c;
+    --regular-active-color: #292929;
+  }
+}
+
 :where(#spark-widget) * {
     margin: 0;
     padding: 0;
@@ -6,8 +32,8 @@
 
 html, body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-    background-color: #ffffff;
-    color: #1a1a1a;
+    background-color: var(--background-color);
+    color: var(--bold-text-color);
 }
 
 body {
@@ -116,7 +142,7 @@ body:has(#spark-widget.hidden) {
 #spark-panel {
     width: 350px;
     height: 100%;
-    background-color: #ffffff;
+    background-color: var(--background-color);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -189,14 +215,14 @@ body:has(#spark-widget.hidden) {
 }
 
 #calendar-container {
-    background-color: #ffffff;
+    background-color: var(--background-color);
     padding: 0;
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
     flex: 1;
-    scrollbar-width: thin;
-    scrollbar-color: #cecece #fff;
+    scrollbar-width: var(--scrollbar-width);
+    scrollbar-color: var(--scrollbar-color);
 }
 
 #loading-indicator {
@@ -212,9 +238,9 @@ body:has(#spark-widget.hidden) {
 .calendar-date-header {
     position: sticky;
     top: 0;
-    background-color: #ffffff;
+    background-color: var(--background-color);
     padding: 27px 16px 6px 16px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--section-border-color);
     z-index: 10;
     word-break: break-word;
 }
@@ -237,11 +263,11 @@ body:has(#spark-widget.hidden) {
     position: relative;
     padding: 8px 14px;
     margin: 0;
-    background-color: #ffffff;
+    background-color: var(--background-color);
     border: none;
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid var(--section-border-color);
     text-decoration: none;
-    color: #1a1a1a;
+    color: var(--bold-text-color);
     cursor: pointer;
     transition: all 0.2s ease;
     word-break: break-word;
@@ -264,7 +290,7 @@ body:has(#spark-widget.hidden) {
 }
 
 .calendar-item:hover {
-    background-color: #f9f9f9;
+    background-color: var(--regular-hover-color);
 }
 
 .calendar-item:active {
@@ -293,7 +319,7 @@ body:has(#spark-widget.hidden) {
 .item-name {
     font-size: 14px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--bold-text-color);
     margin-bottom: 3px;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -329,7 +355,7 @@ body:has(#spark-widget.hidden) {
 
 .item-time {
     font-size: 12px;
-    color: #5f5f5f;
+    color: var(--regular-text-color);
     font-weight: 600;
     flex-shrink: 0;
     white-space: nowrap;
@@ -337,7 +363,7 @@ body:has(#spark-widget.hidden) {
 
 .item-course {
     font-size: 12px;
-    color: #5f5f5f;
+    color: var(--regular-text-color);
     font-weight: 600;
     white-space: nowrap;
     word-break: break-word;
@@ -374,24 +400,6 @@ body:has(#spark-widget.hidden) {
     color: #999;
     font-size: 13px;
     font-style: italic;
-}
-
-/* Scrollbar styling */
-#calendar-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-#calendar-container::-webkit-scrollbar-track {
-    background: #f0f0f0;
-}
-
-#calendar-container::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 4px;
-}
-
-#calendar-container::-webkit-scrollbar-thumb:hover {
-    background: #999;
 }
 
 /* Scrollbar indicator with course color notches */
@@ -495,8 +503,8 @@ body:has(#spark-widget.hidden) {
     position: sticky;
     top: 0;
     padding: 10px 12px;
-    border-bottom: 2px solid #e0e0e0;
-    background-color: #fafafa;
+    border-bottom: 2px solid var(--section-border-color);
+    background-color: var(--background-color);
     z-index: 100;
 }
 
@@ -573,14 +581,14 @@ body:has(#spark-widget.hidden) {
 .frequency-day-label {
     font-size: 12px;
     font-weight: 600;
-    color: #333;
+    color: var(--bold-text-color);
     text-transform: uppercase;
 }
 
 .frequency-day-date {
     font-size: 12px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--bold-text-color);
 }
 
 .frequency-bar-container {
@@ -609,7 +617,7 @@ body:has(#spark-widget.hidden) {
 
 .frequency-day-count {
     font-size: 12px;
-    color: #666;
+    color: var(--bold-text-color);
     font-weight: 500;
     margin-top: 2px;
 }
@@ -621,7 +629,7 @@ body:has(#spark-widget.hidden) {
     right: 350px; /* overridden by JS to match panel width */
     width: 280px;
     height: 100%;
-    background-color: #ffffff;
+    background-color: var(--background-color);
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
@@ -643,15 +651,15 @@ body:has(#spark-widget.hidden) {
     align-items: center;
     justify-content: space-between;
     padding: 16px 12px;
-    border-bottom: 2px solid #e0e0e0;
-    background-color: #f5f5f5;
+    border-bottom: 2px solid var(--section-border-color);
+    background-color: var(--background-color);
     flex-shrink: 0;
 }
 
 .settings-title {
     font-size: 16px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--bold-text-color);
     letter-spacing: 0.2px;
 }
 
@@ -659,15 +667,15 @@ body:has(#spark-widget.hidden) {
     flex: 1;
     overflow-y: auto;
     padding: 16px 12px;
-    background-color: #fafafa;
-    scrollbar-width: thin;
-    scrollbar-color: #cecece #fff;
+    background-color: var(--background-color);
+    scrollbar-width: var(--scrollbar-width);
+    scrollbar-color: var(--scrollbar-color);
 }
 
 .settings-section {
     margin-bottom: 20px;
-    background-color: #ffffff;
-    border: 1px solid #e5e5e5;
+    background-color: var(--background-color);
+    border: 1px solid var(--section-border-color);
     border-radius: 6px;
     padding: 12px;
 }
@@ -676,7 +684,7 @@ body:has(#spark-widget.hidden) {
     display: block;
     font-size: 13px;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--bold-text-color);
     letter-spacing: 0.2px;
 }
 
@@ -692,11 +700,11 @@ body:has(#spark-widget.hidden) {
 .settings-input {
     width: 80px;
     padding: 6px 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--section-border-color);
     border-radius: 4px;
     font-size: 13px;
-    color: #1a1a1a;
-    background-color: #ffffff;
+    color: var(--bold-text-color);
+    background-color: var(--background-color);
     font-family: inherit;
 }
 
@@ -723,7 +731,7 @@ body:has(#spark-widget.hidden) {
 }
 
 .settings-course-row:hover {
-    background-color: #f5f5f5;
+    background-color: var(--regular-hover-color);
 }
 
 .settings-course-checkbox {
@@ -743,7 +751,7 @@ body:has(#spark-widget.hidden) {
 
 .settings-course-name {
     font-size: 12px;
-    color: #1a1a1a;
+    color: var(--bold-text-color);
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;

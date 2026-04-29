@@ -27,6 +27,7 @@ export const SHOW_COMPLETED_STORAGE_KEY = "spark-show-completed";
 export const SHOW_ON_START_STORAGE_KEY = "spark-setting-show-on-start";
 export const SPARK_DARK_MODE_STORAGE_KEY = "spark-dark-mode";
 export const SPARK_D2L_DARK_MODE_STORAGE_KEY = "spark-d2l-dark-mode";
+export const LAST_FETCH_COMPLETED_AT_STORAGE_KEY = "spark-last-fetch-completed-at";
 // Tab-local, session-scoped (sessionStorage — NOT synced across tabs):
 export const HIDDEN_COURSES_SESSION_KEY = "spark-hidden-courses";
 export const HIDDEN_TYPES_SESSION_KEY = "spark-hidden-types";
@@ -54,10 +55,7 @@ export function read_enabled_flag(key: string): boolean {
 }
 
 export function read_calendar_start_days_back(): number {
-    const raw = parseInt(
-        localStorage.getItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY) ?? String(CALENDAR_DAYS_BACK_DEFAULT),
-        10,
-    );
+    const raw = parseInt(localStorage.getItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY) ?? String(CALENDAR_DAYS_BACK_DEFAULT),10);
     return Number.isFinite(raw) && raw >= 0 ? raw : CALENDAR_DAYS_BACK_DEFAULT;
 }
 
@@ -67,6 +65,10 @@ export function truncate_course_name(name: string): string {
         .map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
         .join("|");
     return name.replace(new RegExp(`\\s*(${pattern})\\b.*$`, "i"), "").trim();
+}
+
+export function read_last_fetch_completed_at(): number {
+    return parseInt(localStorage.getItem(LAST_FETCH_COMPLETED_AT_STORAGE_KEY) ?? "0", 10);
 }
 
 // Mutable shared state — a single object so any importing module can read and

@@ -289,15 +289,15 @@ export function initialize_gui(): void {
     update_gui({} as CourseData, true);
 }
 
-export function add_data_status_indicator(is_stale: boolean): void {
-    document.querySelector(`.${CalendarCss.FETCH_STATUS}`)?.remove();
+// Panel can load before this exists resulting in no indicator
+// currently no indicator when reloading or switching pages
+export function toggle_fetching_indicator(status: boolean): void {
 
     const last_fetched_el = document.querySelector(`.${FrequencyChartCss.LAST_FETCHED}`);
     if (!last_fetched_el) return;
 
     last_fetched_el.classList.remove(CalendarCss.FETCHING);
-
-    if (is_stale) {
+    if (status) {
         const fetch_status = document.createElement("span");
         fetch_status.className = CalendarCss.FETCH_STATUS;
         const label_text = document.createTextNode(FETCHING_STATUS_LABEL);
@@ -307,6 +307,8 @@ export function add_data_status_indicator(is_stale: boolean): void {
         fetch_status.appendChild(spinner);
         last_fetched_el.appendChild(fetch_status);
         last_fetched_el.classList.add(CalendarCss.FETCHING);
+    } else {
+        document.querySelector(`.${CalendarCss.FETCH_STATUS}`)?.remove();
     }
 }
 
@@ -330,7 +332,9 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
     }
 
     if (is_from_cache) {
-        add_data_status_indicator(true);
+        //Turning this on causes Fetching status indicator to loop
+        //until throttle cooldown is lifted and a fetch can happen
+        //add_data_status_indicator(true);
     }
 
     if (!min_date || !max_date) {

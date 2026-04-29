@@ -2,6 +2,7 @@
 // See LICENSE file for terms of use.
 
 import { Action } from "./shared/actions";
+import { LAST_FETCH_COMPLETED_AT_STORAGE_KEY as LAST_FETCH_STARTED_AT_STORAGE_KEY } from "./ui/ui-state";;
 import {
     safe_send_message,
     inject_embedded_ui,
@@ -12,7 +13,7 @@ import {
 import {
     initialize_gui,
     update_gui,
-    add_data_status_indicator,
+    toggle_fetching_indicator,
     apply_settings,
     set_last_fetched_time,
     register_ui_callbacks,
@@ -20,6 +21,7 @@ import {
 import { scroll_to_today } from "./ui/frequency-chart";
 import { build_settings_panel, update_settings_panel } from "./ui/settings-menu";
 import type { CourseData } from "./shared/types";
+import { read_last_fetch_completed_at, ui_state } from "./ui/ui-state";
 
 const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
@@ -27,28 +29,35 @@ const SETTINGS_VALUE_KEY = "spark-user-settings";
 const SCROLL_POS_SESSION_KEY = "spark-scroll-pos";
 const SPARK_INITIALIZED_FLAG = "__spark_initialized__";
 
-const FETCH_COOLDOWN_MS = 5 * 60 * 1000;
+// Cooldown between time to live fetches. (Mouse movement, Page navigation)
+// Fetches are forced if user clicks refresh button
+const TTL_COOLDOWN_TIME_MINUTES = 15;
+
+const FETCH_COOLDOWN_MS = TTL_COOLDOWN_TIME_MINUTES * 60 * 1000;
 const INTERACTION_DEBOUNCE_MS = 2000;
 const SCROLL_SAVE_DEBOUNCE_MS = 300;
+const DEFAULT_DEBOUNCE_MS = 10000
 
 let course_data: CourseData = {};
 let calendar_container: HTMLElement | null = null;
 let fetch_in_flight = false;
 let remote_fetch_in_flight = false;
-let last_fetch_completed_at = 0;
 let interaction_debounce_timer: ReturnType<typeof setTimeout> | undefined;
 let scroll_save_debounce: ReturnType<typeof setTimeout> | undefined;
 
 function fetch_and_store_courses() {
+    if (Date.now() - read_last_fetch_completed_at() < DEFAULT_DEBOUNCE_MS)
     if (fetch_in_flight) return;
+    localStorage.setItem(LAST_FETCH_STARTED_AT_STORAGE_KEY, Date.now().toString());
     fetch_in_flight = true;
-    add_data_status_indicator(true);
+    toggle_fetching_indicator(true);
     safe_send_message({ action: Action.BROADCAST_FETCH_STARTED });
     safe_send_message({ action: Action.FETCH_COURSES }, on_fetch_response);
 }
 
 function on_fetch_response(response: unknown) {
     fetch_in_flight = false;
+    toggle_fetching_indicator(false);
     if (!response) return;
     course_data = JSON.parse(JSON.stringify(response));
     const fetched_at = new Date();
@@ -60,7 +69,6 @@ function on_fetch_response(response: unknown) {
 }
 
 function on_course_data_stored() {
-    last_fetch_completed_at = Date.now();
     update_gui(course_data, false);
     safe_send_message({ action: Action.BROADCAST_COURSE_DATA_UPDATED });
 }
@@ -76,6 +84,7 @@ function is_any_fetch_in_flight() {
 }
 
 function is_fetch_cooldown_active() {
+    const last_fetch_completed_at = read_last_fetch_completed_at()
     return Date.now() - last_fetch_completed_at < FETCH_COOLDOWN_MS;
 }
 
@@ -168,7 +177,7 @@ function on_page_ready() {
     register_ui_callbacks({ on_refresh: fetch_and_store_courses, on_rerender: rerender_with_cached_data });
     register_smart_fetch_listeners();
     load_initial_cached_data();
-    fetch_and_store_courses();
+    try_smart_fetch();
 }
 
 function reload_open_tabs() {
@@ -181,7 +190,7 @@ function reload_open_tabs() {
 
 function on_message_fetch_started() {
     remote_fetch_in_flight = true;
-    add_data_status_indicator(true);
+    toggle_fetching_indicator(true);
 }
 
 function on_remote_course_data_loaded(result: { [key: string]: unknown }) {

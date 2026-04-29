@@ -75,8 +75,8 @@ export function truncate_course_name(name: string): string {
 export const ui_state = {
     calendar_start_days_back: read_calendar_start_days_back(),
     show_completed_items: read_enabled_flag(SHOW_COMPLETED_STORAGE_KEY),
-    spark_dark_mode: read_enabled_flag(SPARK_DARK_MODE_STORAGE_KEY),
-    spark_d2l_dark_mode: read_enabled_flag(SPARK_D2L_DARK_MODE_STORAGE_KEY),
+    spark_dark_mode: localStorage.getItem(SPARK_DARK_MODE_STORAGE_KEY) ?? false,
+    spark_d2l_dark_mode: localStorage.getItem(SPARK_D2L_DARK_MODE_STORAGE_KEY) ?? false,
     show_on_start: read_enabled_flag(SHOW_ON_START_STORAGE_KEY),
     hidden_course_ids: read_session_set(HIDDEN_COURSES_SESSION_KEY),
     hidden_types: read_session_set(HIDDEN_TYPES_SESSION_KEY),

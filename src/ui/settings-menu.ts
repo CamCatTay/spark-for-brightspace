@@ -146,7 +146,7 @@ function build_spark_dark_mode_section(): HTMLElement {
     const toggle = create_toggle_setting(
         "Spark Dark Mode",
         "Enables dark mode for the spark side panel.",
-        ui_state.spark_dark_mode,
+        Boolean(ui_state.spark_dark_mode),
         on_spark_dark_mode_changed
     );
     return toggle.section;
@@ -156,7 +156,7 @@ function build_d2l_dark_mode_section(): HTMLElement {
     const toggle = create_toggle_setting(
         "D2L Dark Mode (Experimental)",
         "Enables dark mode for D2L. Still under development, may not function as expected.",
-        ui_state.spark_d2l_dark_mode,
+        Boolean(ui_state.spark_d2l_dark_mode),
         on_d2l_dark_mode_changed
     );
     return toggle.section;

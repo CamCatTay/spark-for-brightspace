@@ -16,7 +16,7 @@ const EXPANSION_STATE_KEY = "spark-expanded";
 const PANEL_WIDTH_KEY = "spark-width";
 const TOGGLE_BTN_TOP_KEY = "spark-toggle-btn-top";
 
-const DEFAULT_PANEL_WIDTH = 400;
+const DEFAULT_PANEL_WIDTH = 500;
 const MIN_PANEL_WIDTH = 330;
 const PANEL_SLIDE_IN_MS = 300;
 const SETTINGS_TRANSITION_MS = 250;

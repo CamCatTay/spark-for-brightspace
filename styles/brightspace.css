@@ -1,16 +1,56 @@
-:root {
-    --background-color: #333;
-    --widget-color: #2c2c2c;
+:root.spark-dark-mode {
+    filter: invert(1) hue-rotate(180deg) !important;
+
+    img, video, [style*="background-image"] {
+        filter: invert(1) hue-rotate(180deg) !important;
+    }
+
+    /* revert the color invert on spark related elements*/
+    #spark-widget, #spark-toggle-btn, #spark-settings-panel
+    {
+        filter: invert(1) hue-rotate(180deg) !important;
+    }
 }
 
-.d2l-homepage {
-    background-color: var(--background-color);
+/*
+document.documentElement.classList.toggle('spark-dark-mode');
+
+const isEnabled = document.documentElement.classList.contains('spark-dark-mode');
+chrome.storage.local.set({ darkModeEnabled: isEnabled });
+*/
+
+/*
+Legacy of trying to override elements
+Shadow roots make it very difficult and wonky
+Keep for later reference but a programmatic way to
+change elements from light to dark will be needed
+to succeed just inverting page colors
+
+body .d2l-navigation-s,
+.d2l-page-main-padding,
+.d2l-tile, .d2l-body-main-wrapper, .ek-modal-content
+{
+    background-color: var(--d2l-primary-background-color) !important;
 }
 
-.d2l-page-main-padding {
-    background-color: var(--background-color);
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend {
+    color: var(--d2l-regular-text-color);
 }
 
-body .d2l-navigation-s {
-    background-color: var(--background-color);
+body .d2l-widget, .div.dco div.dco_c, div.dco_f div.dco_c {
+    background-color: var(--d2l-widget-background-color) !important;
 }
+
+body .d2l-navigation-s-header-logo-area a.d2l-navigation-s-link, .d2l-navigation-s-header-logo-area a.d2l-navigation-s-link:link,
+.d2l-navigation-s-header-logo-area a.d2l-navigation-s-link:visited, .d2l-collapsible-panel-opener,
+.d2l-typography .d2l-heading-1, .d2l-typography .d2l-heading-2, .d2l-typography .d2l-heading-3,
+.d2l-typography .d2l-heading-4, .d2l-typography .vui-heading-1, .d2l-typography .vui-heading-2,
+.d2l-typography .vui-heading-3, .d2l-typography .vui-heading-4, .d2l-navigation-s-personal-menu-text
+{
+    color: var(--d2l-bold-text-color) !important;
+}
+
+body .vui-list, .vui-list>li {
+    color: var(--d2l-regular-text-color)
+}
+*/

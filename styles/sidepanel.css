@@ -44,7 +44,7 @@ html, body {
 
 body {
     margin-right: 350px;
-    transition: margin-right var(--spark-spark-slide-ms) ease;
+    transition: margin-right var(--spark-slide-ms) ease;
 }
 
 #spark-widget {
@@ -56,12 +56,12 @@ body {
     z-index: 9999;
     display: flex;
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-    animation: slideInPanel var(--spark-spark-slide-ms) ease-out;
+    animation: slideInPanel var(--spark-slide-ms) ease-out;
     overflow: hidden;
 }
 
 #spark-widget.hidden {
-    animation: slideOutPanel var(--spark-spark-slide-ms) ease-in;
+    animation: slideOutPanel var(--spark-slide-ms) ease-in;
     pointer-events: none;
 }
 
@@ -89,20 +89,20 @@ body {
 
 @keyframes slideInToggle {
     from { right: 0px; }
-    to   { right: var(--spark-spark-panel-width); }
+    to   { right: var(--spark-panel-width); }
 }
 
 @keyframes slideOutToggle {
-    from { right: var(--spark-spark-panel-width); }
+    from { right: var(--spark-panel-width); }
     to   { right: 0px; }
 }
 
 .spark-toggle-slide-in {
-    animation: slideInToggle var(--spark-spark-slide-ms) ease-out;
+    animation: slideInToggle var(--spark-slide-ms) ease-out;
 }
 
 .spark-toggle-slide-out {
-    animation: slideOutToggle var(--spark-spark-slide-ms) ease-in;
+    animation: slideOutToggle var(--spark-slide-ms) ease-in;
 }
 
 @keyframes spin {
@@ -410,15 +410,15 @@ body:has(#spark-widget.hidden) {
 
 /* Scrollbar indicator with course color notches */
 :root {
-    --spark-scrollbar-notch-width: 7px;
-    --spark-scrollbar-notch-height: 3px;
+    --scrollbar-notch-width: 7px;
+    --scrollbar-notch-height: 3px;
 }
 
 .scrollbar-indicator {
     position: absolute;
     right: 0;
     top: 0;
-    width: var(--spark-scrollbar-notch-width);
+    width: var(--scrollbar-notch-width);
     height: 100%;
     background-color: transparent;
     pointer-events: none;
@@ -428,15 +428,15 @@ body:has(#spark-widget.hidden) {
 .scrollbar-notch {
     position: absolute;
     right: 0;
-    width: var(--spark-scrollbar-notch-width);
-    height: var(--spark-scrollbar-notch-height);
+    width: var(--scrollbar-notch-width);
+    height: var(--scrollbar-notch-height);
     opacity: 0.8;
     transition: opacity 0.2s ease, height 0.2s ease;
 }
 
 .scrollbar-notch:hover {
     opacity: 1;
-    height: calc(var(--spark-scrollbar-notch-height) * 1.5);
+    height: calc(var(--scrollbar-notch-height) * 1.5);
     cursor: pointer;
 }
 
@@ -572,7 +572,7 @@ body:has(#spark-widget.hidden) {
     padding: 2px;
 }
 
-.frequency-day--spark-today {
+.frequency-day--today {
     background-color: var(--spark-frequency-bar-background-color);
 }
 
@@ -784,7 +784,7 @@ input[type="checkbox"]:focus-visible {
     align-items: center;
     justify-content: center;
     z-index: 10001;
-    transition: filter var(--spark-spark-slide-ms) ease, background var(--spark-spark-slide-ms) ease;
+    transition: filter var(--spark-slide-ms) ease, background var(--spark-slide-ms) ease;
     color: #ffffff;
     font-size: 13px;
     line-height: 1;

@@ -2,7 +2,8 @@
 // See LICENSE file for terms of use.
 
 import { get_course_content } from "./api/brightspace";
-import { Action } from "./shared/actions";
+import { BROADCAST_COURSE_DATA_UPDATED, BROADCAST_FETCH_STARTED, BROADCAST_SETTINGS_CHANGED, COURSE_DATA_UPDATED, FETCH_COURSES, FETCH_STARTED, OPEN_FAQ, SETTINGS_CHANGED, TOGGLE_PANEL } from "./shared/constants/actions";
+import { ui_state } from "./ui/ui-state";
 
 export const SETTINGS_VALUE_KEY = "spark-user-settings";
 export const D2L_URL_FILTER = "/d2l/";
@@ -53,11 +54,11 @@ function handle_open_faq(): void {
 }
 
 function handle_fetch_started(sender: chrome.runtime.MessageSender): void {
-    broadcast_to_d2l_tabs(sender.tab?.id, { action: Action.FETCH_STARTED });
+    broadcast_to_d2l_tabs(sender.tab?.id, { action: FETCH_STARTED });
 }
 
 function handle_course_data_updated(sender: chrome.runtime.MessageSender): void {
-    broadcast_to_d2l_tabs(sender.tab?.id, { action: Action.COURSE_DATA_UPDATED });
+    broadcast_to_d2l_tabs(sender.tab?.id, { action: COURSE_DATA_UPDATED });
 }
 
 function save_settings(settings: unknown): void {
@@ -66,7 +67,7 @@ function save_settings(settings: unknown): void {
 
 function handle_settings_changed(sender: chrome.runtime.MessageSender, settings: unknown): void {
     save_settings(settings);
-    broadcast_to_d2l_tabs(sender.tab?.id, { action: Action.SETTINGS_CHANGED, settings });
+    broadcast_to_d2l_tabs(sender.tab?.id, { action: SETTINGS_CHANGED, settings });
 }
 
 function handle_message(
@@ -74,22 +75,22 @@ function handle_message(
     sender: chrome.runtime.MessageSender,
     send_response: (response: unknown) => void,
 ): boolean | void {
-    if (request.action === Action.FETCH_COURSES) {
+    if (request.action === FETCH_COURSES) {
         return handle_fetch_courses(sender, send_response);
     }
-    if (request.action === Action.OPEN_FAQ) {
+    if (request.action === OPEN_FAQ) {
         handle_open_faq();
         return;
     }
-    if (request.action === Action.BROADCAST_FETCH_STARTED) {
+    if (request.action === BROADCAST_FETCH_STARTED) {
         handle_fetch_started(sender);
         return;
     }
-    if (request.action === Action.BROADCAST_COURSE_DATA_UPDATED) {
+    if (request.action === BROADCAST_COURSE_DATA_UPDATED) {
         handle_course_data_updated(sender);
         return;
     }
-    if (request.action === Action.BROADCAST_SETTINGS_CHANGED) {
+    if (request.action === BROADCAST_SETTINGS_CHANGED) {
         handle_settings_changed(sender, request.settings);
         return;
     }
@@ -97,7 +98,7 @@ function handle_message(
 
 function handle_icon_clicked(tab: chrome.tabs.Tab): void {
     if (is_d2l_tab(tab.url)) {
-        chrome.tabs.sendMessage(tab.id!, { action: Action.TOGGLE_PANEL });
+        chrome.tabs.sendMessage(tab.id!, { action: TOGGLE_PANEL });
     }
 }
 

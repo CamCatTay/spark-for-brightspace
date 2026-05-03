@@ -5,8 +5,7 @@
 // structured Course and Item objects consumed by the UI.
 
 import type { CourseShape } from "../shared/types";
-import { BrightspaceHtml } from "../ui/dom-constants";
-import { getDateOnly } from "../utils/date-utils";
+import { BrightspaceHtml } from "../shared/constants/ui";
 
 export interface BrightspaceItem {
     OrgUnitId: number;

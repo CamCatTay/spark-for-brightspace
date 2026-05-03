@@ -1,7 +1,6 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { Action } from "./shared/actions";
 import { LAST_FETCH_COMPLETED_AT_STORAGE_KEY as LAST_FETCH_STARTED_AT_STORAGE_KEY } from "./ui/ui-state";;
 import {
     safe_send_message,
@@ -22,6 +21,7 @@ import { scroll_to_today } from "./ui/frequency-chart";
 import { build_settings_panel, update_settings_panel } from "./ui/settings-menu";
 import type { CourseData } from "./shared/types";
 import { read_last_fetch_completed_at, ui_state } from "./ui/ui-state";
+import { BROADCAST_COURSE_DATA_UPDATED, BROADCAST_FETCH_STARTED, COURSE_DATA_UPDATED, FETCH_COURSES, OPEN_URL, SETTINGS_CHANGED, TOGGLE_PANEL } from "./shared/constants/actions";
 
 const COURSE_DATA_KEY = "courseData";
 const LAST_FETCHED_KEY = "spark-last-fetched";
@@ -48,11 +48,11 @@ let scroll_save_debounce: ReturnType<typeof setTimeout> | undefined;
 function fetch_and_store_courses() {
     if (Date.now() - read_last_fetch_completed_at() < DEFAULT_DEBOUNCE_MS)
     if (fetch_in_flight) return;
-    localStorage.setItem(LAST_FETCH_STARTED_AT_STORAGE_KEY, Date.now().toString());
+    chrome.storage.local.set({LAST_FETCH_STARTED_AT_STORAGE_KEY: Date.now().toString()});
     fetch_in_flight = true;
     toggle_fetching_indicator(true);
-    safe_send_message({ action: Action.BROADCAST_FETCH_STARTED });
-    safe_send_message({ action: Action.FETCH_COURSES }, on_fetch_response);
+    safe_send_message({ action: BROADCAST_FETCH_STARTED });
+    safe_send_message({ action: FETCH_COURSES }, on_fetch_response);
 }
 
 function on_fetch_response(response: unknown) {
@@ -70,7 +70,7 @@ function on_fetch_response(response: unknown) {
 
 function on_course_data_stored() {
     update_gui(course_data, false);
-    safe_send_message({ action: Action.BROADCAST_COURSE_DATA_UPDATED });
+    safe_send_message({ action: BROADCAST_COURSE_DATA_UPDATED });
 }
 
 function rerender_with_cached_data() {
@@ -217,11 +217,11 @@ function on_message_settings_changed(settings: { days_back: number; show_complet
 }
 
 function handle_background_message(request: { action: string; url?: string; settings?: { days_back: number; show_completed?: boolean } }) {
-    if (request.action === Action.FETCH_STARTED) on_message_fetch_started();
-    if (request.action === Action.COURSE_DATA_UPDATED) on_message_course_data_updated();
-    if (request.action === Action.OPEN_URL) on_message_open_url(request.url!);
-    if (request.action === Action.TOGGLE_PANEL) toggle_panel();
-    if (request.action === Action.SETTINGS_CHANGED) on_message_settings_changed(request.settings!);
+    if (request.action === FETCH_COURSES) on_message_fetch_started();
+    if (request.action === COURSE_DATA_UPDATED) on_message_course_data_updated();
+    if (request.action === OPEN_URL) on_message_open_url(request.url!);
+    if (request.action === TOGGLE_PANEL) toggle_panel();
+    if (request.action === SETTINGS_CHANGED) on_message_settings_changed(request.settings!);
 }
 
 function initialize() {

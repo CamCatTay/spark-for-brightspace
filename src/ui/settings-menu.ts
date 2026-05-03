@@ -1,11 +1,10 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { Action } from "../shared/actions";
-import { getCourseColor } from "../utils/color-utils";
+import { getCourseColor } from "../shared/utils/color-utils";
 import { safe_send_message } from "./panel";
-import { create_toggle_setting } from "../utils/settings-menu-utils";
-import { SettingsCss } from "./dom-constants";
+import { create_toggle_setting } from "../shared/utils/settings-menu-utils";
+import { SettingsCss } from "../shared/constants/ui";
 import {
     ui_state,
     truncate_course_name,
@@ -21,6 +20,7 @@ import {
     SPARK_D2L_DARK_MODE_STORAGE_KEY,
 } from "./ui-state";
 import type { CourseData, CourseShape } from "../shared/types";
+import { BROADCAST_SETTINGS_CHANGED } from "../shared/constants/actions";
 
 function get_synced_settings() {
     return {
@@ -34,7 +34,7 @@ function clamp_days_back(raw_value: number): number {
 }
 
 function broadcast_settings_changed(): void {
-    safe_send_message({ action: Action.BROADCAST_SETTINGS_CHANGED, settings: get_synced_settings() });
+    safe_send_message({ action: BROADCAST_SETTINGS_CHANGED, settings: get_synced_settings() });
 }
 
 function trigger_rerender(): void {
@@ -45,21 +45,21 @@ function on_days_back_changed(input: HTMLInputElement): void {
     const clamped = clamp_days_back(parseInt(input.value, 10));
     input.value = clamped.toString();
     ui_state.calendar_start_days_back = clamped;
-    localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, clamped.toString());
+    chrome.storage.local.set({CALENDAR_START_DAYS_BACK_STORAGE_KEY: clamped.toString()});
     broadcast_settings_changed();
     trigger_rerender();
 }
 
 function on_show_completed_changed(checked: boolean): void {
     ui_state.show_completed_items = checked;
-    localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, checked.toString());
+    chrome.storage.local.set({SHOW_COMPLETED_STORAGE_KEY: checked.toString()});
     broadcast_settings_changed();
     trigger_rerender();
 }
 
 function on_show_on_start_changed(checked: boolean): void {
     ui_state.show_on_start = checked;
-    localStorage.setItem(SHOW_ON_START_STORAGE_KEY, checked.toString());
+    chrome.storage.local.set({SHOW_ON_START_STORAGE_KEY: checked.toString()});
     broadcast_settings_changed();
     trigger_rerender();
 }
@@ -91,7 +91,7 @@ function on_spark_dark_mode_changed(checked: boolean) {
         document.documentElement.classList.add(SettingsCss.SPARK_DARK_MODE);
     }
     ui_state.spark_dark_mode = checked;
-    localStorage.setItem(SPARK_DARK_MODE_STORAGE_KEY, checked.toString());
+    chrome.storage.local.set({SPARK_DARK_MODE_STORAGE_KEY: checked.toString()});
     broadcast_settings_changed();
     trigger_rerender();
 }
@@ -103,7 +103,7 @@ function on_d2l_dark_mode_changed(checked: boolean) {
         document.documentElement.classList.add(SettingsCss.SPARK_D2L_DARK_MODE);
     }
     ui_state.spark_d2l_dark_mode = checked;
-    localStorage.setItem(SPARK_D2L_DARK_MODE_STORAGE_KEY, checked.toString());
+    chrome.storage.local.set({SPARK_D2L_DARK_MODE_STORAGE_KEY: checked.toString()});
     broadcast_settings_changed();
     trigger_rerender();
 }

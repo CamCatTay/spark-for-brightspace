@@ -1,7 +1,7 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { SettingsCss } from "../ui/dom-constants";
+import { SettingsCss } from "../constants/ui";
 
 export function create_toggle_setting(title_text: string, description_text: string, default_toggle: boolean, onChange?: (checked: boolean) => void) {
     const section = document.createElement("div");

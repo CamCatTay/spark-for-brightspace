@@ -2,7 +2,7 @@
 // See LICENSE file for terms of use.
 
 import type { CourseData } from "../shared/types";
-import { SettingsCss } from "./dom-constants";
+import { SettingsCss } from "../shared/constants/ui";
 
 export const DAYS_IN_WEEK = 7;
 export const CALENDAR_DAYS_BACK_DEFAULT = 7;

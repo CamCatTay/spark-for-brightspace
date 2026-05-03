@@ -1,13 +1,13 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { Action } from "../shared/actions";
-import { getWeekStart, getDateKey } from "../utils/date-utils";
+import { getWeekStart, getDateKey } from "../shared/utils/date-utils";
 import { safe_send_message, panel_width } from "./panel";
 import { build_settings_panel } from "./settings-menu";
 import { ui_state, DAYS_IN_WEEK, MONTH_NAMES_SHORT, DAY_LABELS } from "./ui-state";
-import { FrequencyChartCss, CalendarCss, SettingsCss, PanelCss } from "./dom-constants";
+import { FrequencyChartCss, CalendarCss, SettingsCss, PanelCss } from "../shared/constants/ui";
 import type { CourseShape, ItemShape } from "../shared/types";
+import { OPEN_FAQ } from "../shared/constants/actions";
 
 const PREV_WEEK_ICON = "‹";
 const NEXT_WEEK_ICON = "›";
@@ -107,7 +107,7 @@ function create_faq_button(): HTMLButtonElement {
     btn.textContent = FAQ_ICON;
     btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        safe_send_message({ action: Action.OPEN_FAQ });
+        safe_send_message({ action: OPEN_FAQ });
     });
     return btn;
 }

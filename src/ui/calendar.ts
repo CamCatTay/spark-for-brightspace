@@ -1,8 +1,8 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader } from "../utils/date-utils";
-import { getCourseColor, ensureCourseColorsAssigned } from "../utils/color-utils";
+import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader } from "../shared/utils/date-utils";
+import { getCourseColor, ensureCourseColorsAssigned } from "../shared/utils/color-utils";
 import { create_frequency_chart } from "./frequency-chart";
 import { update_settings_course_list } from "./settings-menu";
 import {
@@ -14,7 +14,7 @@ import {
     CALENDAR_START_DAYS_BACK_STORAGE_KEY,
     SHOW_COMPLETED_STORAGE_KEY,
 } from "./ui-state";
-import { CalendarCss, FrequencyChartCss, PanelCss, SettingsCss } from "./dom-constants";
+import { CalendarCss, FrequencyChartCss, PanelCss, SettingsCss } from "../shared/constants/ui";
 import type { CourseData, CourseShape, ItemShape } from "../shared/types";
 
 const AVAILABLE_ON_PREFIX = "Available on ";
@@ -362,11 +362,11 @@ export function register_ui_callbacks({ on_refresh, on_rerender }: { on_refresh:
 
 export function apply_settings({ days_back, show_completed }: { days_back: number; show_completed?: boolean }): void {
     ui_state.calendar_start_days_back = days_back;
-    localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, days_back.toString());
+    chrome.storage.local.set({CALENDAR_START_DAYS_BACK_STORAGE_KEY: days_back.toString()});
 
     if (show_completed !== undefined) {
         ui_state.show_completed_items = show_completed;
-        localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, show_completed.toString());
+        chrome.storage.local.set({SHOW_COMPLETED_STORAGE_KEY: show_completed.toString()});
     }
 
     const days_input = document.getElementById(SettingsCss.DAYS_BACK_INPUT_ID) as HTMLInputElement | null;

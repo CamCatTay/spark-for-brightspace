@@ -18,8 +18,4 @@ export function request_smart_fetch(force = false): void {
     safe_send_message({ action: FETCH_COURSES });
 }
 
-document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") request_smart_fetch();
-});
-
 register_refresh_callback(() => request_smart_fetch(true));

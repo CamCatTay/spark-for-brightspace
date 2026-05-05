@@ -8,10 +8,11 @@ import { truncate_course_name } from "../shared/utils/string-utils";
 import { DUE_TODAY_COLOR, DUE_TOMORROW_COLOR, get_setting, OVERDUE_COLOR } from "../core/settings";
 import { CalendarCss, FrequencyChartCss, PanelCss } from "../shared/constants/ui";
 import type { CourseData, CourseShape, ItemShape } from "../shared/types";
-import { CALENDAR_DAYS_BACK, COURSE_DATA, HIDDEN_COURSES, HIDDEN_TYPES, SCROLL_POS, SHOW_COMPLETED_ASSIGNMENTS } from "../shared/constants/storage-keys";
+import { CALENDAR_DAYS_BACK, COURSE_DATA, HIDDEN_COURSES, HIDDEN_TYPES, IS_FETCHING, LAST_FETCH_COMPLETED_AT, SCROLL_POS, SHOW_COMPLETED_ASSIGNMENTS } from "../shared/constants/storage-keys";
 import { get_state, set_state } from "../core/state";
 import { register_panel_restore_callback } from "./panel";
 import { scroll_to_today } from "./frequency-chart";
+import { update_fetching_indicator, update_last_fetched_label } from "./fetch-indicator";
 
 const AVAILABLE_ON_PREFIX = "Available on ";
 
@@ -304,6 +305,9 @@ export function update_calendar(course_data: CourseData): void {
     } catch (e) {
         console.error("Error creating frequency chart (non-fatal):", e);
     }
+
+    update_last_fetched_label(get_state(LAST_FETCH_COMPLETED_AT));
+    update_fetching_indicator();
 
     if (!min_date || !max_date) {
         show_empty_state(calendar_container);

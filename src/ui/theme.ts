@@ -14,3 +14,7 @@ export async function set_dark_mode(enabled: boolean): Promise<void> {
     await chrome_storage_set(USER_SETTINGS, { ...current, [SPARK_DARK_MODE]: enabled }, "sync");
     sync_theme_to_dom(get_setting(SPARK_DARK_MODE), get_setting(D2L_DARK_MODE));
 }
+
+export function update_theme(): void {
+    sync_theme_to_dom(get_setting(SPARK_DARK_MODE), get_setting(D2L_DARK_MODE));
+}

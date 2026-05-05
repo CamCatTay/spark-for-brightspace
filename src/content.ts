@@ -5,11 +5,11 @@ import { inject_embedded_ui, register_settings_panel_builder } from "./ui/panel"
 import { update_calendar, restore_scroll_state } from "./ui/calendar";
 import { build_settings_panel, update_settings_panel, register_rerender_callback } from "./ui/settings-menu";
 import { initialize_settings } from "./core/settings";
-import { COURSE_DATA, LAST_FETCH_COMPLETED_AT } from "./shared/constants/storage-keys";
+import { COURSE_DATA } from "./shared/constants/storage-keys";
 import { get_state, initialize_state } from "./core/state";
-import { update_fetching_indicator, update_last_fetched_label } from "./ui/fetch-indicator";
 import { request_smart_fetch } from "./core/fetch";
 import "./core/storage-listener";
+import { update_theme } from "./ui/theme";
 
 async function main() {
     if ((window as any).has_spark_initialized) return;
@@ -24,15 +24,22 @@ async function main() {
     register_settings_panel_builder(build_settings_panel);
     register_rerender_callback(() => update_calendar(get_state(COURSE_DATA)));
     update_settings_panel();
+    update_theme()
 
     // 3. Render Initial State
     update_calendar(get_state(COURSE_DATA));
-    update_last_fetched_label(get_state(LAST_FETCH_COMPLETED_AT));
-    update_fetching_indicator();
     if (container) restore_scroll_state(container);
 
     // 4. Initial Fetch
     request_smart_fetch();
+
+    // Event fires when this tab is switched to
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState !== "visible") return;
+        update_theme();
+        request_smart_fetch();
+    });
 }
 
 main();

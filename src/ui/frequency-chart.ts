@@ -166,9 +166,8 @@ function build_chart_row(
 function build_last_fetched_label(): HTMLDivElement {
     const el = document.createElement("div");
     el.className = FrequencyChartCss.LAST_FETCHED_CONTAINER;
-    const text = document.createTextNode("");
+    const text = document.createTextNode(LAST_FETCHED_EMPTY);
     el.appendChild(text);
-    update_last_fetched_label(null);
     return el;
 }
 

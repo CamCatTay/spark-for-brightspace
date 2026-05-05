@@ -9,8 +9,8 @@ import {
     BROADCAST_SETTINGS_CHANGED
 } from "./shared/constants/actions";
 import { CourseShape } from "./shared/types";
+import { COURSE_DATA, IS_FETCHING, LAST_FETCH_COMPLETED_AT, USER_SETTINGS } from "./shared/constants/storage-keys";
 
-const SETTINGS_VALUE_KEY = "spark-user-settings";
 const D2L_URL_FILTER = "/d2l/";
 const FAQ_URL = "https://camcattay.github.io/spark-for-brightspace/faq.html";
 const UNINSTALL_URL = "https://camcattay.github.io/spark-for-brightspace/uninstall.html";
@@ -56,20 +56,33 @@ function inject_content_script(tab: chrome.tabs.Tab) {
     }).catch(err => console.error("Injection failed:", err));
 }
 
-function handle_action(request: Record<string, any>, sender: Record<string, any>, sendResponse: any) {
-        switch (request.action) {
+function handle_action(request: Record<string, any>, sender: Record<string, any>, _sendResponse: any) {
+    switch (request.action) {
+        // background has to fetch because content scripts die on page reload
         case FETCH_COURSES:
-            get_course_content(sender.tab?.url ?? "").then(sendResponse);
-            return true; // Keep channel open for async response
+            chrome.storage.local.get(IS_FETCHING).then((result) => {
+                if (result[IS_FETCHING]) return;
+                chrome.storage.local.set({ [IS_FETCHING]: true });
+                get_course_content(sender.tab?.url ?? "")
+                    .then((course_data) => {
+                        chrome.storage.local.set({
+                            [IS_FETCHING]: false,
+                            [COURSE_DATA]: course_data,
+                            [LAST_FETCH_COMPLETED_AT]: new Date().toISOString(),
+                        });
+                    })
+                    .catch(() => {
+                        chrome.storage.local.set({ [IS_FETCHING]: false });
+                    });
+            });
+            break;
 
         case OPEN_FAQ:
             chrome.tabs.create({ url: FAQ_URL });
             break;
 
         case BROADCAST_SETTINGS_CHANGED:
-            // Simply save to storage.
-            // Content scripts in other tabs will hear this via chrome.storage.onChanged.
-            chrome.storage.local.set({ [SETTINGS_VALUE_KEY]: request.settings });
+            chrome.storage.local.set({ [USER_SETTINGS]: request.settings });
             break;
     }
 }

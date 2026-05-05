@@ -11,7 +11,7 @@ const LAST_FETCHED_EMPTY = "Last fetched: —";
 
 export function show_fetching_indicator(): void {
     const container = document.querySelector(`.${FrequencyChartCss.LAST_FETCHED_CONTAINER}`);
-    if (!container || container.classList.contains(CalendarCss.FETCH_STATUS)) return;
+    if (!container || container.querySelector(`.${CalendarCss.FETCH_STATUS}`)) return;
 
     const fetch_status = document.createElement("span");
     const label_text = document.createTextNode(FETCHING_STATUS_LABEL);
@@ -23,16 +23,10 @@ export function show_fetching_indicator(): void {
     fetch_status.appendChild(label_text);
     fetch_status.appendChild(spinner);
     container.appendChild(fetch_status);
-
-    container.classList.add(CalendarCss.FETCH_STATUS);
 }
 
 export function hide_fetching_indicator(): void {
-    /* Remove class, has no visual effect
-    const container = document.querySelector(`.${FrequencyChartCss.LAST_FETCHED_CONTAINER}`);
-    container?.classList.remove(CalendarCss.FETCH_STATUS);
-    */
-    document.querySelector(`.${CalendarCss.FETCH_STATUS}`)?.remove();
+    document.querySelector(`.${FrequencyChartCss.LAST_FETCHED_CONTAINER} .${CalendarCss.FETCH_STATUS}`)?.remove();
 }
 
 export function update_fetching_indicator(): void {

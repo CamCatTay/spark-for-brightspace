@@ -1,9 +1,11 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { ui_state } from "../core/settings";
 import { SettingsCss } from "../shared/constants/ui";
 import { PanelCss } from "../shared/constants/ui";
+import { TOGGLE_PANEL, OPEN_URL } from "../shared/constants/actions";
+import { get_setting } from "../core/settings";
+import { SHOW_ON_START } from "../shared/constants/storage-keys";
 
 // Registered by content.ts to avoid a circular import between panel and settings-menu.
 let settings_panel_builder: (() => HTMLElement) | null = null;
@@ -309,7 +311,7 @@ async function restore_toggle_button_position(): Promise<void> {
 
 function determine_initial_panel_visibility(): boolean {
     const expansion_state = sessionStorage.getItem(EXPANSION_STATE_KEY);
-    return expansion_state === "true" || (expansion_state === null && ui_state.show_on_start);
+    return expansion_state === "true" || (expansion_state === null && get_setting(SHOW_ON_START));
 }
 
 function apply_initial_panel_state(is_visible: boolean): void {
@@ -357,3 +359,8 @@ export function inject_embedded_ui(): HTMLElement {
 
     return calendar_container;
 }
+
+chrome.runtime.onMessage.addListener((request: any) => {
+    if (request.action === TOGGLE_PANEL) toggle_panel();
+    else if (request.action === OPEN_URL) window.open(request.url, "_blank");
+});

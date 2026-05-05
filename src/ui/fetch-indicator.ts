@@ -1,6 +1,8 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
+import { get_state } from "../core/state";
+import { IS_FETCHING } from "../shared/constants/storage-keys";
 import { CalendarCss, FrequencyChartCss } from "../shared/constants/ui";
 
 const FETCHING_STATUS_LABEL = " ! Fetching...";
@@ -31,6 +33,15 @@ export function hide_fetching_indicator(): void {
     container?.classList.remove(CalendarCss.FETCH_STATUS);
     */
     document.querySelector(`.${CalendarCss.FETCH_STATUS}`)?.remove();
+}
+
+export function update_fetching_indicator(): void {
+    const is_shown = get_state(IS_FETCHING)
+    if (is_shown) {
+        show_fetching_indicator();
+    } else {
+        hide_fetching_indicator();
+    }
 }
 
 export function update_last_fetched_label(time: Date | null): void {

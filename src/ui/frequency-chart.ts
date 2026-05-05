@@ -4,10 +4,18 @@
 import { getWeekStart, getDateKey } from "../shared/utils/date-utils";
 import { safe_send_message, panel_width } from "./panel";
 import { build_settings_panel } from "./settings-menu";
-import { ui_state, DAYS_IN_WEEK, MONTH_NAMES_SHORT, DAY_LABELS } from "../core/settings";
+import { DAYS_IN_WEEK, MONTH_NAMES_SHORT, DAY_LABELS } from "../core/settings";
 import { FrequencyChartCss, CalendarCss, SettingsCss, PanelCss } from "../shared/constants/ui";
 import type { CourseShape, ItemShape } from "../shared/types";
 import { OPEN_FAQ } from "../shared/constants/actions";
+
+import { update_last_fetched_label } from "./fetch-indicator";
+
+let on_refresh_callback: (() => void) | null = null;
+
+export function register_refresh_callback(fn: () => void): void {
+    on_refresh_callback = fn;
+}
 
 const PREV_WEEK_ICON = "‹";
 const NEXT_WEEK_ICON = "›";
@@ -95,7 +103,7 @@ function create_refresh_button(): HTMLButtonElement {
         e.stopPropagation();
         btn.classList.add(FrequencyChartCss.SPINNING);
         btn.addEventListener("animationend", () => btn.classList.remove(FrequencyChartCss.SPINNING), { once: true });
-        if (ui_state.on_refresh) ui_state.on_refresh();
+        if (on_refresh_callback) on_refresh_callback();
     });
     return btn;
 }
@@ -157,10 +165,10 @@ function build_chart_row(
 
 function build_last_fetched_label(): HTMLDivElement {
     const el = document.createElement("div");
-    el.className = FrequencyChartCss.LAST_FETCHED;
-    el.textContent = ui_state.last_fetched_time
-        ? LAST_FETCHED_PREFIX + ui_state.last_fetched_time.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" })
-        : LAST_FETCHED_EMPTY;
+    el.className = FrequencyChartCss.LAST_FETCHED_CONTAINER;
+    const text = document.createTextNode("");
+    el.appendChild(text);
+    update_last_fetched_label(null);
     return el;
 }
 

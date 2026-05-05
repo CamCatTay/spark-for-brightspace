@@ -8,7 +8,10 @@ import { truncate_course_name } from "../shared/utils/string-utils";
 import { DUE_TODAY_COLOR, DUE_TOMORROW_COLOR, get_setting, OVERDUE_COLOR } from "../core/settings";
 import { CalendarCss, FrequencyChartCss, PanelCss } from "../shared/constants/ui";
 import type { CourseData, CourseShape, ItemShape } from "../shared/types";
-import { CALENDAR_DAYS_BACK, HIDDEN_COURSES, HIDDEN_TYPES, SHOW_COMPLETED_ASSIGNMENTS } from "../shared/constants/storage-keys";
+import { CALENDAR_DAYS_BACK, COURSE_DATA, HIDDEN_COURSES, HIDDEN_TYPES, SCROLL_POS, SHOW_COMPLETED_ASSIGNMENTS } from "../shared/constants/storage-keys";
+import { get_state, set_state } from "../core/state";
+import { register_panel_restore_callback } from "./panel";
+import { scroll_to_today } from "./frequency-chart";
 
 const AVAILABLE_ON_PREFIX = "Available on ";
 
@@ -278,9 +281,16 @@ function mount_scrollbar_indicator(calendar_container: HTMLElement): void {
 }
 
 
+let scroll_listener_initialized = false;
+
 export function update_calendar(course_data: CourseData): void {
     const calendar_container = document.getElementById(PanelCss.CALENDAR_CONTAINER_ID);
     if (!calendar_container) return;
+
+    if (!scroll_listener_initialized) {
+        calendar_container.addEventListener("scroll", () => save_scroll_state(calendar_container));
+        scroll_listener_initialized = true;
+    }
 
     ensureCourseColorsAssigned(course_data);
 
@@ -310,7 +320,14 @@ export function update_calendar(course_data: CourseData): void {
     mount_scrollbar_indicator(calendar_container);
 }
 
-
-export function initialize_calendar(): void {
-    update_calendar({} as CourseData);
+function save_scroll_state(container: HTMLElement): void {
+    set_state(SCROLL_POS, container.scrollTop);
 }
+
+export function restore_scroll_state(container: HTMLElement): void {
+    const saved = get_state(SCROLL_POS) as number;
+    saved > 0 ? (container.scrollTop = saved) : scroll_to_today();
+}
+
+register_panel_restore_callback(() => update_calendar(get_state(COURSE_DATA)));
+

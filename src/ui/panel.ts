@@ -1,7 +1,7 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { ui_state } from "./settings";
+import { ui_state } from "../core/settings";
 import { SettingsCss } from "../shared/constants/ui";
 import { PanelCss } from "../shared/constants/ui";
 

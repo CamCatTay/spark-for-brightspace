@@ -5,20 +5,12 @@ import { getCourseColor } from "../shared/utils/color-utils";
 import { safe_send_message } from "./panel";
 import { create_toggle_setting } from "../shared/utils/settings-menu-utils";
 import { SettingsCss } from "../shared/constants/ui";
+import { truncate_course_name } from "../shared/utils/string-utils";
 import {
-    ui_state,
-    truncate_course_name,
     ITEM_TYPES,
-    CALENDAR_START_DAYS_BACK_STORAGE_KEY,
-    SHOW_COMPLETED_STORAGE_KEY,
-    SHOW_ON_START_STORAGE_KEY,
-    HIDDEN_COURSES_SESSION_KEY,
-    HIDDEN_TYPES_SESSION_KEY,
-    SETTINGS_MIN_DAYS_BACK,
-    SETTINGS_MAX_DAYS_BACK,
-    SPARK_DARK_MODE_STORAGE_KEY,
-    SPARK_D2L_DARK_MODE_STORAGE_KEY,
-} from "./settings";
+    MIN_CALENDAR_DAYS_BACK,
+    MAX_CALENDAR_DAYS_BACK,
+} from "../core/settings";
 import type { CourseData, CourseShape } from "../shared/types";
 import { BROADCAST_SETTINGS_CHANGED } from "../shared/constants/actions";
 
@@ -30,7 +22,7 @@ function get_synced_settings() {
 }
 
 function clamp_days_back(raw_value: number): number {
-    return Math.max(SETTINGS_MIN_DAYS_BACK, Math.min(SETTINGS_MAX_DAYS_BACK, raw_value || 0));
+    return Math.max(MIN_CALENDAR_DAYS_BACK, Math.min(MAX_CALENDAR_DAYS_BACK, raw_value || 0));
 }
 
 function broadcast_settings_changed(): void {
@@ -137,8 +129,8 @@ function build_days_back_section(): HTMLElement {
     input.type = "number";
     input.id = SettingsCss.DAYS_BACK_INPUT_ID;
     input.className = SettingsCss.INPUT;
-    input.min = SETTINGS_MIN_DAYS_BACK.toString();
-    input.max = SETTINGS_MAX_DAYS_BACK.toString();
+    input.min = MIN_CALENDAR_DAYS_BACK.toString();
+    input.max = MAX_CALENDAR_DAYS_BACK.toString();
     input.value = ui_state.calendar_start_days_back.toString();
     input.addEventListener("change", () => on_days_back_changed(input));
 

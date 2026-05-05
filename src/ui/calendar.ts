@@ -4,16 +4,16 @@
 import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader } from "../shared/utils/date-utils";
 import { getCourseColor, ensureCourseColorsAssigned } from "../shared/utils/color-utils";
 import { create_frequency_chart } from "./frequency-chart";
-import { update_settings_course_list } from "./settings-menu";
+import { truncate_course_name } from "../shared/utils/string-utils";
 import {
-    ui_state,
-    truncate_course_name,
     DUE_TODAY_COLOR,
     DUE_TOMORROW_COLOR,
+    get_setting,
     OVERDUE_COLOR,
-} from "./settings";
-import { CalendarCss, FrequencyChartCss, PanelCss, SettingsCss } from "../shared/constants/ui";
+} from "../core/settings";
+import { CalendarCss, FrequencyChartCss, PanelCss } from "../shared/constants/ui";
 import type { CourseData, CourseShape, ItemShape } from "../shared/types";
+import { CALENDAR_DAYS_BACK, HIDDEN_COURSES, HIDDEN_TYPES, SHOW_COMPLETED_ASSIGNMENTS } from "../shared/constants/storage-keys";
 
 const AVAILABLE_ON_PREFIX = "Available on ";
 
@@ -40,7 +40,7 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
 
     Object.keys(course_data).forEach((course_id) => {
         const course = course_data[course_id];
-        if (ui_state.hidden_course_ids.has(course_id)) return;
+        if (get_setting(HIDDEN_COURSES).has(course_id)) return;
 
         const item_collections = [
             { items: course.assignments, type: "assignments" },
@@ -49,11 +49,11 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
         ];
 
         item_collections.forEach(({ items, type }) => {
-            if (ui_state.hidden_types.has(type)) return;
+            if (get_setting(HIDDEN_TYPES).has(type)) return;
             if (!items) return;
             Object.keys(items).forEach((item_id) => {
                 const item = items[item_id];
-                if (!item.due_date || (item.completed && !ui_state.show_completed_items)) return;
+                if (!item.due_date || (item.completed && !get_setting(SHOW_COMPLETED_ASSIGNMENTS))) return;
                 const date_only = getDateOnly(item.due_date);
                 if (!date_only) return;
                 const date_key = date_only.toISOString().split("T")[0];
@@ -283,9 +283,6 @@ function mount_scrollbar_indicator(calendar_container: HTMLElement): void {
     calendar_container.addEventListener("scroll", () => sync_scrollbar_indicator(calendar_container));
 }
 
-export function initialize_gui(): void {
-    update_gui({} as CourseData, true);
-}
 
 // Panel can load before this exists resulting in no indicator
 // currently no indicator when reloading or switching pages
@@ -314,9 +311,7 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
     const calendar_container = document.getElementById(PanelCss.CALENDAR_CONTAINER_ID);
     if (!calendar_container) return;
 
-    ui_state.last_course_data = course_data;
     ensureCourseColorsAssigned(course_data);
-    update_settings_course_list(course_data);
 
     const preserved_week_offset = get_preserved_week_offset(calendar_container);
     calendar_container.innerHTML = "";
@@ -342,30 +337,15 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
 
     const today = new Date();
     const start_date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    start_date.setDate(start_date.getDate() - ui_state.calendar_start_days_back);
+    const calendar_days_back = get_setting(CALENDAR_DAYS_BACK)
+    start_date.setDate(start_date.getDate() - calendar_days_back);
     const end_date = new Date(max_date);
 
     build_calendar_list(items_by_date, start_date, end_date, calendar_container);
     mount_scrollbar_indicator(calendar_container);
 }
 
-export function register_ui_callbacks({ on_refresh, on_rerender }: { on_refresh: () => void; on_rerender: () => void }): void {
-    ui_state.on_refresh = on_refresh;
-    ui_state.on_rerender = on_rerender;
-}
 
-export function apply_settings({ days_back, show_completed }: { days_back: number; show_completed?: boolean }): void {
-    ui_state.calendar_start_days_back = days_back;
-    chrome.storage.local.set({CALENDAR_START_DAYS_BACK_STORAGE_KEY: days_back.toString()});
-
-    if (show_completed !== undefined) {
-        ui_state.show_completed_items = show_completed;
-        chrome.storage.local.set({SHOW_COMPLETED_STORAGE_KEY: show_completed.toString()});
-    }
-
-    const days_input = document.getElementById(SettingsCss.DAYS_BACK_INPUT_ID) as HTMLInputElement | null;
-    if (days_input) days_input.value = days_back.toString();
-
-    const completed_toggle = document.getElementById(SettingsCss.SHOW_COMPLETED_INPUT_ID) as HTMLInputElement | null;
-    if (completed_toggle) completed_toggle.checked = ui_state.show_completed_items;
+export function initialize_calendar(): void {
+    update_gui({} as CourseData, true);
 }

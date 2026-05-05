@@ -4,7 +4,7 @@
 import { getWeekStart, getDateKey } from "../shared/utils/date-utils";
 import { safe_send_message, panel_width } from "./panel";
 import { build_settings_panel } from "./settings-menu";
-import { ui_state, DAYS_IN_WEEK, MONTH_NAMES_SHORT, DAY_LABELS } from "./settings";
+import { ui_state, DAYS_IN_WEEK, MONTH_NAMES_SHORT, DAY_LABELS } from "../core/settings";
 import { FrequencyChartCss, CalendarCss, SettingsCss, PanelCss } from "../shared/constants/ui";
 import type { CourseShape, ItemShape } from "../shared/types";
 import { OPEN_FAQ } from "../shared/constants/actions";

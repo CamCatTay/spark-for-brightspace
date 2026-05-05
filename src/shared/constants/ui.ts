@@ -51,7 +51,7 @@ export const FrequencyChartCss = Object.freeze({
     BTN_SPACER: "spark-btn-spacer",
     FAQ_BTN: "faq-btn",
     CHART_ROW: "frequency-chart-row",
-    LAST_FETCHED: "frequency-chart-last-fetched",
+    LAST_FETCHED_CONTAINER: "frequency-chart-last-fetched",
     DAY: "frequency-day",
     DAY_TODAY: "frequency-day--today",
     DAY_LABEL: "frequency-day-label",
@@ -91,5 +91,4 @@ export const CalendarCss = Object.freeze({
     EMPTY_DAY_NOTICE: "empty-day-notice",
     FETCH_STATUS: "fetch-status",
     FETCH_SPINNER: "fetch-spinner",
-    FETCHING: "fetching",
 });

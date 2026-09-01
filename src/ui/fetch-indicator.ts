@@ -5,7 +5,7 @@ import { get_state } from "../core/state";
 import { IS_FETCHING } from "../shared/constants/storage-keys";
 import { CalendarCss, FrequencyChartCss } from "../shared/constants/ui";
 
-const FETCHING_STATUS_LABEL = " ! Fetching...";
+const FETCHING_STATUS_LABEL = "";
 const LAST_FETCHED_PREFIX = "Last fetched: ";
 const LAST_FETCHED_EMPTY = "Last fetched: —";
 

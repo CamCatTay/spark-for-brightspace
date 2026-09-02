@@ -29,8 +29,6 @@ const SETTINGS_BTN_TITLE = "Settings";
 const REFRESH_BTN_TITLE = "Refresh";
 const FAQ_BTN_TITLE = "Help / FAQ";
 
-const LAST_FETCHED_PREFIX = "Last fetched: ";
-const LAST_FETCHED_EMPTY = "Last fetched: —";
 const WEEK_OF_PREFIX = "Week of ";
 
 // Augments HTMLDivElement with week navigation state stored directly on the
@@ -166,7 +164,7 @@ function build_chart_row(
 function build_last_fetched_label(): HTMLDivElement {
     const el = document.createElement("div");
     el.className = FrequencyChartCss.LAST_FETCHED_CONTAINER;
-    const text = document.createTextNode(LAST_FETCHED_EMPTY);
+    const text = document.createTextNode("");
     el.appendChild(text);
     return el;
 }

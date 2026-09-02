@@ -32,14 +32,6 @@ async function main() {
 
     // 4. Initial Fetch
     request_smart_fetch();
-
-    // Event fires when this tab is switched to
-
-    document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState !== "visible") return;
-        update_theme();
-        request_smart_fetch();
-    });
 }
 
 main();

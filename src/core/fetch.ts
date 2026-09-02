@@ -7,7 +7,8 @@ import { FETCH_COURSES } from "../shared/constants/actions";
 import { IS_FETCHING, LAST_FETCH_COMPLETED_AT } from "../shared/constants/storage-keys";
 import { register_refresh_callback } from "../ui/frequency-chart";
 
-const COOLDOWN_MS = 15 * 60 * 1000;
+const COOLDOWN_TIME_IN_MINUTES = 15
+const COOLDOWN_MS = COOLDOWN_TIME_IN_MINUTES * 60 * 1000;
 
 export function request_smart_fetch(force = false): void {
     const time_since_last = Date.now() - (get_state(LAST_FETCH_COMPLETED_AT)?.getTime() ?? 0);

@@ -10,12 +10,10 @@ import { register_refresh_callback } from "../ui/frequency-chart";
 const COOLDOWN_MS = 15 * 60 * 1000;
 
 export function request_smart_fetch(force = false): void {
-    //console.log("requesting a fetch");
     const time_since_last = Date.now() - (get_state(LAST_FETCH_COMPLETED_AT)?.getTime() ?? 0);
     const is_cooldown_active = time_since_last < COOLDOWN_MS;
 
     if (get_state(IS_FETCHING) || (!force && is_cooldown_active)) return;
-    //console.log("fetch allowed");
     safe_send_message({ action: FETCH_COURSES });
 }
 

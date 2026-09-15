@@ -322,8 +322,14 @@ export function build_settings_panel(): HTMLElement {
 }
 
 export function update_settings_panel(): void {
+    console.log("updating settings panel");
     const existing = document.getElementById(SettingsCss.PANEL_ID);
     if (!existing) return;
+
+    // restore scroll pos
+    const existing_body = existing.querySelector<HTMLElement>(`.${SettingsCss.BODY}`);
+    const scroll_top = existing_body?.scrollTop ?? 0;
+    const scroll_left = existing_body?.scrollLeft ?? 0;
 
     const new_panel = build_settings_panel();
     new_panel.style.cssText = existing.style.cssText;
@@ -331,6 +337,13 @@ export function update_settings_panel(): void {
         new_panel.classList.add(SettingsCss.OPEN);
     }
     existing.replaceWith(new_panel);
+
+    // restore scroll pos after building new panel
+    const new_body = new_panel.querySelector<HTMLElement>(`.${SettingsCss.BODY}`);
+    if (new_body) {
+        new_body.scrollTop = scroll_top;
+        new_body.scrollLeft = scroll_left;
+    }
 }
 
 export function update_settings_course_list(course_data: CourseData, list_el: HTMLElement | null = null): void {

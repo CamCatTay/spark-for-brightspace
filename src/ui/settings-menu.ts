@@ -322,7 +322,6 @@ export function build_settings_panel(): HTMLElement {
 }
 
 export function update_settings_panel(): void {
-    console.log("updating settings panel");
     const existing = document.getElementById(SettingsCss.PANEL_ID);
     if (!existing) return;
 

@@ -83,17 +83,18 @@ describe("getDateKey", () => {
 });
 
 describe("getWeekStart", () => {
-    test("returns a Sunday for a Wednesday input", () => {
+    test("returns a Monday for a Wednesday input", () => {
         const wednesday = new Date(2025, 3, 16); // April 16 2025 is a Wednesday
-        const sunday = getWeekStart(wednesday);
-        expect(sunday.getDay()).toBe(0); // 0 = Sunday
+        const monday = getWeekStart(wednesday);
+        expect(monday.getDay()).toBe(1); // 1 = Monday
+        expect(monday.getDate()).toBe(14);
     });
 
-    test("returns the same Sunday when input is already Sunday", () => {
-        const sunday = new Date(2025, 3, 13); // April 13 2025 is a Sunday
-        const result = getWeekStart(sunday);
-        expect(result.getDay()).toBe(0);
-        expect(result.getDate()).toBe(13);
+    test("returns the same Monday when input is already Monday", () => {
+        const monday = new Date(2025, 3, 14); // April 14 2025 is a Monday
+        const result = getWeekStart(monday);
+        expect(result.getDay()).toBe(1);
+        expect(result.getDate()).toBe(14);
     });
 });
 

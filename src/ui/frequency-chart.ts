@@ -183,7 +183,7 @@ export function build_day_cell(
 
     const day_label_el = document.createElement("div");
     day_label_el.className = FrequencyChartCss.DAY_LABEL;
-    day_label_el.textContent = DAY_LABELS[day_date.getDay()];
+    day_label_el.textContent = DAY_LABELS[(day_date.getDay() + 6) % 7];
     cell.appendChild(day_label_el);
 
     const date_number = document.createElement("div");

@@ -10,7 +10,7 @@ export const DUE_TOMORROW_COLOR = "#e7c21d";
 export const OVERDUE_COLOR = "#e84040";
 
 export const MONTH_NAMES_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-export const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+export const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export const ITEM_TYPES = [
     { key: "assignments", label: "Assignments" },

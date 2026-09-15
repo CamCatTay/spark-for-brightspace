@@ -1,12 +1,12 @@
 # Architecture
 
-This document covers how Spark works internally — the major pieces, how they interact, non-obvious design decisions, and things that aren't obvious from reading the code alone. Intended for contributors who need to understand the codebase at depth.
+This document covers how Spark works internally - the major pieces, how they interact, non-obvious design decisions, and things that aren't obvious from reading the code alone. Intended for contributors who need to understand the codebase at depth.
 
 ---
 
 ## Big picture
 
-Spark is a Chrome extension (Manifest V3) that injects a side panel into any D2L page. It uses the D2L REST API directly — no server-side component, no auth proxy. The browser's own session cookies are forwarded automatically with `fetch()` calls.
+Spark is a Chrome extension (Manifest V3) that injects a side panel into any D2L page. It uses the D2L REST API directly - no server-side component, no auth proxy. The browser's own session cookies are forwarded automatically with `fetch()` calls.
 
 There are two runtime contexts that can never share memory:
 
@@ -15,7 +15,7 @@ There are two runtime contexts that can never share memory:
 | Content script | `src/content.ts` | Injected into each D2L tab; owns runtime state |
 | Service worker | `src/background.ts` | Shared singleton; handles API calls and message routing |
 
-Everything in `src/ui/` and `src/utils/` runs only in the content script context. `src/api/brightspace.ts` runs only in the service worker. `src/shared/actions.ts` is inlined into both bundles at build time. `src/shared/types.ts` defines plain-object interfaces (`CourseShape`, `ItemShape`, `CourseData`) shared across the message boundary — these are type-only and have no runtime presence in either bundle.
+Everything in `src/ui/` and `src/utils/` runs only in the content script context. `src/api/brightspace.ts` runs only in the service worker. `src/shared/actions.ts` is inlined into both bundles at build time. `src/shared/types.ts` defines plain-object interfaces (`CourseShape`, `ItemShape`, `CourseData`) shared across the message boundary - these are type-only and have no runtime presence in either bundle.
 
 ---
 
@@ -28,9 +28,9 @@ src/content.ts   →  vite.content.config.js   →  dist/content.js    (IIFE for
 src/background.ts →  vite.background.config.js →  dist/background.js  (ES module format)
 ```
 
-Vite compiles TypeScript to JavaScript internally via esbuild — `tsc` is not used for emit. Running `./node_modules/.bin/tsc --noEmit` is used only for type-checking.
+Vite compiles TypeScript to JavaScript internally via esbuild - `tsc` is not used for emit. Running `./node_modules/.bin/tsc --noEmit` is used only for type-checking.
 
-**Why IIFE for the content script?** Chrome injects content scripts as plain `<script>` tags into the host page. There's no module resolution — `import` statements just fail. Vite's IIFE format wraps everything in `(function() { ... })()` and inlines all dependencies, so the output is a single self-contained file.
+**Why IIFE for the content script?** Chrome injects content scripts as plain `<script>` tags into the host page. There's no module resolution - `import` statements just fail. Vite's IIFE format wraps everything in `(function() { ... })()` and inlines all dependencies, so the output is a single self-contained file.
 
 **Why ES module for the background?** MV3 service workers support `type: "module"` natively. It's also required for top-level `await`. The background script gets bundled anyway so `actions.js` works the same way in both contexts.
 
@@ -63,7 +63,7 @@ User opens panel / panel triggers refresh
 
 ### Per-tab panel state
 
-Panel open/closed state is tracked per-tab in `sessionStorage` (`EXPANSION_STATE_KEY`). There is no cross-tab enforcement — multiple D2L tabs can have the panel open simultaneously.
+Panel open/closed state is tracked per-tab in `sessionStorage` (`EXPANSION_STATE_KEY`). There is no cross-tab enforcement - multiple D2L tabs can have the panel open simultaneously.
 
 `register_panel_restore_callback` is used to re-apply synced settings and re-render in-memory data whenever the tab regains visibility (via the `visibilitychange` event). This keeps the panel content fresh when a user switches back to a D2L tab.
 
@@ -82,7 +82,7 @@ Three different storage mechanisms are used intentionally:
 **Why the split?**
 - Course data must be accessible by the service worker, so it goes in `chrome.storage.local`.
 - UI preferences that sync across tabs (look-back days) go in `chrome.storage.local` too, broadcast via `Action.BROADCAST_SETTINGS_CHANGED`.
-- Per-tab session state (which courses are hidden, scroll position) goes in `sessionStorage` because it's intentionally not shared — each tab maintains its own view.
+- Per-tab session state (which courses are hidden, scroll position) goes in `sessionStorage` because it's intentionally not shared - each tab maintains its own view.
 - Panel width goes in `localStorage` because it persists across sessions and is purely local.
 
 If you add a new setting, decide: should it sync across tabs? → `chrome.storage.local` + broadcast. Should it persist but stay local? → `localStorage`. Should it reset when the tab closes? → `sessionStorage`.
@@ -93,7 +93,7 @@ If you add a new setting, decide: should it sync across tabs? → `chrome.storag
 
 ### How it finds courses
 
-1. Fetches `/d2l/api/lp/1.43/enrollments/myenrollments/` — paginates automatically if `PagingInfo.HasMoreItems` is true
+1. Fetches `/d2l/api/lp/1.43/enrollments/myenrollments/` - paginates automatically if `PagingInfo.HasMoreItems` is true
 2. Filters to active, accessible courses where `OrgUnit.Type.Id === 3` (actual courses, not departments or org nodes)
 3. Fetches the current user ID from `/d2l/api/lp/1.49/users/whoami`
 
@@ -103,19 +103,19 @@ If you add a new setting, decide: should it sync across tabs? → `chrome.storag
 - **`Next`-based**: `data.Objects` + `data.Next` URL for the next page (quiz/assignment endpoints)
 - **`PagingInfo`-based**: `data.Items` + `data.PagingInfo.Bookmark` appended as a query param (enrollment endpoint)
 
-This is handled recursively and transparently — callers just get a flat array back.
+This is handled recursively and transparently - callers just get a flat array back.
 
 ### Completion detection (the tricky part)
 
 The D2L API doesn't reliably expose completion state for all item types. The extension works around this:
 
-**Quizzes** — The submissions API doesn't give completion data cleanly. Instead, the extension scrapes the quiz summary HTML page at `/d2l/lms/quizzing/user/quiz_summary.d2l?qi=<id>&ou=<orgId>` and looks for `id="z_l"` containing "Completed - N". If N > 0, the quiz is done. There's a regex fallback that searches the whole body if the element selector fails.
+**Quizzes** - The submissions API doesn't give completion data cleanly. Instead, the extension scrapes the quiz summary HTML page at `/d2l/lms/quizzing/user/quiz_summary.d2l?qi=<id>&ou=<orgId>` and looks for `id="z_l"` containing "Completed - N". If N > 0, the quiz is done. There's a regex fallback that searches the whole body if the element selector fails.
 
-**Assignments** — Tries the submissions API first: `/d2l/api/le/1.82/<courseId>/dropbox/folders/<assignmentId>/submissions/`. If the API returns an error object (e.g., the folder is closed by the professor and returns `{ Errors: [...] }`), it falls back to scraping the submission history page at `/d2l/lms/dropbox/user/folders_history.d2l?db=<id>&ou=<courseId>` and checking for `class="d_gn d_gt"` rows.
+**Assignments** - Tries the submissions API first: `/d2l/api/le/1.82/<courseId>/dropbox/folders/<assignmentId>/submissions/`. If the API returns an error object (e.g., the folder is closed by the professor and returns `{ Errors: [...] }`), it falls back to scraping the submission history page at `/d2l/lms/dropbox/user/folders_history.d2l?db=<id>&ou=<courseId>` and checking for `class="d_gn d_gt"` rows.
 
-**Discussions** — Uses post counts from the discussion topic posts API. At least one post from the current user = completed. (Posts are fetched per topic.)
+**Discussions** - Uses post counts from the discussion topic posts API. At least one post from the current user = completed. (Posts are fetched per topic.)
 
-The HTML scraping is brittle by nature — if D2L changes their page structure, these selectors will break silently. Keep this in mind when debugging missing completion states.
+The HTML scraping is brittle by nature - if D2L changes their page structure, these selectors will break silently. Keep this in mind when debugging missing completion states.
 
 ### Parallel fetching
 
@@ -125,13 +125,13 @@ The comment in the code notes that `.join(",")` was chosen over an alternative a
 
 ### API version strings
 
-D2L endpoints embed version numbers: `/d2l/api/le/1.82/...`, `/d2l/api/lp/1.49/...`. These are embedded in the endpoint strings defined as functions in `brightspace.ts`. Don't inline new version numbers — if you add an endpoint, define a clearly named helper function for it.
+D2L endpoints embed version numbers: `/d2l/api/le/1.82/...`, `/d2l/api/lp/1.49/...`. These are embedded in the endpoint strings defined as functions in `brightspace.ts`. Don't inline new version numbers - if you add an endpoint, define a clearly named helper function for it.
 
 ---
 
 ## UI layer
 
-### `panel.ts` — the panel shell
+### `panel.ts` - the panel shell
 
 Owns the panel DOM: `#spark-widget` (outer container) → `#spark-panel` → `#calendar-container`. Also creates the floating toggle button (`#spark-toggle-btn`).
 
@@ -142,20 +142,20 @@ Key responsibilities:
 - **Toggle button drag**: The floating toggle button (`#spark-toggle-btn`) is vertically draggable. Its position is persisted to `localStorage` (`TOGGLE_BTN_TOP_KEY`). A small drag threshold (4px) distinguishes a drag from a click.
 - **Tab visibility restore**: `register_panel_restore_callback` fires whenever the tab becomes visible again (`visibilitychange` event) with the panel already open. It re-applies synced settings and re-renders from in-memory data.
 
-### `components.ts` — all visual rendering
+### `components.ts` - all visual rendering
 
 The heaviest file. Responsible for:
 - The chronological calendar list (date headers + item cards)
 - Urgency coloring (due today → orange, due tomorrow → yellow, overdue → red)
 - **"Not yet available" items**: items with a `start_date` in the future get a `.not-yet-available` style and show an "Available on [date]" line. `clear_past_start_date()` in `brightspace.js` strips start dates that are already in the past before they reach the UI.
 - The scrollbar notch indicator (colored dots on the right edge of the panel, one per item)
-- The frequency bar chart (counts items per weekday, navigable by week). Each day column is clickable — clicking scrolls the calendar to that date.
+- The frequency bar chart (counts items per weekday, navigable by week). Each day column is clickable - clicking scrolls the calendar to that date.
 - The settings slide-out panel
 - Course name truncation (strips words like "Section", "Spring", "Fall" from course names for display)
 
 Settings that sync across tabs are saved to `chrome.storage.local` + broadcast via the background. Settings that are session-only (hidden courses, hidden item types) go straight to `sessionStorage`.
 
-### `color-utils.ts` — stable course colors
+### `color-utils.ts` - stable course colors
 
 Courses are sorted lexicographically by name, then each gets a color from the 7-color pool by index. This means color assignment is deterministic and consistent across sessions and tabs, as long as the set of course names doesn't change. If a new course appears mid-semester, all colors may shift (because lexicographic order changes). This is a known limitation.
 
@@ -165,7 +165,7 @@ Pure formatting helpers. No side effects. `formatDateHeader` is the one with the
 
 ### CSS scoping
 
-All panel styles are in `styles/sidepanel.css` and scoped under `:where(#spark-widget) *`. The `:where()` pseudo-class has **zero specificity**, so D2L's own styles always win in a conflict with the panel. The panel's internal styles only apply within `#spark-widget`. This was chosen to avoid accidentally overriding D2L's layout — the extension runs inside D2L's DOM, and any leaked style could break the page.
+All panel styles are in `styles/sidepanel.css` and scoped under `:where(#spark-widget) *`. The `:where()` pseudo-class has **zero specificity**, so D2L's own styles always win in a conflict with the panel. The panel's internal styles only apply within `#spark-widget`. This was chosen to avoid accidentally overriding D2L's layout - the extension runs inside D2L's DOM, and any leaked style could break the page.
 
 If you add a style and it's not applying, the most common cause is a D2L style with higher specificity winning. You may need to increase specificity within the widget selector, or use a more specific selector inside `#spark-widget`.
 
@@ -173,7 +173,7 @@ If you add a style and it's not applying, the most common cause is a D2L style w
 
 ## Testing
 
-Tests live in `tests/` and use [Vitest](https://vitest.dev/), which shares the same esbuild pipeline as the Vite build — TypeScript works with zero extra config. Run them with `npm test`.
+Tests live in `tests/` and use [Vitest](https://vitest.dev/), which shares the same esbuild pipeline as the Vite build - TypeScript works with zero extra config. Run them with `npm test`.
 
 Each source module that needs test isolation exports a minimal testing seam (e.g. `_resetColorMap()` in `color-utils.ts`). Modules with top-level side effects (e.g. `background.ts`) are imported dynamically inside `beforeEach` via `vi.doMock` + `vi.resetModules` + `await import()` so each test starts with a fresh module instance.
 
@@ -189,7 +189,7 @@ Each source module that needs test isolation exports a minimal testing seam (e.g
 
 **The service worker can sleep.** MV3 service workers are terminated by Chrome when idle. The background script re-registers its `onMessage` listener on every wake. This is fine for request/response patterns but means you can't store anything in module-level variables in the background script and expect it to persist between messages.
 
-**`safe_send_message` in `panel.ts`** wraps `chrome.runtime.sendMessage` with error suppression. The service worker might not be awake yet when a message is sent — this prevents uncaught errors in that case. If you're debugging missing message responses, check whether the service worker is awake.
+**`safe_send_message` in `panel.ts`** wraps `chrome.runtime.sendMessage` with error suppression. The service worker might not be awake yet when a message is sent - this prevents uncaught errors in that case. If you're debugging missing message responses, check whether the service worker is awake.
 
 **Course name truncation** strips words like "Section", "Fall", "Spring", "Group", and "XLS" from the end of course names for display. The full name is still used for color assignment and internal keying. If a course name looks wrong in the UI, check `COURSE_NAME_TRIM_WORDS` in `components.ts`.
 

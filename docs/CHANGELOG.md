@@ -45,7 +45,7 @@ Items with start dates were not being displayed greyed out as they should be. No
 
 ---
 
-## [1.2.1] — 2026-04-23
+## [1.2.1] - 2026-04-23
 
 ### Improved
 

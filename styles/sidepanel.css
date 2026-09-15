@@ -685,6 +685,9 @@ body:has(#spark-widget.hidden) {
     line-height: 1.45;
     color: #888;
     text-align: center;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .settings-section {

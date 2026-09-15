@@ -22,13 +22,13 @@ Write code that is self-explanatory through good naming. Comments should be rare
 - Only add a comment above a function when the **why** is not obvious from reading the signature and body alone.
 - Never add inline comments, section-header comments (`// -- Section --`), or comments that just restate what the code does.
 - No redundant comments like `// Fetch courses` above a function called `fetch_courses()`.
-- A single short comment above a function is the maximum — do not write multi-line comment blocks unless the logic is genuinely complex and cannot be simplified.
+- A single short comment above a function is the maximum - do not write multi-line comment blocks unless the logic is genuinely complex and cannot be simplified.
 
 ## No Magic Numbers or Strings
 
 Never use numeric literals or opaque coded strings inline in logic. The goal is that anyone reading the code later can immediately understand what a value represents without needing external context.
 
-**This rule applies to values that carry no inherent meaning on their own** — numbers, single-character codes, status codes, API version strings, etc. It does NOT apply to self-descriptive string literals where the string itself already communicates intent (e.g. `"fetchCourses"`, `"click"`, `"DOMContentLoaded"`).
+**This rule applies to values that carry no inherent meaning on their own** - numbers, single-character codes, status codes, API version strings, etc. It does NOT apply to self-descriptive string literals where the string itself already communicates intent (e.g. `"fetchCourses"`, `"click"`, `"DOMContentLoaded"`).
 
 Always assign bare values to a named constant or include them in an `Object.freeze` enum (JavaScript) or equivalent named constant group in other languages.
 
@@ -52,13 +52,13 @@ if (item.type === ActivityType.DROPBOX) { ... }
 
 Use `Object.freeze` in JavaScript whenever a value belongs to a logical group (types, states, HTTP codes, API versions, limits, etc.). Even a single opaque value with no related siblings must be assigned to a named `const`.
 
-This rule applies to all file types in the project — JavaScript, CSS (e.g. z-index values, breakpoints), JSON config values referenced in code, etc.
+This rule applies to all file types in the project - JavaScript, CSS (e.g. z-index values, breakpoints), JSON config values referenced in code, etc.
 
 ## Test Files
 
 Test files follow all the same conventions above. Additional rules:
 
-- **Named constants for fixture values**: any constant, enum, or typed value used in a test that originates in the source file **must be exported from the source file and imported in the test**. Never duplicate a value. Parity between a file and its test is critical — if the value changes in the source, the test must automatically reflect that without any manual edits.
+- **Named constants for fixture values**: any constant, enum, or typed value used in a test that originates in the source file **must be exported from the source file and imported in the test**. Never duplicate a value. Parity between a file and its test is critical - if the value changes in the source, the test must automatically reflect that without any manual edits.
 
   Add a `module.exports` compat block to any source file whose test needs its constants:
 

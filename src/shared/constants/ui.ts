@@ -19,6 +19,8 @@ export const SettingsCss = Object.freeze({
     PANEL_HEADER: "settings-header",
     PANEL_ID: "spark-settings-panel",
     PANEL_TITLE: "settings-title",
+    PANEL_FOOTER: "settings-footer",
+    PANEL_FOOTER_TEXT: "settings-footer-text",
     SECTION: "settings-section",
     SPARK_DARK_MODE: "spark-dark-mode",
     SPARK_D2L_DARK_MODE: "spark-d2l-dark-mode"

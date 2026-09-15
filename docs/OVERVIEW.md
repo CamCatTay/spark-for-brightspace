@@ -15,8 +15,8 @@ Spark is a Manifest V3 Chrome extension that injects a resizable side panel into
 ### Stack
 - **Language:** JavaScript (vanilla, no framework)
 - **Framework:** Chrome Extensions API (Manifest V3)
-- **Bundler:** Vite — compiles `src/` into `dist/` before the extension is loaded
-- **Key dependencies:** None at runtime — uses only browser-native `fetch`, `chrome.*` APIs, and the D2L/Brightspace REST API
+- **Bundler:** Vite - compiles `src/` into `dist/` before the extension is loaded
+- **Key dependencies:** None at runtime - uses only browser-native `fetch`, `chrome.*` APIs, and the D2L/Brightspace REST API
 - **Entry points:** `src/content.js` (content script), `src/background.js` (service worker)
 
 ## Ideas
@@ -28,7 +28,7 @@ Spark is a Manifest V3 Chrome extension that injects a resizable side panel into
 - [x] Show/hide completed items toggle
 
 ### Notes / tech debt
-- Unused legacy fetch URLs for non-graded and graded items via the `myItems` endpoint are still present in `brightspace.js` — kept as a fallback reference but could be removed
+- Unused legacy fetch URLs for non-graded and graded items via the `myItems` endpoint are still present in `brightspace.js` - kept as a fallback reference but could be removed
 
 ## Connections
 <!-- Leave this section blank. To be filled manually. -->

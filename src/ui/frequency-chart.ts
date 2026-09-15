@@ -201,7 +201,7 @@ export function build_day_cell(
 
     const item_count_label = document.createElement("div");
     item_count_label.className = FrequencyChartCss.DAY_COUNT;
-    item_count_label.textContent = count > 0 ? count.toString() : "—";
+    item_count_label.textContent = count > 0 ? count.toString() : "-";
     cell.appendChild(item_count_label);
 
     cell.style.cursor = "pointer";

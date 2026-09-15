@@ -12,9 +12,9 @@ D2L buries due dates across individual course pages. This fixes that.
 
 - All upcoming due dates from every enrolled course in one view
 - Chronological calendar with date headers ("Today", "Tomorrow")
-- Color-coded course indicators — consistent colors per course
+- Color-coded course indicators - consistent colors per course
 - Urgency highlighting: due today (orange), due tomorrow (yellow), overdue (red)
-- Frequency bar chart — see which days of the week are the most loaded
+- Frequency bar chart - see which days of the week are the most loaded
 - Resizable, persistent side panel that stays visible as you navigate
 - Syncs across multiple open D2L tabs (only one panel active at a time)
 - Settings: hide specific courses or item types, adjust how far back to look
@@ -33,7 +33,7 @@ npm run build
 1. Open `chrome://extensions/`
 2. Enable **Developer Mode**
 3. Click **Load unpacked** → select the repo root
-4. Navigate to any D2L page — the Spark icon appears in the toolbar
+4. Navigate to any D2L page - the Spark icon appears in the toolbar
 
 After any source change: `npm run build`, then click the reload icon on the extension card in `chrome://extensions/`.
 
@@ -41,8 +41,8 @@ After any source change: `npm run build`, then click the reload icon on the exte
 
 ## Docs
 
-- [CONTRIBUTING.md](CONTRIBUTING.md) — how to work on this project
-- [ARCHITECTURE.md](ARCHITECTURE.md) — how the code is structured and why
+- [CONTRIBUTING.md](CONTRIBUTING.md) - how to work on this project
+- [ARCHITECTURE.md](ARCHITECTURE.md) - how the code is structured and why
 
 ---
 

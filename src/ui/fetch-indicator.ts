@@ -7,7 +7,7 @@ import { CalendarCss, FrequencyChartCss } from "../shared/constants/ui";
 
 const FETCHING_STATUS_LABEL = "";
 const LAST_FETCHED_PREFIX = "Last Updated: ";
-const LAST_FETCHED_EMPTY = "Last Updated: —";
+const LAST_FETCHED_EMPTY = "Last Updated: -";
 
 export function show_fetching_indicator(): void {
     const container = document.querySelector(`.${FrequencyChartCss.LAST_FETCHED_CONTAINER}`);

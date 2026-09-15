@@ -1,6 +1,6 @@
 // Verifies message handler dispatch, chrome API calls, cross-tab broadcasting,
 // and the action button handler.
-// Note: panel open/closed state is managed per-tab via sessionStorage — no cross-tab panel sync.
+// Note: panel open/closed state is managed per-tab via sessionStorage - no cross-tab panel sync.
 
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import type { MockInstance } from "vitest";
@@ -57,7 +57,7 @@ beforeEach(async () => {
             local: { set: vi.fn(), get: vi.fn(), remove: vi.fn() },
             session: {
                 set: vi.fn(),
-                // returning empty object means worker_initialized is falsy — init code runs
+                // returning empty object means worker_initialized is falsy - init code runs
                 get: vi.fn().mockImplementation(
                     (_keys: unknown, cb: (r: Record<string, unknown>) => void) => cb({})
                 ),

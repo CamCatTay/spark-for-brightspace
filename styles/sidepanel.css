@@ -672,6 +672,24 @@ body:has(#spark-widget.hidden) {
     scrollbar-color: var(--spark-scrollbar-color);
 }
 
+.settings-footer {
+    border-top: 1px solid var(--spark-section-border-color);
+    background-color: var(--spark-background-color);
+    padding: 10px 12px 12px;
+    flex-shrink: 0;
+}
+
+.settings-footer-text {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.45;
+    color: #888;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
 .settings-section {
     background-color: var(--spark-background-color);
     border: 1px solid var(--spark-section-border-color);

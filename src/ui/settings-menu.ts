@@ -1,7 +1,7 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { getCourseColor } from "../shared/utils/color-utils";
+import { ensureCourseColorsAssigned, getCourseColor } from "../shared/utils/color-utils";
 import { safe_send_message } from "./panel";
 import { create_toggle_setting } from "../shared/utils/settings-menu-utils";
 import { SettingsCss } from "../shared/constants/ui";
@@ -292,7 +292,22 @@ function build_course_row(course_id: string, course: CourseShape): HTMLElement {
     return row;
 }
 
+function build_settings_footer(): HTMLElement {
+    const footer = document.createElement("div");
+    footer.className = SettingsCss.PANEL_FOOTER;
+
+    const notice = document.createElement("p");
+    notice.className = SettingsCss.PANEL_FOOTER_TEXT;
+    notice.textContent = "Spark is an independent tool. Always verify dates on official Brightspace pages.";
+
+    footer.appendChild(notice);
+    return footer;
+}
+
 export function build_settings_panel(): HTMLElement {
+    const course_data = get_state(COURSE_DATA);
+    ensureCourseColorsAssigned(course_data);
+
     const panel = document.createElement("div");
     panel.id = SettingsCss.PANEL_ID;
 
@@ -311,8 +326,8 @@ export function build_settings_panel(): HTMLElement {
 
     panel.appendChild(build_panel_header());
     panel.appendChild(body);
+    panel.appendChild(build_settings_footer());
 
-    const course_data = get_state(COURSE_DATA);
     if (Object.keys(course_data).length > 0) {
         const courses_list = courses_section.querySelector<HTMLElement>(`#${SettingsCss.COURSES_LIST_ID}`)!;
         update_settings_course_list(course_data, courses_list);
@@ -346,6 +361,8 @@ export function update_settings_panel(): void {
 }
 
 export function update_settings_course_list(course_data: CourseData, list_el: HTMLElement | null = null): void {
+    ensureCourseColorsAssigned(course_data);
+
     const list = list_el || document.getElementById(SettingsCss.COURSES_LIST_ID);
     if (!list) return;
 

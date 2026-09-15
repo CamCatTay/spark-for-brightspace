@@ -298,7 +298,7 @@ function build_settings_footer(): HTMLElement {
 
     const notice = document.createElement("p");
     notice.className = SettingsCss.PANEL_FOOTER_TEXT;
-    notice.textContent = "Spark is an independent tool. Always verify dates on official Brightspace pages.";
+    notice.textContent = "Spark is an independent tool. Always verify dates on official Brightspace pages. (Click For Terms)";
     notice.style.cursor = "pointer";
     notice.addEventListener("click", () => {
         window.open("https://camcattay.github.io/spark-for-brightspace/privacy-policy.html", "_blank", "noopener,noreferrer");

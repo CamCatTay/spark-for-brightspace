@@ -1,9 +1,11 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { ui_state } from "./ui-state";
-import { SettingsCss } from "./dom-constants";
-import { PanelCss } from "./dom-constants";
+import { SettingsCss } from "../shared/constants/ui";
+import { PanelCss } from "../shared/constants/ui";
+import { TOGGLE_PANEL, OPEN_URL } from "../shared/constants/actions";
+import { get_setting } from "../core/settings";
+import { SHOW_ON_START } from "../shared/constants/storage-keys";
 
 // Registered by content.ts to avoid a circular import between panel and settings-menu.
 let settings_panel_builder: (() => HTMLElement) | null = null;
@@ -16,7 +18,7 @@ const EXPANSION_STATE_KEY = "spark-expanded";
 const PANEL_WIDTH_KEY = "spark-width";
 const TOGGLE_BTN_TOP_KEY = "spark-toggle-btn-top";
 
-const DEFAULT_PANEL_WIDTH = 500;
+const DEFAULT_PANEL_WIDTH = 400;
 const MIN_PANEL_WIDTH = 330;
 const PANEL_SLIDE_IN_MS = 300;
 const SETTINGS_TRANSITION_MS = 250;
@@ -97,7 +99,7 @@ function attach_resize_handler(
         const settings_panel = document.getElementById(SettingsCss.PANEL_ID);
         if (settings_panel) settings_panel.style.right = new_width + "px";
 
-        localStorage.setItem(PANEL_WIDTH_KEY, new_width.toString());
+        chrome.storage.local.set({PANEL_WIDTH_KEY: new_width.toString()});
     });
 
     document.addEventListener("mouseup", function() {
@@ -125,7 +127,7 @@ function set_toggle_button_top(top_px: number): void {
     const clamped = clamp_button_top_position(top_px);
     toggle_button!.style.top = clamped + "px";
     toggle_button!.style.transform = "none";
-    localStorage.setItem(TOGGLE_BTN_TOP_KEY, clamped.toString());
+    chrome.storage.local.set({TOGGLE_BTN_TOP_KEY: clamped.toString()});
 }
 
 function attach_drag_handler(btn: HTMLButtonElement): void {
@@ -292,24 +294,24 @@ export function toggle_panel(): void {
     }
 }
 
-function load_saved_panel_width(): void {
-    const saved_width = localStorage.getItem(PANEL_WIDTH_KEY);
-    if (saved_width) {
-        panel_width = parseInt(saved_width, 10);
+async function load_saved_panel_width(): Promise<void> {
+    const result = await chrome.storage.local.get([PANEL_WIDTH_KEY]);
+    if (result[PANEL_WIDTH_KEY]) {
+        panel_width = result[PANEL_WIDTH_KEY];
     }
 }
 
-function restore_toggle_button_position(): void {
-    const saved_top = localStorage.getItem(TOGGLE_BTN_TOP_KEY);
-    if (saved_top !== null) {
-        toggle_button!.style.top = saved_top + "px";
+async function restore_toggle_button_position(): Promise<void> {
+    const result = await chrome.storage.local.get([TOGGLE_BTN_TOP_KEY]);
+    if (result[TOGGLE_BTN_TOP_KEY]) {
+        toggle_button!.style.top = result[TOGGLE_BTN_TOP_KEY] + "px";
         toggle_button!.style.transform = "none";
     }
 }
 
 function determine_initial_panel_visibility(): boolean {
     const expansion_state = sessionStorage.getItem(EXPANSION_STATE_KEY);
-    return expansion_state === "true" || (expansion_state === null && ui_state.show_on_start);
+    return expansion_state === "true" || (expansion_state === null && get_setting(SHOW_ON_START));
 }
 
 function apply_initial_panel_state(is_visible: boolean): void {
@@ -357,3 +359,8 @@ export function inject_embedded_ui(): HTMLElement {
 
     return calendar_container;
 }
+
+chrome.runtime.onMessage.addListener((request: any) => {
+    if (request.action === TOGGLE_PANEL) toggle_panel();
+    else if (request.action === OPEN_URL) window.open(request.url, "_blank");
+});

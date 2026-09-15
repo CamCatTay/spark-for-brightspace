@@ -1,21 +1,18 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader } from "../utils/date-utils";
-import { getCourseColor, ensureCourseColorsAssigned } from "../utils/color-utils";
+import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader } from "../shared/utils/date-utils";
+import { getCourseColor, ensureCourseColorsAssigned } from "../shared/utils/color-utils";
 import { create_frequency_chart } from "./frequency-chart";
-import { update_settings_course_list } from "./settings-menu";
-import {
-    ui_state,
-    truncate_course_name,
-    DUE_TODAY_COLOR,
-    DUE_TOMORROW_COLOR,
-    OVERDUE_COLOR,
-    CALENDAR_START_DAYS_BACK_STORAGE_KEY,
-    SHOW_COMPLETED_STORAGE_KEY,
-} from "./ui-state";
-import { CalendarCss, FrequencyChartCss, PanelCss, SettingsCss } from "./dom-constants";
+import { truncate_course_name } from "../shared/utils/string-utils";
+import { DUE_TODAY_COLOR, DUE_TOMORROW_COLOR, get_setting, OVERDUE_COLOR } from "../core/settings";
+import { CalendarCss, FrequencyChartCss, PanelCss } from "../shared/constants/ui";
 import type { CourseData, CourseShape, ItemShape } from "../shared/types";
+import { CALENDAR_DAYS_BACK, COURSE_DATA, HIDDEN_COURSES, HIDDEN_TYPES, IS_FETCHING, LAST_FETCH_COMPLETED_AT, SCROLL_POS, SHOW_COMPLETED_ASSIGNMENTS } from "../shared/constants/storage-keys";
+import { get_state, set_state } from "../core/state";
+import { register_panel_restore_callback } from "./panel";
+import { scroll_to_today } from "./frequency-chart";
+import { update_fetching_indicator, update_last_fetched_label } from "./fetch-indicator";
 
 const AVAILABLE_ON_PREFIX = "Available on ";
 
@@ -27,7 +24,6 @@ const META_SEPARATOR = "|";
 const COURSE_DOT_SYMBOL = "●";
 const COMPLETED_BADGE_SYMBOL = "✓";
 const INCOMPLETE_DOT_SYMBOL = "•";
-const FETCHING_STATUS_LABEL = " — Fetching...";
 
 interface DateIndexedItems {
     items_by_date: Record<string, Array<{ item: ItemShape; course: CourseShape }>>;
@@ -42,7 +38,7 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
 
     Object.keys(course_data).forEach((course_id) => {
         const course = course_data[course_id];
-        if (ui_state.hidden_course_ids.has(course_id)) return;
+        if (get_setting(HIDDEN_COURSES).has(course_id)) return;
 
         const item_collections = [
             { items: course.assignments, type: "assignments" },
@@ -51,11 +47,11 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
         ];
 
         item_collections.forEach(({ items, type }) => {
-            if (ui_state.hidden_types.has(type)) return;
+            if (get_setting(HIDDEN_TYPES).has(type)) return;
             if (!items) return;
             Object.keys(items).forEach((item_id) => {
                 const item = items[item_id];
-                if (!item.due_date || (item.completed && !ui_state.show_completed_items)) return;
+                if (!item.due_date || (item.completed && !get_setting(SHOW_COMPLETED_ASSIGNMENTS))) return;
                 const date_only = getDateOnly(item.due_date);
                 if (!date_only) return;
                 const date_key = date_only.toISOString().split("T")[0];
@@ -285,40 +281,19 @@ function mount_scrollbar_indicator(calendar_container: HTMLElement): void {
     calendar_container.addEventListener("scroll", () => sync_scrollbar_indicator(calendar_container));
 }
 
-export function initialize_gui(): void {
-    update_gui({} as CourseData, true);
-}
 
-// Panel can load before this exists resulting in no indicator
-// currently no indicator when reloading or switching pages
-export function toggle_fetching_indicator(status: boolean): void {
+let scroll_listener_initialized = false;
 
-    const last_fetched_el = document.querySelector(`.${FrequencyChartCss.LAST_FETCHED}`);
-    if (!last_fetched_el) return;
-
-    last_fetched_el.classList.remove(CalendarCss.FETCHING);
-    if (status) {
-        const fetch_status = document.createElement("span");
-        fetch_status.className = CalendarCss.FETCH_STATUS;
-        const label_text = document.createTextNode(FETCHING_STATUS_LABEL);
-        const spinner = document.createElement("span");
-        spinner.className = CalendarCss.FETCH_SPINNER;
-        fetch_status.appendChild(label_text);
-        fetch_status.appendChild(spinner);
-        last_fetched_el.appendChild(fetch_status);
-        last_fetched_el.classList.add(CalendarCss.FETCHING);
-    } else {
-        document.querySelector(`.${CalendarCss.FETCH_STATUS}`)?.remove();
-    }
-}
-
-export function update_gui(course_data: CourseData, is_from_cache: boolean = false): void {
+export function update_calendar(course_data: CourseData): void {
     const calendar_container = document.getElementById(PanelCss.CALENDAR_CONTAINER_ID);
     if (!calendar_container) return;
 
-    ui_state.last_course_data = course_data;
+    if (!scroll_listener_initialized) {
+        calendar_container.addEventListener("scroll", () => save_scroll_state(calendar_container));
+        scroll_listener_initialized = true;
+    }
+
     ensureCourseColorsAssigned(course_data);
-    update_settings_course_list(course_data);
 
     const preserved_week_offset = get_preserved_week_offset(calendar_container);
     calendar_container.innerHTML = "";
@@ -331,11 +306,8 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
         console.error("Error creating frequency chart (non-fatal):", e);
     }
 
-    if (is_from_cache) {
-        //Turning this on causes Fetching status indicator to loop
-        //until throttle cooldown is lifted and a fetch can happen
-        //add_data_status_indicator(true);
-    }
+    update_last_fetched_label(get_state(LAST_FETCH_COMPLETED_AT));
+    update_fetching_indicator();
 
     if (!min_date || !max_date) {
         show_empty_state(calendar_container);
@@ -344,34 +316,22 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
 
     const today = new Date();
     const start_date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    start_date.setDate(start_date.getDate() - ui_state.calendar_start_days_back);
+    const calendar_days_back = get_setting(CALENDAR_DAYS_BACK)
+    start_date.setDate(start_date.getDate() - calendar_days_back);
     const end_date = new Date(max_date);
 
     build_calendar_list(items_by_date, start_date, end_date, calendar_container);
     mount_scrollbar_indicator(calendar_container);
 }
 
-export function set_last_fetched_time(fetch_time: Date): void {
-    ui_state.last_fetched_time = fetch_time;
+function save_scroll_state(container: HTMLElement): void {
+    set_state(SCROLL_POS, container.scrollTop);
 }
 
-export function register_ui_callbacks({ on_refresh, on_rerender }: { on_refresh: () => void; on_rerender: () => void }): void {
-    ui_state.on_refresh = on_refresh;
-    ui_state.on_rerender = on_rerender;
+export function restore_scroll_state(container: HTMLElement): void {
+    const saved = get_state(SCROLL_POS) as number;
+    saved > 0 ? (container.scrollTop = saved) : scroll_to_today();
 }
 
-export function apply_settings({ days_back, show_completed }: { days_back: number; show_completed?: boolean }): void {
-    ui_state.calendar_start_days_back = days_back;
-    localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, days_back.toString());
+register_panel_restore_callback(() => update_calendar(get_state(COURSE_DATA)));
 
-    if (show_completed !== undefined) {
-        ui_state.show_completed_items = show_completed;
-        localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, show_completed.toString());
-    }
-
-    const days_input = document.getElementById(SettingsCss.DAYS_BACK_INPUT_ID) as HTMLInputElement | null;
-    if (days_input) days_input.value = days_back.toString();
-
-    const completed_toggle = document.getElementById(SettingsCss.SHOW_COMPLETED_INPUT_ID) as HTMLInputElement | null;
-    if (completed_toggle) completed_toggle.checked = ui_state.show_completed_items;
-}

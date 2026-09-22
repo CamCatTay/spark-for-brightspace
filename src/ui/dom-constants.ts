@@ -12,6 +12,7 @@ export const SettingsCss = Object.freeze({
     COURSE_ROW: "settings-course-row",
     DAYS_BACK_INPUT_ID: "spark-setting-days-back",
     SHOW_COMPLETED_INPUT_ID: "spark-setting-show-completed",
+    SHOW_NO_DUE_DATE_INPUT_ID: "spark-setting-show-no-due-date",
     DESCRIPTION: "settings-description",
     INPUT: "settings-input",
     LABEL: "settings-label",

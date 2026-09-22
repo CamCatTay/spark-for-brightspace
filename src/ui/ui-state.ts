@@ -24,6 +24,7 @@ export const ITEM_TYPES = [
 // Synced across tabs via chrome.storage.local + broadcast:
 export const CALENDAR_START_DAYS_BACK_STORAGE_KEY = "spark-calendar-start-days-back";
 export const SHOW_COMPLETED_STORAGE_KEY = "spark-show-completed";
+export const SHOW_NO_DUE_DATE_STORAGE_KEY = "spark-show-no-due-date";
 export const SHOW_ON_START_STORAGE_KEY = "spark-setting-show-on-start";
 // Tab-local, session-scoped (sessionStorage — NOT synced across tabs):
 export const HIDDEN_COURSES_SESSION_KEY = "spark-hidden-courses";
@@ -73,6 +74,7 @@ export function truncate_course_name(name: string): string {
 export const ui_state = {
     calendar_start_days_back: read_calendar_start_days_back(),
     show_completed_items: read_enabled_flag(SHOW_COMPLETED_STORAGE_KEY),
+    show_no_due_date_items: read_enabled_flag(SHOW_NO_DUE_DATE_STORAGE_KEY),
     show_on_start: read_enabled_flag(SHOW_ON_START_STORAGE_KEY),
     hidden_course_ids: read_session_set(HIDDEN_COURSES_SESSION_KEY),
     hidden_types: read_session_set(HIDDEN_TYPES_SESSION_KEY),

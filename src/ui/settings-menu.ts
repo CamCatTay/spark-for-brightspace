@@ -12,6 +12,7 @@ import {
     ITEM_TYPES,
     CALENDAR_START_DAYS_BACK_STORAGE_KEY,
     SHOW_COMPLETED_STORAGE_KEY,
+    SHOW_NO_DUE_DATE_STORAGE_KEY,
     SHOW_ON_START_STORAGE_KEY,
     HIDDEN_COURSES_SESSION_KEY,
     HIDDEN_TYPES_SESSION_KEY,
@@ -24,6 +25,7 @@ function get_synced_settings() {
     return {
         days_back: ui_state.calendar_start_days_back,
         show_completed: ui_state.show_completed_items,
+        show_no_due_date: ui_state.show_no_due_date_items,
     };
 }
 
@@ -51,6 +53,13 @@ function on_days_back_changed(input: HTMLInputElement): void {
 function on_show_completed_changed(checked: boolean): void {
     ui_state.show_completed_items = checked;
     localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, checked.toString());
+    broadcast_settings_changed();
+    trigger_rerender();
+}
+
+function on_show_no_due_date_changed(checked: boolean): void {
+    ui_state.show_no_due_date_items = checked;
+    localStorage.setItem(SHOW_NO_DUE_DATE_STORAGE_KEY, checked.toString());
     broadcast_settings_changed();
     trigger_rerender();
 }
@@ -129,6 +138,17 @@ function build_show_completed_section(): HTMLElement {
         ui_state.show_completed_items,
         on_show_completed_changed
     );
+    return toggle.section;
+}
+
+function build_show_no_due_date_section(): HTMLElement {
+    const toggle = create_toggle_setting(
+        "Show items without deadline",
+        "When on, activities with no due date appear in a separate \"No Due Date\" section at the end of the calendar.",
+        ui_state.show_no_due_date_items,
+        on_show_no_due_date_changed
+    );
+    toggle.checkbox.id = SettingsCss.SHOW_NO_DUE_DATE_INPUT_ID;
     return toggle.section;
 }
 
@@ -247,6 +267,7 @@ export function build_settings_panel(): HTMLElement {
 
     body.appendChild(build_days_back_section());
     body.appendChild(build_show_completed_section());
+    body.appendChild(build_show_no_due_date_section());
     body.appendChild(build_show_on_start_section());
     body.appendChild(build_types_filter_section());
 

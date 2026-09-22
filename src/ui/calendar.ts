@@ -13,6 +13,7 @@ import {
     OVERDUE_COLOR,
     CALENDAR_START_DAYS_BACK_STORAGE_KEY,
     SHOW_COMPLETED_STORAGE_KEY,
+    SHOW_NO_DUE_DATE_STORAGE_KEY,
 } from "./ui-state";
 import { CalendarCss, FrequencyChartCss, PanelCss, SettingsCss } from "./dom-constants";
 import type { CourseData, CourseShape, ItemShape } from "../shared/types";
@@ -28,15 +29,32 @@ const COURSE_DOT_SYMBOL = "●";
 const COMPLETED_BADGE_SYMBOL = "✓";
 const INCOMPLETE_DOT_SYMBOL = "•";
 const FETCHING_STATUS_LABEL = " — Fetching...";
+const NO_DUE_DATE_TITLE = "No Due Date";
+
+// Singular labels used only for the "No Due Date" section, where items from
+// different activity types are mixed together and need a type prefix.
+const TYPE_LABEL_SINGULAR: Record<string, string> = {
+    assignments: "Assignment",
+    quizzes: "Quiz",
+    discussions: "Discussion",
+};
+
+interface NoDateItem {
+    item: ItemShape;
+    course: CourseShape;
+    type: string;
+}
 
 interface DateIndexedItems {
     items_by_date: Record<string, Array<{ item: ItemShape; course: CourseShape }>>;
     min_date: Date | null;
     max_date: Date | null;
+    no_date_items: NoDateItem[];
 }
 
 function collect_items_by_date(course_data: CourseData): DateIndexedItems {
     const items_by_date: Record<string, Array<{ item: ItemShape; course: CourseShape }>> = {};
+    const no_date_items: NoDateItem[] = [];
     let min_date: Date | null = null;
     let max_date: Date | null = null;
 
@@ -55,7 +73,13 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
             if (!items) return;
             Object.keys(items).forEach((item_id) => {
                 const item = items[item_id];
-                if (!item.due_date || (item.completed && !ui_state.show_completed_items)) return;
+                if (item.completed && !ui_state.show_completed_items) return;
+                if (!item.due_date) {
+                    if (ui_state.show_no_due_date_items) {
+                        no_date_items.push({ item, course, type });
+                    }
+                    return;
+                }
                 const date_only = getDateOnly(item.due_date);
                 if (!date_only) return;
                 const date_key = date_only.toISOString().split("T")[0];
@@ -69,7 +93,7 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
         });
     });
 
-    return { items_by_date, min_date, max_date };
+    return { items_by_date, min_date, max_date, no_date_items };
 }
 
 export function get_due_time_color(due_date: string | null | undefined, completed: boolean, now_date_only: Date): string | null {
@@ -175,6 +199,55 @@ function build_item_card(item: ItemShape, course: CourseShape): HTMLAnchorElemen
     link.appendChild(build_completion_badge(item.completed));
 
     return link;
+}
+
+function build_no_due_date_meta(course: CourseShape): HTMLDivElement {
+    const meta = document.createElement("div");
+    meta.className = CalendarCss.ITEM_META;
+    meta.appendChild(build_course_label(course));
+    return meta;
+}
+
+function build_no_due_date_item_card(no_date_item: NoDateItem): HTMLAnchorElement {
+    const { item, course, type } = no_date_item;
+    const type_label = TYPE_LABEL_SINGULAR[type] ?? type;
+
+    const link = document.createElement("a");
+    link.href = item.url ?? "";
+    link.className = CalendarCss.ITEM;
+
+    const name_el = document.createElement("div");
+    name_el.className = CalendarCss.ITEM_NAME;
+    name_el.textContent = `${type_label}: ${item.name}`;
+
+    const content = document.createElement("div");
+    content.className = CalendarCss.ITEM_CONTENT;
+    content.appendChild(name_el);
+    content.appendChild(build_no_due_date_meta(course));
+
+    link.appendChild(content);
+    link.appendChild(build_completion_badge(item.completed));
+
+    return link;
+}
+
+function build_no_due_date_section(no_date_items: NoDateItem[]): DocumentFragment {
+    const fragment = document.createDocumentFragment();
+
+    const header = document.createElement("div");
+    header.className = CalendarCss.DATE_HEADER;
+    const title = document.createElement("div");
+    title.className = CalendarCss.DATE_TITLE;
+    title.textContent = NO_DUE_DATE_TITLE;
+    header.appendChild(title);
+    fragment.appendChild(header);
+
+    const items_container = document.createElement("div");
+    items_container.className = CalendarCss.ITEMS_CONTAINER;
+    no_date_items.forEach((no_date_item) => items_container.appendChild(build_no_due_date_item_card(no_date_item)));
+    fragment.appendChild(items_container);
+
+    return fragment;
 }
 
 function build_empty_day_notice(): HTMLDivElement {
@@ -321,7 +394,7 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
     const preserved_week_offset = get_preserved_week_offset(calendar_container);
     calendar_container.innerHTML = "";
 
-    const { items_by_date, min_date, max_date } = collect_items_by_date(course_data);
+    const { items_by_date, min_date, max_date, no_date_items } = collect_items_by_date(course_data);
 
     try {
         create_frequency_chart(calendar_container, items_by_date, preserved_week_offset);
@@ -334,16 +407,23 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
     }
 
     if (!min_date || !max_date) {
-        show_empty_state(calendar_container);
-        return;
+        if (no_date_items.length === 0) {
+            show_empty_state(calendar_container);
+            return;
+        }
+    } else {
+        const today = new Date();
+        const start_date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        start_date.setDate(start_date.getDate() - ui_state.calendar_start_days_back);
+        const end_date = new Date(max_date);
+
+        build_calendar_list(items_by_date, start_date, end_date, calendar_container);
     }
 
-    const today = new Date();
-    const start_date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    start_date.setDate(start_date.getDate() - ui_state.calendar_start_days_back);
-    const end_date = new Date(max_date);
+    if (no_date_items.length > 0) {
+        calendar_container.appendChild(build_no_due_date_section(no_date_items));
+    }
 
-    build_calendar_list(items_by_date, start_date, end_date, calendar_container);
     mount_scrollbar_indicator(calendar_container);
 }
 
@@ -356,7 +436,7 @@ export function register_ui_callbacks({ on_refresh, on_rerender }: { on_refresh:
     ui_state.on_rerender = on_rerender;
 }
 
-export function apply_settings({ days_back, show_completed }: { days_back: number; show_completed?: boolean }): void {
+export function apply_settings({ days_back, show_completed, show_no_due_date }: { days_back: number; show_completed?: boolean; show_no_due_date?: boolean }): void {
     ui_state.calendar_start_days_back = days_back;
     localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, days_back.toString());
 
@@ -365,9 +445,17 @@ export function apply_settings({ days_back, show_completed }: { days_back: numbe
         localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, show_completed.toString());
     }
 
+    if (show_no_due_date !== undefined) {
+        ui_state.show_no_due_date_items = show_no_due_date;
+        localStorage.setItem(SHOW_NO_DUE_DATE_STORAGE_KEY, show_no_due_date.toString());
+    }
+
     const days_input = document.getElementById(SettingsCss.DAYS_BACK_INPUT_ID) as HTMLInputElement | null;
     if (days_input) days_input.value = days_back.toString();
 
     const completed_toggle = document.getElementById(SettingsCss.SHOW_COMPLETED_INPUT_ID) as HTMLInputElement | null;
     if (completed_toggle) completed_toggle.checked = ui_state.show_completed_items;
+
+    const no_due_date_toggle = document.getElementById(SettingsCss.SHOW_NO_DUE_DATE_INPUT_ID) as HTMLInputElement | null;
+    if (no_due_date_toggle) no_due_date_toggle.checked = ui_state.show_no_due_date_items;
 }

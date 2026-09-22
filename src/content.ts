@@ -125,7 +125,7 @@ function setup_scroll_persistence() {
 function on_panel_restored() {
     chrome.storage.local.get([SETTINGS_VALUE_KEY], function(result) {
         if (result[SETTINGS_VALUE_KEY]) {
-            apply_settings(result[SETTINGS_VALUE_KEY] as { days_back: number; show_completed?: boolean });
+            apply_settings(result[SETTINGS_VALUE_KEY] as { days_back: number; show_completed?: boolean; show_no_due_date?: boolean });
         }
         if (course_data && Object.keys(course_data).length > 0) {
             update_gui(course_data, fetch_in_flight || remote_fetch_in_flight);
@@ -135,7 +135,7 @@ function on_panel_restored() {
 
 function on_initial_cache_loaded(result: { [key: string]: unknown }) {
     if (result[SETTINGS_VALUE_KEY]) {
-        apply_settings(result[SETTINGS_VALUE_KEY] as { days_back: number; show_completed?: boolean });
+        apply_settings(result[SETTINGS_VALUE_KEY] as { days_back: number; show_completed?: boolean; show_no_due_date?: boolean });
     }
     if (result[LAST_FETCHED_KEY]) {
         set_last_fetched_time(new Date(result[LAST_FETCHED_KEY] as string));
@@ -202,12 +202,12 @@ function on_message_open_url(url: string) {
     window.open(url, "_blank");
 }
 
-function on_message_settings_changed(settings: { days_back: number; show_completed?: boolean }) {
+function on_message_settings_changed(settings: { days_back: number; show_completed?: boolean; show_no_due_date?: boolean }) {
     apply_settings(settings);
     rerender_with_cached_data();
 }
 
-function handle_background_message(request: { action: string; url?: string; settings?: { days_back: number; show_completed?: boolean } }) {
+function handle_background_message(request: { action: string; url?: string; settings?: { days_back: number; show_completed?: boolean; show_no_due_date?: boolean } }) {
     if (request.action === Action.FETCH_STARTED) on_message_fetch_started();
     if (request.action === Action.COURSE_DATA_UPDATED) on_message_course_data_updated();
     if (request.action === Action.OPEN_URL) on_message_open_url(request.url!);

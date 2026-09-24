@@ -279,6 +279,16 @@ function get_preserved_week_offset(calendar_container: HTMLElement): number {
     return existing_chart?._week_offset ?? 0;
 }
 
+function exclude_error_links_from_chart(items_by_date: DateIndexedItems["items_by_date"]): DateIndexedItems["items_by_date"] {
+    const link_statuses = get_state(LINK_STATUSES) as LinkStatuses;
+    return Object.fromEntries(
+        Object.entries(items_by_date).map(([date_key, items]) => [
+            date_key,
+            items.filter(({ item }) => link_statuses[item.url ?? ""] !== true),
+        ])
+    );
+}
+
 function build_scrollbar_notches(item_els: NodeListOf<HTMLElement>, scroll_height: number): HTMLDivElement[] {
     const notches: HTMLDivElement[] = [];
     item_els.forEach((item_el) => {
@@ -349,7 +359,7 @@ export function update_calendar(course_data: CourseData): void {
     const { items_by_date, min_date, max_date } = collect_items_by_date(course_data);
 
     try {
-        create_frequency_chart(calendar_container, items_by_date, preserved_week_offset);
+        create_frequency_chart(calendar_container, exclude_error_links_from_chart(items_by_date), preserved_week_offset);
     } catch (e) {
         console.error("Error creating frequency chart (non-fatal):", e);
     }

@@ -114,14 +114,17 @@
             </label>
           </div>
 
-          <div id="other-container" class="uninstall-other-container" hidden>
+          <div id="detail-container" class="uninstall-detail-container" hidden>
+            <label id="detail-label" class="uninstall-options-label" for="detail-text">
+              Tell us a little more (optional)
+            </label>
             <textarea
-              id="other-text"
+              id="detail-text"
               class="uninstall-textarea"
-              placeholder="Tell us more..."
+              placeholder="Your feedback helps us improve..."
               rows="4"
               maxlength="500"
-              aria-label="Other reason"
+              aria-label="Additional feedback"
             ></textarea>
           </div>
 
@@ -151,21 +154,70 @@
       // URL of the deployed Google Apps Script web app (see scripts/uninstall-feedback.gs)
       const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwegH6g9M9xqZo0c2q4PJuvevFSmpg39k4TQsVTpX_tm0Bcsx2BGwwmyEdTPz9_y1eF/exec";
 
-      const REASON_OTHER = "other";
-      const MAX_OTHER_LENGTH = 500;
+      const MAX_DETAIL_LENGTH = 500;
+      const DEFAULT_DETAIL_LABEL = "Tell us a little more (optional)";
+      const DEFAULT_DETAIL_PLACEHOLDER = "Your feedback helps us improve...";
+      const REASON_DETAIL_PROMPTS = Object.freeze({
+        no_longer_using_brightspace: {
+          label: "What changed? (optional)",
+          placeholder: "For example, did you finish a course or move to another platform?",
+        },
+        not_working: {
+          label: "What went wrong? (optional)",
+          placeholder: "Tell us which feature or page was not working as expected.",
+        },
+        missing_features: {
+          label: "What feature were you missing? (optional)",
+          placeholder: "Tell us what would have made Spark more useful.",
+        },
+        found_alternative: {
+          label: "What worked better about the alternative? (optional)",
+          placeholder: "Tell us what you preferred about it.",
+        },
+        privacy_concerns: {
+          label: "What concerned you? (optional)",
+          placeholder: "Tell us about the permission or privacy concern.",
+        },
+        just_testing: {
+          label: "What were you testing? (optional)",
+          placeholder: "Tell us what you were hoping to try.",
+        },
+        other: {
+          label: "Tell us a little more (optional)",
+          placeholder: "Share anything else that would help us understand.",
+        },
+      });
 
       const form_el = document.getElementById("uninstall-form");
-      const other_container_el = document.getElementById("other-container");
-      const other_text_el = document.getElementById("other-text");
+      const detail_container_el = document.getElementById("detail-container");
+      const detail_label_el = document.getElementById("detail-label");
+      const detail_text_el = document.getElementById("detail-text");
       const form_error_el = document.getElementById("form-error");
       const success_el = document.getElementById("success-message");
 
-      // Show or hide the "Other" textarea based on the selected radio
       form_el.addEventListener("change", function(e) {
         if (e.target.name !== "reason") return;
-        other_container_el.hidden = e.target.value !== REASON_OTHER;
+        const prompt = REASON_DETAIL_PROMPTS[e.target.value] || {};
+        detail_label_el.textContent = prompt.label || DEFAULT_DETAIL_LABEL;
+        detail_text_el.placeholder = prompt.placeholder || DEFAULT_DETAIL_PLACEHOLDER;
+        detail_container_el.hidden = false;
         form_error_el.hidden = true;
       });
+
+      function get_browser_name() {
+        const user_agent = navigator.userAgent;
+        if (/Edg\//.test(user_agent)) return "Microsoft Edge";
+        if (/OPR\//.test(user_agent)) return "Opera";
+        if (/Firefox\//.test(user_agent)) return "Firefox";
+        if (/CriOS\//.test(user_agent)) return "Chrome iOS";
+        if (/Chrome\//.test(user_agent)) return "Google Chrome";
+        if (/Safari\//.test(user_agent)) return "Safari";
+        return "Other";
+      }
+
+      function get_platform_name() {
+        return navigator.userAgentData?.platform || navigator.platform || "Unknown";
+      }
 
       form_el.addEventListener("submit", function(e) {
         e.preventDefault();
@@ -178,9 +230,9 @@
 
         const payload = {
           reason: selected_radio.value,
-          other_text: selected_radio.value === REASON_OTHER
-            ? other_text_el.value.trim().slice(0, MAX_OTHER_LENGTH)
-            : "",
+          other_text: detail_text_el.value.trim().slice(0, MAX_DETAIL_LENGTH),
+          browser: get_browser_name(),
+          platform: get_platform_name(),
           timestamp: new Date().toISOString(),
         };
 

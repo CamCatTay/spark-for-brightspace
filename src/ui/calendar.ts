@@ -8,7 +8,7 @@ import { truncate_course_name } from "../shared/utils/string-utils";
 import { DUE_TODAY_COLOR, DUE_TOMORROW_COLOR, get_setting, OVERDUE_COLOR } from "../core/settings";
 import { CalendarCss, FrequencyChartCss, PanelCss } from "../shared/constants/ui";
 import type { CourseData, CourseShape, ItemShape, LinkStatuses } from "../shared/types";
-import { CALENDAR_DAYS_BACK, COURSE_DATA, HIDDEN_COURSES, HIDDEN_TYPES, IS_FETCHING, LAST_FETCH_COMPLETED_AT, LINK_STATUSES, SCROLL_POS, SHOW_COMPLETED_ASSIGNMENTS } from "../shared/constants/storage-keys";
+import { CALENDAR_DAYS_BACK, COURSE_DATA, HIDDEN_COURSES, HIDDEN_TYPES, IS_FETCHING, LAST_FETCH_COMPLETED_AT, LINK_STATUSES, SCROLL_POS, SHOW_COMPLETED_ASSIGNMENTS, SHOW_ERROR_LINKS } from "../shared/constants/storage-keys";
 import { ASSIGNMENT_LINK_CLICKED } from "../shared/constants/actions";
 import { get_state, set_state } from "../core/state";
 import { register_panel_restore_callback } from "./panel";
@@ -54,7 +54,9 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
             if (!items) return;
             Object.keys(items).forEach((item_id) => {
                 const item = items[item_id];
-                if (!item.due_date || (item.completed && !get_setting(SHOW_COMPLETED_ASSIGNMENTS))) return;
+                const link_statuses = get_state(LINK_STATUSES) as LinkStatuses;
+                const is_link_error = link_statuses[item.url ?? ""] === true;
+                if (!item.due_date || (item.completed && !get_setting(SHOW_COMPLETED_ASSIGNMENTS)) || (is_link_error && !get_setting(SHOW_ERROR_LINKS))) return;
                 const date_only = getDateOnly(item.due_date);
                 if (!date_only) return;
                 const date_key = date_only.toISOString().split("T")[0];

@@ -1,4 +1,4 @@
-import { CALENDAR_DAYS_BACK, D2L_DARK_MODE, HIDDEN_COURSES, HIDDEN_TYPES, SHOW_COMPLETED_ASSIGNMENTS, SHOW_ON_START, SPARK_DARK_MODE, USER_SETTINGS } from "../shared/constants/storage-keys";
+import { CALENDAR_DAYS_BACK, D2L_DARK_MODE, HIDDEN_COURSES, HIDDEN_TYPES, SHOW_COMPLETED_ASSIGNMENTS, SHOW_ERROR_LINKS, SHOW_ON_START, SPARK_DARK_MODE, USER_SETTINGS } from "../shared/constants/storage-keys";
 import { RegistryItem, apply_bundle, apply_item_change, get_value, set_value, sync_registry } from "../shared/utils/registry-utils";
 
 export const DAYS_IN_WEEK = 7;
@@ -24,6 +24,7 @@ const registry: RegistryItem[] = [
     { key: SPARK_DARK_MODE, default: false, scope: "sync", value: false },
     { key: D2L_DARK_MODE, default: false, scope: "sync", value: false },
     { key: SHOW_COMPLETED_ASSIGNMENTS, default: true, scope: "sync", value: true },
+    { key: SHOW_ERROR_LINKS, default: true, scope: "sync", value: true },
     { key: SHOW_ON_START, default: true, scope: "sync", value: true },
     { key: HIDDEN_COURSES, default: new Set(), scope: "session", transform: (v) => new Set(v ?? []), value: new Set() },
     { key: HIDDEN_TYPES, default: new Set(), scope: "session", transform: (v) => new Set(v ?? []), value: new Set() },

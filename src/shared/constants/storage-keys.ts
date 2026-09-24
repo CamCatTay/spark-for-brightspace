@@ -13,6 +13,7 @@ export const SCROLL_POS = "spark-scroll-pos";
 export const USER_SETTINGS = "spark-user-settings";
 export const CALENDAR_DAYS_BACK = "spark-calendar-start-days-back";
 export const SHOW_COMPLETED_ASSIGNMENTS = "spark-show-completed";
+export const SHOW_ERROR_LINKS = "spark-show-error-links";
 export const SHOW_ON_START = "spark-setting-show-on-start";
 export const SPARK_DARK_MODE = "spark-dark-mode";
 export const D2L_DARK_MODE = "spark-d2l-dark-mode";

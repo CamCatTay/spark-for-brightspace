@@ -19,6 +19,7 @@ import {
     HIDDEN_COURSES,
     HIDDEN_TYPES,
     SHOW_COMPLETED_ASSIGNMENTS,
+    SHOW_ERROR_LINKS,
     SHOW_ON_START,
     SPARK_DARK_MODE,
     D2L_DARK_MODE,
@@ -37,6 +38,7 @@ function get_synced_settings() {
     return {
         days_back: get_setting(CALENDAR_DAYS_BACK),
         show_completed: get_setting(SHOW_COMPLETED_ASSIGNMENTS),
+        show_error_links: get_setting(SHOW_ERROR_LINKS),
     };
 }
 
@@ -62,6 +64,12 @@ function on_days_back_changed(input: HTMLInputElement): void {
 
 function on_show_completed_changed(checked: boolean): void {
     set_setting(SHOW_COMPLETED_ASSIGNMENTS, checked);
+    broadcast_settings_changed();
+    trigger_rerender();
+}
+
+function on_show_error_links_changed(checked: boolean): void {
+    set_setting(SHOW_ERROR_LINKS, checked);
     broadcast_settings_changed();
     trigger_rerender();
 }
@@ -182,6 +190,16 @@ function build_show_completed_section(): HTMLElement {
         "When off, only incomplete items are shown in the calendar.",
         get_setting(SHOW_COMPLETED_ASSIGNMENTS),
         on_show_completed_changed
+    );
+    return toggle.section;
+}
+
+function build_show_error_links_section(): HTMLElement {
+    const toggle = create_toggle_setting(
+        "Show items with error links",
+        "When off, items whose links reached a error page are hidden from the calendar.",
+        get_setting(SHOW_ERROR_LINKS),
+        on_show_error_links_changed
     );
     return toggle.section;
 }
@@ -322,6 +340,7 @@ export function build_settings_panel(): HTMLElement {
     body.appendChild(build_spark_dark_mode_section());
     body.appendChild(build_d2l_dark_mode_section());
     body.appendChild(build_show_completed_section());
+    body.appendChild(build_show_error_links_section());
     body.appendChild(build_show_on_start_section());
     body.appendChild(build_types_filter_section());
 

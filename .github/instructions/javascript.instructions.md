@@ -56,6 +56,8 @@ This rule applies to all file types in the project - JavaScript, CSS (e.g. z-ind
 
 ## Test Files
 
+IGNORE ALL TEST FILE CONVENTIONS DO NOT WRITE TEST FILES
+
 Test files follow all the same conventions above. Additional rules:
 
 - **Named constants for fixture values**: any constant, enum, or typed value used in a test that originates in the source file **must be exported from the source file and imported in the test**. Never duplicate a value. Parity between a file and its test is critical - if the value changes in the source, the test must automatically reflect that without any manual edits.

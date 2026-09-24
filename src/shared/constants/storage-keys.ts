@@ -2,6 +2,7 @@
 export const LAST_FETCH_COMPLETED_AT = "spark-last-fetch-completed-at";
 export const IS_FETCHING = "spark-is-fetching";
 export const COURSE_DATA = "spark-course-data";
+export const LINK_STATUSES = "spark-link-statuses";
 
 // session
 export const HIDDEN_COURSES = "spark-hidden-courses";

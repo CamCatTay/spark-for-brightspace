@@ -1,7 +1,7 @@
-import { COURSE_DATA, HIDDEN_COURSES, HIDDEN_TYPES, IS_FETCHING, LAST_FETCH_COMPLETED_AT, USER_SETTINGS } from "../shared/constants/storage-keys";
+import { COURSE_DATA, HIDDEN_COURSES, HIDDEN_TYPES, IS_FETCHING, LAST_FETCH_COMPLETED_AT, LINK_STATUSES, USER_SETTINGS } from "../shared/constants/storage-keys";
 import { apply_setting_change, apply_user_settings } from "./settings";
 import { apply_state_change, get_state } from "./state";
-import { update_calendar } from "../ui/calendar";
+import { update_calendar, update_item_link_status } from "../ui/calendar";
 import { update_settings_panel } from "../ui/settings-menu";
 import { hide_fetching_indicator, show_fetching_indicator, update_fetching_indicator, update_last_fetched_label } from "../ui/fetch-indicator";
 
@@ -24,6 +24,11 @@ function on_chrome_storage_changed(changes: Record<string, any>, area: "sync" | 
             apply_state_change(COURSE_DATA, changes[COURSE_DATA].newValue);
             update_settings_panel();
             update_calendar(get_state(COURSE_DATA));
+        }
+        if (changes[LINK_STATUSES]) {
+            apply_state_change(LINK_STATUSES, changes[LINK_STATUSES].newValue ?? {});
+            const statuses = changes[LINK_STATUSES].newValue ?? {};
+            Object.keys(statuses).forEach((url) => update_item_link_status(url, statuses[url] === true));
         }
         if (changes[LAST_FETCH_COMPLETED_AT]) {
             apply_state_change(LAST_FETCH_COMPLETED_AT, changes[LAST_FETCH_COMPLETED_AT].newValue);

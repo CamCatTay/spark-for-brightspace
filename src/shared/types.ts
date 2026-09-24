@@ -14,6 +14,8 @@ export interface ItemShape {
     completed: boolean;
 }
 
+export type LinkStatuses = Record<string, boolean>;
+
 export interface CourseShape {
     id: number;
     name: string;

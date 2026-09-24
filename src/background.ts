@@ -4,17 +4,21 @@
 import { get_course_content } from "./api/brightspace";
 import {
     FETCH_COURSES,
+    ASSIGNMENT_LINK_CLICKED,
     OPEN_FAQ,
     TOGGLE_PANEL,
     BROADCAST_SETTINGS_CHANGED
 } from "./shared/constants/actions";
 import { CourseShape } from "./shared/types";
-import { COURSE_DATA, IS_FETCHING, LAST_FETCH_COMPLETED_AT, USER_SETTINGS } from "./shared/constants/storage-keys";
+import { COURSE_DATA, IS_FETCHING, LAST_FETCH_COMPLETED_AT, LINK_STATUSES, USER_SETTINGS } from "./shared/constants/storage-keys";
 
 const D2L_URL_FILTER = "/d2l/";
 const FAQ_URL = "https://camcattay.github.io/spark-for-brightspace/faq.html";
 const UNINSTALL_URL = "https://camcattay.github.io/spark-for-brightspace/uninstall.html";
 const SPARK_INITIALIZED_FLAG = "__spark_initialized__";
+const ERROR_PATH_SEGMENT = "/error/";
+
+const pending_assignment_clicks = new Map<number, string>();
 
 const is_d2l_tab = (url?: string) => !!url && url.includes(D2L_URL_FILTER);
 
@@ -77,6 +81,12 @@ function handle_action(request: Record<string, any>, sender: Record<string, any>
             });
             break;
 
+        case ASSIGNMENT_LINK_CLICKED:
+            if (sender.tab?.id !== undefined && typeof request.url === "string") {
+                pending_assignment_clicks.set(sender.tab.id, request.url);
+            }
+            break;
+
         case OPEN_FAQ:
             chrome.tabs.create({ url: FAQ_URL });
             break;
@@ -87,6 +97,22 @@ function handle_action(request: Record<string, any>, sender: Record<string, any>
     }
 }
 chrome.runtime.onMessage.addListener(handle_action);
+
+chrome.tabs.onUpdated.addListener((tab_id, change_info, tab) => {
+    if (change_info.status !== "complete") return;
+
+    const clicked_url = pending_assignment_clicks.get(tab_id);
+    if (!clicked_url || !tab.url) return;
+
+    const unavailable = tab.url.includes(ERROR_PATH_SEGMENT);
+    chrome.storage.local.get(LINK_STATUSES).then((result) => {
+        const statuses = result[LINK_STATUSES] ?? {};
+        return chrome.storage.local.set({
+            [LINK_STATUSES]: { ...statuses, [clicked_url]: unavailable },
+        });
+    });
+    pending_assignment_clicks.delete(tab_id);
+});
 
 function handle_extension_icon_clicked(tab: chrome.tabs.Tab): void {
         if (is_d2l_tab(tab.url)) {

@@ -15,6 +15,7 @@ export const SAVE_SCROLL_POSITION = "save_scroll_position";
 export const GET_SCROLL_POSITION = "get_scroll_position";
 export const BROADCAST_FETCH_STARTED = "broadcast_fetch_started";
 export const FETCH_COURSES = "fetch_courses";
+export const ASSIGNMENT_LINK_CLICKED = "assignment_link_clicked";
 export const BROADCAST_COURSE_DATA_UPDATED = "broadcast_course_data_updated";
 
 // Components

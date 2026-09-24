@@ -120,7 +120,6 @@ class Item {
     due_date?: string | null;
     start_date?: string | null;
     completed: boolean;
-
     constructor(id: number, name: string, url: string | undefined, due_date: string | null | undefined, completed: boolean, start_date: string | null = null) {
         this.id = id;
         this.name = name;

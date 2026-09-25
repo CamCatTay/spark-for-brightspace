@@ -5,5 +5,5 @@ export function truncate_course_name(name: string): string {
     const pattern = COURSE_NAME_TRIM_WORDS
         .map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
         .join("|");
-    return name.replace(new RegExp(`\\s*(${pattern})\\b.*$`, "i"), "").trim();
+    return name.replace(new RegExp(`\\s+(${pattern})\\b.*$`, "i"), "").trim();
 }

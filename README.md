@@ -21,7 +21,7 @@ D2L buries due dates across individual course pages. This fixes that.
 
 ---
 
-## Install Manually (for development)
+## Install Manually
 
 ```bash
 git clone https://github.com/CamCatTay/spark-for-brightspace.git

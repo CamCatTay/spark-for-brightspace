@@ -1,20 +1,18 @@
-# Contributing
+# Contributing & Developer Guide
 
 ---
 
-## Contributor License Agreement
+## Project Status & External Contributions
 
-By submitting a pull request or otherwise contributing code, documentation, or other materials to this project, you agree to the following terms:
+This project is privately maintained by **CamCatTay**.
 
-1. **IP Assignment.** You irrevocably assign all intellectual property rights in your contribution - including copyright - to the project copyright holders (CamCatTay). This assignment takes effect automatically upon submission.
-2. **Original work.** You represent that your contribution is your own original work and that you have the right to make this assignment.
-3. **License terms.** Your contribution is governed by the same license as the rest of this project (see the [LICENSE](LICENSE) file). You understand that the copyright holders may use, relicense, or commercialize the project and your contribution without further notice or compensation.
+**Unsolicited pull requests and external code contributions are not currently accepted.** This repository remains public for visibility, personal reference, and educational inspection under the terms of the [LICENSE](LICENSE).
 
-If you do not agree to these terms, do not submit a pull request.
+If you find a bug or have a feature idea, feel free to open a GitHub Issue for feedback.
 
 ---
 
-## Running locally
+## Running Locally
 
 ```bash
 npm install        # first time only
@@ -40,7 +38,7 @@ npm test
 
 ---
 
-## Project structure quick reference
+## Project Structure Quick Reference
 
 ```
 src/
@@ -53,7 +51,7 @@ src/
     types.ts           shared plain-object interfaces (CourseShape, ItemShape, CourseData)
   ui/
     panel.ts           panel DOM, resize, show/hide, toggle button
-    components.ts      all rendering: calendar list, frequency chart, settings panel
+    components.ts       all rendering: calendar list, frequency chart, settings panel
   utils/
     color-utils.ts     stable course → color assignment
     date-utils.ts      date formatting helpers
@@ -67,7 +65,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for a deeper breakdown of how these piece
 
 ---
 
-## Build system
+## Build System
 
 Two separate Vite configs, one per entry point:
 
@@ -89,9 +87,7 @@ Content scripts must be IIFE because Chrome injects them as plain `<script>` tag
 
 ---
 
-## Branching and commits
-
-No strict convention enforced - just use common sense:
+## Branching and Commits
 
 - Work on a feature branch, not directly on `main`
 - Branch names: `feature/short-description` or `fix/short-description`
@@ -101,16 +97,7 @@ No strict convention enforced - just use common sense:
 
 ---
 
-## Merging / PRs
-
-- For small changes (bug fixes, copy tweaks), merge directly after a quick self-review
-- For anything that touches the API layer, message flow, or CSS scoping, get a second pair of eyes
-- No force-pushes to `main`
-- Delete branches after merging
-
----
-
-## Releasing a new version
+## Releasing a New Version
 
 Version is stored in two places - `package.json` and `manifest.json`. The `npm version` lifecycle hook keeps them in sync automatically:
 
@@ -123,7 +110,7 @@ This runs `scripts/sync-version.js` which copies the version from `package.json`
 
 ---
 
-## Things easy to forget after time away
+## Things Easy to Forget After Time Away
 
 **You must rebuild after every source change.** Chrome loads from `dist/`, not `src/`. If your changes aren't showing up, you probably forgot to run `npm run build` or forgot to reload the extension.
 

@@ -451,6 +451,14 @@ body:has(#spark-widget.hidden) {
     overflow-wrap: break-word;
 }
 
+.link-error-notice {
+    color: #666;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    overflow-wrap: break-word;
+}
+
 .item-meta {
     display: flex;
     justify-content: flex-start;

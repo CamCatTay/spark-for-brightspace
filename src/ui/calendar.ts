@@ -26,7 +26,8 @@ const COURSE_DOT_SYMBOL = "●";
 const COMPLETED_BADGE_SYMBOL = "✓";
 const INCOMPLETE_DOT_SYMBOL = "•";
 const NOT_YET_AVAILABLE_BADGE_SYMBOL = "⊘";
-const UNAVAILABLE_BADGE_SYMBOL = "—";
+const UNAVAILABLE_BADGE_SYMBOL = "⚠";
+const LINK_ERROR_NOTICE = "Link unavailable. Open this item  in Brightspace.";
 
 interface DateIndexedItems {
     items_by_date: Record<string, Array<{ item: ItemShape; course: CourseShape }>>;
@@ -154,13 +155,34 @@ function build_completion_badge(completed: boolean, unavailable: boolean, not_ye
     return badge;
 }
 
+function update_link_error_notice(link: HTMLAnchorElement, unavailable: boolean): void {
+    const content = link.querySelector<HTMLElement>(`.${CalendarCss.ITEM_CONTENT}`);
+    if (!content) return;
+
+    const existing_notice = content.querySelector(`.${CalendarCss.LINK_ERROR_NOTICE}`);
+    if (!unavailable) {
+        existing_notice?.remove();
+        return;
+    }
+    if (existing_notice) return;
+
+    const notice = document.createElement("div");
+    notice.className = CalendarCss.LINK_ERROR_NOTICE;
+    notice.textContent = LINK_ERROR_NOTICE;
+    const name = content.querySelector(`.${CalendarCss.ITEM_NAME}`);
+    if (name) {
+        name.insertAdjacentElement("afterend", notice);
+    } else {
+        content.appendChild(notice);
+    }
+}
+
 function build_item_card(item: ItemShape, course: CourseShape): HTMLAnchorElement {
     const now_date_only = getDateOnly(new Date())!;
     const start_date_only = item.start_date ? getDateOnly(item.start_date) : null;
     const is_not_yet_available = start_date_only !== null && start_date_only > now_date_only;
     const link_statuses = get_state(LINK_STATUSES) as LinkStatuses;
     const is_link_error = link_statuses[item.url ?? ""] === true;
-    const is_unavailable = is_not_yet_available || is_link_error;
 
     const link = document.createElement("a");
     link.href = item.url ?? "";
@@ -174,7 +196,7 @@ function build_item_card(item: ItemShape, course: CourseShape): HTMLAnchorElemen
             void chrome.runtime.sendMessage({ action: ASSIGNMENT_LINK_CLICKED, url: item.url });
         });
     }
-    if (is_unavailable) {
+    if (is_not_yet_available) {
         link.classList.add(CalendarCss.ITEM_UNAVAILABLE);
     }
 
@@ -188,6 +210,7 @@ function build_item_card(item: ItemShape, course: CourseShape): HTMLAnchorElemen
     content.appendChild(build_item_meta(item, course, now_date_only));
 
     link.appendChild(content);
+    update_link_error_notice(link, is_link_error);
     link.appendChild(build_completion_badge(item.completed, is_link_error, is_not_yet_available));
 
     return link;
@@ -200,8 +223,8 @@ export function update_item_link_status(url: string, unavailable: boolean): void
     calendar_container.querySelectorAll<HTMLAnchorElement>(`.${CalendarCss.ITEM}`).forEach((link) => {
         if (link.dataset.itemUrl !== url) return;
         const is_not_yet_available = link.dataset.itemNotYetAvailable === "true";
-        const is_unavailable = unavailable || is_not_yet_available;
-        link.classList.toggle(CalendarCss.ITEM_UNAVAILABLE, is_unavailable);
+        link.classList.toggle(CalendarCss.ITEM_UNAVAILABLE, is_not_yet_available);
+        update_link_error_notice(link, unavailable);
         const badge = link.querySelector<HTMLDivElement>(`.${CalendarCss.ITEM_COMPLETED_BADGE}, .${CalendarCss.ITEM_INCOMPLETE_DOT}`);
         if (!badge) return;
         const completed = link.dataset.itemCompleted === "true";
@@ -279,16 +302,6 @@ function get_preserved_week_offset(calendar_container: HTMLElement): number {
     return existing_chart?._week_offset ?? 0;
 }
 
-function exclude_error_links_from_chart(items_by_date: DateIndexedItems["items_by_date"]): DateIndexedItems["items_by_date"] {
-    const link_statuses = get_state(LINK_STATUSES) as LinkStatuses;
-    return Object.fromEntries(
-        Object.entries(items_by_date).map(([date_key, items]) => [
-            date_key,
-            items.filter(({ item }) => link_statuses[item.url ?? ""] !== true),
-        ])
-    );
-}
-
 function build_scrollbar_notches(item_els: NodeListOf<HTMLElement>, scroll_height: number): HTMLDivElement[] {
     const notches: HTMLDivElement[] = [];
     item_els.forEach((item_el) => {
@@ -359,7 +372,7 @@ export function update_calendar(course_data: CourseData): void {
     const { items_by_date, min_date, max_date } = collect_items_by_date(course_data);
 
     try {
-        create_frequency_chart(calendar_container, exclude_error_links_from_chart(items_by_date), preserved_week_offset);
+        create_frequency_chart(calendar_container, items_by_date, preserved_week_offset);
     } catch (e) {
         console.error("Error creating frequency chart (non-fatal):", e);
     }

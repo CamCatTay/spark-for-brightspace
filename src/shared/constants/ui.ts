@@ -76,6 +76,7 @@ export const CalendarCss = Object.freeze({
     ITEM: "calendar-item",
     ITEM_UNAVAILABLE: "not-yet-available",
     ITEM_NAME: "item-name",
+    LINK_ERROR_NOTICE: "link-error-notice",
     ITEM_META: "item-meta",
     ITEM_CONTENT: "item-content",
     ITEM_TIME: "item-time",

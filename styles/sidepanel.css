@@ -364,7 +364,7 @@ body:has(#spark-widget.hidden) {
 .calendar-date-header {
     position: sticky;
     top: 0;
-    background-color: var(--spark-background-color);
+    background-color: var(--spark-regular-hover-color);
     padding: 27px 16px 6px 16px;
     border-bottom: 1px solid var(--spark-section-border-color);
     z-index: 10;
@@ -380,7 +380,7 @@ body:has(#spark-widget.hidden) {
 }
 
 .calendar-items-container {
-    padding: 0 0 24px 0;
+    padding: 0 0 0px 0;
 }
 
 .calendar-item {
@@ -423,25 +423,6 @@ body:has(#spark-widget.hidden) {
     background-color: var(--spark-regular-active-color);
 }
 
-.calendar-item.not-yet-available {
-    opacity: 0.6;
-    background-color: var(--spark-not-available-background-color);
-    cursor: pointer;
-}
-
-.calendar-item.not-yet-available:hover {
-    background-color: var(--spark-not-available-background-color);
-}
-
-.calendar-item.not-yet-available .item-name {
-    color: #999;
-}
-
-.calendar-item.not-yet-available .start-date-value {
-    color: #666;
-    font-weight: 600;
-}
-
 .item-name {
     font-size: 14px;
     font-weight: 600;
@@ -476,7 +457,7 @@ body:has(#spark-widget.hidden) {
 }
 
 .start-date-value {
-    color: #d68d00;
+    color: #666;
     font-weight: 600;
 }
 

@@ -340,7 +340,7 @@ export function build_settings_panel(): HTMLElement {
     body.appendChild(build_spark_dark_mode_section());
     //body.appendChild(build_d2l_dark_mode_section()); (Disabled because it's WIP)
     body.appendChild(build_show_completed_section());
-    body.appendChild(build_show_error_links_section());
+    //body.appendChild(build_show_error_links_section()); (Disabled because students may forget about the assignment)
     body.appendChild(build_show_on_start_section());
     body.appendChild(build_types_filter_section());
 

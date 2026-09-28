@@ -10,10 +10,12 @@ import { get_state, initialize_state } from "./core/state";
 import { request_smart_fetch } from "./core/fetch";
 import "./core/storage-listener";
 import { update_theme } from "./ui/theme";
+import { show_whats_new_if_pending } from "./ui/whats-new";
+import { SPARK_INITIALIZED_FLAG } from "./shared/constants/runtime";
 
 async function main() {
-    if ((window as any).has_spark_initialized) return;
-    (window as any).has_spark_initialized = true;
+    if ((window as any)[SPARK_INITIALIZED_FLAG]) return;
+    (window as any)[SPARK_INITIALIZED_FLAG] = true;
 
     // 1. Load Settings & State
     await initialize_settings();
@@ -21,6 +23,7 @@ async function main() {
 
     // 2. Setup UI
     const container = inject_embedded_ui();
+    await show_whats_new_if_pending();
     register_settings_panel_builder(build_settings_panel);
     register_rerender_callback(() => update_calendar(get_state(COURSE_DATA)));
     update_settings_panel();

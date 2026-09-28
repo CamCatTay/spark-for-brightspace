@@ -10,12 +10,12 @@ import {
     BROADCAST_SETTINGS_CHANGED
 } from "./shared/constants/actions";
 import { CourseShape } from "./shared/types";
-import { COURSE_DATA, IS_FETCHING, LAST_FETCH_COMPLETED_AT, LINK_STATUSES, USER_SETTINGS } from "./shared/constants/storage-keys";
+import { COURSE_DATA, IS_FETCHING, LAST_FETCH_COMPLETED_AT, LINK_STATUSES, USER_SETTINGS, WHATS_NEW_PENDING } from "./shared/constants/storage-keys";
+import { SPARK_INITIALIZED_FLAG } from "./shared/constants/runtime";
 
 const D2L_URL_FILTER = "/d2l/";
 const FAQ_URL = "https://camcattay.github.io/spark-for-brightspace/faq.html";
 const UNINSTALL_URL = "https://camcattay.github.io/spark-for-brightspace/uninstall.html";
-const SPARK_INITIALIZED_FLAG = "__spark_initialized__";
 const ERROR_PATH_SEGMENT = "/error/";
 
 const pending_assignment_clicks = new Map<number, string>();
@@ -26,7 +26,10 @@ const is_d2l_tab = (url?: string) => !!url && url.includes(D2L_URL_FILTER);
 // set access level allows content scripts to use it
 chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS" });
 
-function handle_extension_installed(details: Record<string, any>): void {
+async function handle_extension_installed(details: Record<string, any>): Promise<void> {
+    if (details.reason === "install" || details.reason === "update") {
+        await chrome.storage.local.set({ [WHATS_NEW_PENDING]: true });
+    }
     if (details.reason === "install") {
         chrome.storage.local.set({ "spark-client-id": crypto.randomUUID() });
     }

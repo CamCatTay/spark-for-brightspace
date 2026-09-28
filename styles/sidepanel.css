@@ -153,6 +153,128 @@ body:has(#spark-widget.hidden) {
     position: relative;
 }
 
+.spark-whats-new-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    overflow: hidden;
+    color: var(--spark-bold-text-color);
+    background: color-mix(in srgb, var(--spark-background-color) 95%, transparent);
+}
+
+.spark-whats-new-content {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overflow-wrap: anywhere;
+    scrollbar-width: none;
+}
+
+.spark-whats-new-content::-webkit-scrollbar {
+    display: none;
+}
+
+.spark-whats-new-header {
+    margin-bottom: 24px;
+}
+
+.spark-whats-new-eyebrow {
+    margin-bottom: 6px;
+    color: #d68d00;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.spark-whats-new-content h2 {
+    margin-right: 36px;
+    font-size: 24px;
+}
+
+.spark-whats-new-section {
+    position: relative;
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+}
+
+.spark-whats-new-section::after {
+    position: absolute;
+    right: -24px;
+    bottom: 0;
+    left: -24px;
+    height: 1px;
+    background: var(--spark-section-border-color);
+    content: "";
+}
+
+.spark-whats-new-section:last-child::after {
+    display: none;
+}
+
+.spark-whats-new-section h3 {
+    margin-bottom: 10px;
+    color: var(--spark-muted-text-color);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.spark-whats-new-list {
+    display: grid;
+    gap: 9px;
+    list-style: none;
+}
+
+.spark-whats-new-list li {
+    position: relative;
+    padding-left: 16px;
+    color: var(--spark-regular-text-color);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.spark-whats-new-list li::before {
+    position: absolute;
+    top: 7px;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #f6a41d;
+    content: "";
+}
+
+.spark-whats-new-note {
+    margin-top: 10px;
+    color: var(--spark-regular-text-color);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.spark-whats-new-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 1;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 4px;
+    color: inherit;
+    background: transparent;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.spark-whats-new-close:hover {
+    background: rgb(127 127 127 / 16%);
+}
+
 .spark-resize-handle {
     position: absolute;
     left: 0;

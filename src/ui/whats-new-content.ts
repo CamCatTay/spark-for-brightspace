@@ -1,5 +1,5 @@
 export const WHATS_NEW_CONTENT = Object.freeze({
-    title: "Spark for Brightspace (1.4.2)",
+    title: "Spark for Brightspace (1.4.0)",
     items: [
         "[Note]",
         "Click the refresh button on the panel (top left) to update upcoming assignments",

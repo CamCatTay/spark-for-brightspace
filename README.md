@@ -10,61 +10,35 @@ D2L buries due dates across individual course pages. This fixes that.
 
 ## Features
 
-- All upcoming due dates from every enrolled course in one view
-- Chronological calendar with date headers ("Today", "Tomorrow")
-- Color-coded course indicators - consistent colors per course
-- Urgency highlighting: due today (orange), due tomorrow (yellow), overdue (red)
-- Frequency bar chart - see which days of the week are the most loaded
-- Resizable, persistent side panel that stays visible as you navigate
-- Syncs across multiple open D2L tabs (only one panel active at a time)
-- Settings: hide specific courses or item types, adjust how far back to look
+- **All-in-One Deadline Hub:** View all upcoming due dates across all enrolled courses in a single place.
+- **Chronological Layout:** Organized calendar view broken down by dates ("Today", "Tomorrow").
+- **Course Color-Coding:** Consistent, customizable colors per course for quick visual parsing.
+- **Urgency Highlights:** Smart indicators for deadlines due today (orange), tomorrow (yellow), or overdue (red).
+- **Workload Bar Chart:** Visual frequency analysis to identify heavy workload days at a glance.
+- **Persistent Side Panel:** Resizable panel that stays open as you navigate between D2L tabs.
+- **Cross-Tab Sync:** Automatically manages state across multiple active D2L tabs.
+- **Customizable Settings:** Filter specific courses, toggle item types, or adjust timeline ranges.
 
 ---
 
-## Install Manually
+## Documentation
 
-```bash
-git clone https://github.com/CamCatTay/spark-for-brightspace.git
-cd spark-for-brightspace
-npm install
-npm run build
-```
+- [ARCHITECTURE.md](ARCHITECTURE.md) — Technical overview of project architecture and structure.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Guidelines regarding development and project management.
 
-1. Open `chrome://extensions/`
-2. Enable **Developer Mode**
-3. Click **Load unpacked** → select the repo root
-4. Navigate to any D2L page - the Spark icon appears in the toolbar
+## Feedback & Bug Reports
 
-After any source change: `npm run build`, then click the reload icon on the extension card in `chrome://extensions/`.
-
----
-
-## Docs
-
-- [CONTRIBUTING.md](CONTRIBUTING.md) - how to work on this project
-- [ARCHITECTURE.md](ARCHITECTURE.md) - how the code is structured and why
-
----
-
-## Roadmap
-
-- [x] Fetch assignments, quizzes, and discussions from all courses
-- [x] Chronological calendar view
-- [x] Frequency chart
-- [x] Color-coded courses + scrollbar notch indicators
-- [x] Urgency indicators
-- [ ] Grade display alongside assignments
-- [ ] Notifications / reminders for upcoming deadlines
-- [ ] Export to calendar (Google Calendar / .ics)
-
----
-
-## Feedback
-
-Found a bug or have a feature idea? Open an issue. This is a side project but feedback is welcome.
+Found a bug or have a feature request? Please feel free to open an issue on GitHub. 
 
 ---
 
 ## License
 
-See [LICENSE](LICENSE). Personal and educational use is permitted. Redistribution or publishing under another identity is not.
+Copyright (c) 2026 **CamCatTay**. All rights reserved.
+
+This software is released under the **Spark for Brightspace - Restrictive Source License**. 
+
+- Free tier usage and private personal forking are permitted for non-commercial or educational purposes.
+- Bypassing Pro/Premium feature checks, distributing derivative works, or republishing this software to any extension marketplace is strictly prohibited.
+
+For complete terms, please refer to the [LICENSE](LICENSE) file.

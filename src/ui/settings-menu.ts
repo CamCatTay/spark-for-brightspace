@@ -1,84 +1,126 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { Action } from "../shared/actions";
-import { getCourseColor } from "../utils/color-utils";
+import { ensureCourseColorsAssigned, getCourseColor } from "../shared/utils/color-utils";
 import { safe_send_message } from "./panel";
-import { create_toggle_setting } from "../utils/settings-menu-utils";
-import { SettingsCss } from "./dom-constants";
+import { create_toggle_setting } from "../shared/utils/settings-menu-utils";
+import { SettingsCss } from "../shared/constants/ui";
+import { truncate_course_name } from "../shared/utils/string-utils";
 import {
-    ui_state,
-    truncate_course_name,
     ITEM_TYPES,
-    CALENDAR_START_DAYS_BACK_STORAGE_KEY,
-    SHOW_COMPLETED_STORAGE_KEY,
-    SHOW_ON_START_STORAGE_KEY,
-    HIDDEN_COURSES_SESSION_KEY,
-    HIDDEN_TYPES_SESSION_KEY,
-    SETTINGS_MIN_DAYS_BACK,
-    SETTINGS_MAX_DAYS_BACK,
-} from "./ui-state";
+    MIN_CALENDAR_DAYS_BACK,
+    MAX_CALENDAR_DAYS_BACK,
+    get_setting,
+    set_setting,
+} from "../core/settings";
+import { get_state } from "../core/state";
+import {
+    CALENDAR_DAYS_BACK,
+    HIDDEN_COURSES,
+    HIDDEN_TYPES,
+    SHOW_COMPLETED_ASSIGNMENTS,
+    SHOW_ERROR_LINKS,
+    SHOW_ON_START,
+    SPARK_DARK_MODE,
+    D2L_DARK_MODE,
+    COURSE_DATA,
+} from "../shared/constants/storage-keys";
 import type { CourseData, CourseShape } from "../shared/types";
+import { BROADCAST_SETTINGS_CHANGED } from "../shared/constants/actions";
+
+let rerender_callback: (() => void) | null = null;
+
+export function register_rerender_callback(fn: () => void): void {
+    rerender_callback = fn;
+}
 
 function get_synced_settings() {
     return {
-        days_back: ui_state.calendar_start_days_back,
-        show_completed: ui_state.show_completed_items,
+        days_back: get_setting(CALENDAR_DAYS_BACK),
+        show_completed: get_setting(SHOW_COMPLETED_ASSIGNMENTS),
+        show_error_links: get_setting(SHOW_ERROR_LINKS),
     };
 }
 
 function clamp_days_back(raw_value: number): number {
-    return Math.max(SETTINGS_MIN_DAYS_BACK, Math.min(SETTINGS_MAX_DAYS_BACK, raw_value || 0));
+    return Math.max(MIN_CALENDAR_DAYS_BACK, Math.min(MAX_CALENDAR_DAYS_BACK, raw_value || 0));
 }
 
 function broadcast_settings_changed(): void {
-    safe_send_message({ action: Action.BROADCAST_SETTINGS_CHANGED, settings: get_synced_settings() });
+    safe_send_message({ action: BROADCAST_SETTINGS_CHANGED, settings: get_synced_settings() });
 }
 
 function trigger_rerender(): void {
-    if (ui_state.on_rerender) ui_state.on_rerender();
+    if (rerender_callback) rerender_callback();
 }
 
 function on_days_back_changed(input: HTMLInputElement): void {
     const clamped = clamp_days_back(parseInt(input.value, 10));
     input.value = clamped.toString();
-    ui_state.calendar_start_days_back = clamped;
-    localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, clamped.toString());
+    set_setting(CALENDAR_DAYS_BACK, clamped);
     broadcast_settings_changed();
     trigger_rerender();
 }
 
 function on_show_completed_changed(checked: boolean): void {
-    ui_state.show_completed_items = checked;
-    localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, checked.toString());
+    set_setting(SHOW_COMPLETED_ASSIGNMENTS, checked);
+    broadcast_settings_changed();
+    trigger_rerender();
+}
+
+function on_show_error_links_changed(checked: boolean): void {
+    set_setting(SHOW_ERROR_LINKS, checked);
     broadcast_settings_changed();
     trigger_rerender();
 }
 
 function on_show_on_start_changed(checked: boolean): void {
-    ui_state.show_on_start = checked;
-    localStorage.setItem(SHOW_ON_START_STORAGE_KEY, checked.toString());
+    set_setting(SHOW_ON_START, checked);
     broadcast_settings_changed();
     trigger_rerender();
 }
 
 function on_type_visibility_changed(type_key: string, is_visible: boolean): void {
+    const hidden = get_setting(HIDDEN_TYPES) as Set<string>;
     if (is_visible) {
-        ui_state.hidden_types.delete(type_key);
+        hidden.delete(type_key);
     } else {
-        ui_state.hidden_types.add(type_key);
+        hidden.add(type_key);
     }
-    sessionStorage.setItem(HIDDEN_TYPES_SESSION_KEY, JSON.stringify([...ui_state.hidden_types]));
+    set_setting(HIDDEN_TYPES, [...hidden]);
     trigger_rerender();
 }
 
 function on_course_visibility_changed(course_id: string, is_visible: boolean): void {
+    const hidden = get_setting(HIDDEN_COURSES) as Set<string>;
     if (is_visible) {
-        ui_state.hidden_course_ids.delete(course_id);
+        hidden.delete(course_id);
     } else {
-        ui_state.hidden_course_ids.add(course_id);
+        hidden.add(course_id);
     }
-    sessionStorage.setItem(HIDDEN_COURSES_SESSION_KEY, JSON.stringify([...ui_state.hidden_course_ids]));
+    set_setting(HIDDEN_COURSES, [...hidden]);
+    trigger_rerender();
+}
+
+function on_spark_dark_mode_changed(checked: boolean) {
+    if (!checked) {
+        document.documentElement.classList.remove(SettingsCss.SPARK_DARK_MODE);
+    } else {
+        document.documentElement.classList.add(SettingsCss.SPARK_DARK_MODE);
+    }
+    set_setting(SPARK_DARK_MODE, checked);
+    broadcast_settings_changed();
+    trigger_rerender();
+}
+
+function on_d2l_dark_mode_changed(checked: boolean) {
+    if (!checked) {
+        document.documentElement.classList.remove(SettingsCss.SPARK_D2L_DARK_MODE);
+    } else {
+        document.documentElement.classList.add(SettingsCss.SPARK_D2L_DARK_MODE);
+    }
+    set_setting(D2L_DARK_MODE, checked);
+    broadcast_settings_changed();
     trigger_rerender();
 }
 
@@ -111,9 +153,9 @@ function build_days_back_section(): HTMLElement {
     input.type = "number";
     input.id = SettingsCss.DAYS_BACK_INPUT_ID;
     input.className = SettingsCss.INPUT;
-    input.min = SETTINGS_MIN_DAYS_BACK.toString();
-    input.max = SETTINGS_MAX_DAYS_BACK.toString();
-    input.value = ui_state.calendar_start_days_back.toString();
+    input.min = MIN_CALENDAR_DAYS_BACK.toString();
+    input.max = MAX_CALENDAR_DAYS_BACK.toString();
+    input.value = get_setting(CALENDAR_DAYS_BACK).toString();
     input.addEventListener("change", () => on_days_back_changed(input));
 
     section.appendChild(label);
@@ -122,12 +164,42 @@ function build_days_back_section(): HTMLElement {
     return section;
 }
 
+function build_spark_dark_mode_section(): HTMLElement {
+    const toggle = create_toggle_setting(
+        "Spark Dark Mode",
+        "Enables dark mode for the spark side panel.",
+        get_setting(SPARK_DARK_MODE),
+        on_spark_dark_mode_changed
+    );
+    return toggle.section;
+}
+
+function build_d2l_dark_mode_section(): HTMLElement {
+    const toggle = create_toggle_setting(
+        "D2L Dark Mode (Experimental)",
+        "Enables dark mode for D2L. Still under development, may not function as expected.",
+        get_setting(D2L_DARK_MODE),
+        on_d2l_dark_mode_changed
+    );
+    return toggle.section;
+}
+
 function build_show_completed_section(): HTMLElement {
     const toggle = create_toggle_setting(
         "Show completed items",
         "When off, only incomplete items are shown in the calendar.",
-        ui_state.show_completed_items,
+        get_setting(SHOW_COMPLETED_ASSIGNMENTS),
         on_show_completed_changed
+    );
+    return toggle.section;
+}
+
+function build_show_error_links_section(): HTMLElement {
+    const toggle = create_toggle_setting(
+        "Show items with error links",
+        "When off, items whose links reached a error page are hidden from the calendar.",
+        get_setting(SHOW_ERROR_LINKS),
+        on_show_error_links_changed
     );
     return toggle.section;
 }
@@ -136,7 +208,7 @@ function build_show_on_start_section(): HTMLElement {
     const toggle = create_toggle_setting(
         "Show on start",
         "When off, the side panel will start hidden in new tabs.",
-        ui_state.show_on_start,
+        get_setting(SHOW_ON_START),
         on_show_on_start_changed
     );
     return toggle.section;
@@ -150,7 +222,7 @@ function build_type_filter_row(key: string, type_label: string): HTMLElement {
     checkbox.type = "checkbox";
     checkbox.className = SettingsCss.COURSE_CHECKBOX;
     checkbox.dataset.settingType = key;
-    checkbox.checked = !ui_state.hidden_types.has(key);
+    checkbox.checked = !(get_setting(HIDDEN_TYPES) as Set<string>).has(key);
     checkbox.addEventListener("change", () => on_type_visibility_changed(key, checkbox.checked));
 
     const name = document.createElement("span");
@@ -220,7 +292,7 @@ function build_course_row(course_id: string, course: CourseShape): HTMLElement {
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.className = SettingsCss.COURSE_CHECKBOX;
-    checkbox.checked = !ui_state.hidden_course_ids.has(course_id);
+    checkbox.checked = !(get_setting(HIDDEN_COURSES) as Set<string>).has(course_id);
     checkbox.addEventListener("change", () => on_course_visibility_changed(course_id, checkbox.checked));
 
     const dot = document.createElement("span");
@@ -238,7 +310,26 @@ function build_course_row(course_id: string, course: CourseShape): HTMLElement {
     return row;
 }
 
+function build_settings_footer(): HTMLElement {
+    const footer = document.createElement("div");
+    footer.className = SettingsCss.PANEL_FOOTER;
+
+    const notice = document.createElement("p");
+    notice.className = SettingsCss.PANEL_FOOTER_TEXT;
+    notice.textContent = "Spark is an independent tool. Some assignments may be missing, always verify dates on official Brightspace pages and syllabi. (Click For Terms)";
+    notice.style.cursor = "pointer";
+    notice.addEventListener("click", () => {
+        window.open("https://camcattay.github.io/spark-for-brightspace/privacy-policy.html", "_blank", "noopener,noreferrer");
+    });
+
+    footer.appendChild(notice);
+    return footer;
+}
+
 export function build_settings_panel(): HTMLElement {
+    const course_data = get_state(COURSE_DATA);
+    ensureCourseColorsAssigned(course_data);
+
     const panel = document.createElement("div");
     panel.id = SettingsCss.PANEL_ID;
 
@@ -246,7 +337,10 @@ export function build_settings_panel(): HTMLElement {
     body.className = SettingsCss.BODY;
 
     body.appendChild(build_days_back_section());
+    body.appendChild(build_spark_dark_mode_section());
+    //body.appendChild(build_d2l_dark_mode_section()); (Disabled because it's WIP)
     body.appendChild(build_show_completed_section());
+    //body.appendChild(build_show_error_links_section()); (Disabled because students may forget about the assignment)
     body.appendChild(build_show_on_start_section());
     body.appendChild(build_types_filter_section());
 
@@ -255,10 +349,11 @@ export function build_settings_panel(): HTMLElement {
 
     panel.appendChild(build_panel_header());
     panel.appendChild(body);
+    panel.appendChild(build_settings_footer());
 
-    if (Object.keys(ui_state.last_course_data).length > 0) {
+    if (Object.keys(course_data).length > 0) {
         const courses_list = courses_section.querySelector<HTMLElement>(`#${SettingsCss.COURSES_LIST_ID}`)!;
-        update_settings_course_list(ui_state.last_course_data, courses_list);
+        update_settings_course_list(course_data, courses_list);
     }
 
     return panel;
@@ -268,15 +363,29 @@ export function update_settings_panel(): void {
     const existing = document.getElementById(SettingsCss.PANEL_ID);
     if (!existing) return;
 
+    // restore scroll pos
+    const existing_body = existing.querySelector<HTMLElement>(`.${SettingsCss.BODY}`);
+    const scroll_top = existing_body?.scrollTop ?? 0;
+    const scroll_left = existing_body?.scrollLeft ?? 0;
+
     const new_panel = build_settings_panel();
     new_panel.style.cssText = existing.style.cssText;
     if (existing.classList.contains(SettingsCss.OPEN)) {
         new_panel.classList.add(SettingsCss.OPEN);
     }
     existing.replaceWith(new_panel);
+
+    // restore scroll pos after building new panel
+    const new_body = new_panel.querySelector<HTMLElement>(`.${SettingsCss.BODY}`);
+    if (new_body) {
+        new_body.scrollTop = scroll_top;
+        new_body.scrollLeft = scroll_left;
+    }
 }
 
 export function update_settings_course_list(course_data: CourseData, list_el: HTMLElement | null = null): void {
+    ensureCourseColorsAssigned(course_data);
+
     const list = list_el || document.getElementById(SettingsCss.COURSES_LIST_ID);
     if (!list) return;
 

@@ -35,7 +35,7 @@ export function getCourseColor(courseName: string): string {
     return courseColorMap[courseName] || "#808080";
 }
 
-// Resets the internal color map — only used in tests to ensure isolation between test cases.
+// Resets the internal color map - only used in tests to ensure isolation between test cases.
 export function _resetColorMap(): void {
     courseColorMap = {};
 }

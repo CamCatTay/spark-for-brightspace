@@ -178,7 +178,7 @@ describe("get_assignment_submissions", () => {
         expect(result).toEqual([]);
     });
 
-    test("falls back to history page when API returns an Errors object — submission found", async () => {
+    test("falls back to history page when API returns an Errors object - submission found", async () => {
         const error_body = { Errors: [{ Message: "Folder closed" }] };
         const history_html = `<table><tr><td class="d_gn d_gt">submitted.pdf</td></tr></table>`;
         vi.mocked(globalThis.fetch)
@@ -189,7 +189,7 @@ describe("get_assignment_submissions", () => {
         expect(result).toEqual([{ Submissions: [{ Id: "history" }] }]);
     });
 
-    test("falls back to history page when API returns Errors — no submission found", async () => {
+    test("falls back to history page when API returns Errors - no submission found", async () => {
         const error_body = { Errors: [{ Message: "Folder closed" }] };
         const history_html = `<table><tr><td>No rows</td></tr></table>`;
         vi.mocked(globalThis.fetch)
@@ -438,7 +438,7 @@ describe("get_course_content", () => {
 
     test("inactive and non-type-3 courses are excluded from results", async () => {
         vi.mocked(globalThis.fetch)
-            // enrollments — one active course, one inactive
+            // enrollments - one active course, one inactive
             .mockResolvedValueOnce(mock_json({
                 PagingInfo: { HasMoreItems: false },
                 Items: [

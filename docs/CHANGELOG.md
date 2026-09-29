@@ -1,8 +1,21 @@
 # Changelog
 
 All notable changes to Spark for Brightspace are documented here.
+---
+## [1.3.2] - 2026-04-27
+
+### Changed
+Fetching throttled to only occur every 15 minutes from time to live actions
+Fetching throttled to only occur every 10 seconds from interaction with refresh button
+
+Also, visually the fetching indicator will not appear on ttl actions that should be fixed in next minor/major release
 
 ---
+## [1.3.1] - 2026-04-26
+
+### Fixed
+
+Items with start dates were not being displayed greyed out as they should be. Now they are.
 
 ## [1.3.0] - 2026-04-26
 
@@ -32,7 +45,7 @@ All notable changes to Spark for Brightspace are documented here.
 
 ---
 
-## [1.2.1] — 2026-04-23
+## [1.2.1] - 2026-04-23
 
 ### Improved
 

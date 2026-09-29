@@ -61,7 +61,8 @@ export function formatDateHeader(date: Date): string {
 export function getWeekStart(date: Date): Date {
     const d = new Date(date);
     const day = d.getDay();
-    const diff = d.getDate() - day;
+    const monday_offset = (day + 6) % 7;
+    const diff = d.getDate() - monday_offset;
     return new Date(d.getFullYear(), d.getMonth(), diff);
 }
 

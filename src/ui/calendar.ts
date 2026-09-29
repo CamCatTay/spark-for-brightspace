@@ -1,21 +1,19 @@
 // Copyright (c) 2026 CamCatTay. All rights reserved.
 // See LICENSE file for terms of use.
 
-import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader } from "../utils/date-utils";
-import { getCourseColor, ensureCourseColorsAssigned } from "../utils/color-utils";
+import { formatTimeFromDate, formatFullDatetime, getDateOnly, formatDateHeader } from "../shared/utils/date-utils";
+import { getCourseColor, ensureCourseColorsAssigned } from "../shared/utils/color-utils";
 import { create_frequency_chart } from "./frequency-chart";
-import { update_settings_course_list } from "./settings-menu";
-import {
-    ui_state,
-    truncate_course_name,
-    DUE_TODAY_COLOR,
-    DUE_TOMORROW_COLOR,
-    OVERDUE_COLOR,
-    CALENDAR_START_DAYS_BACK_STORAGE_KEY,
-    SHOW_COMPLETED_STORAGE_KEY,
-} from "./ui-state";
-import { CalendarCss, FrequencyChartCss, PanelCss, SettingsCss } from "./dom-constants";
-import type { CourseData, CourseShape, ItemShape } from "../shared/types";
+import { truncate_course_name } from "../shared/utils/string-utils";
+import { DUE_TODAY_COLOR, DUE_TOMORROW_COLOR, get_setting, OVERDUE_COLOR } from "../core/settings";
+import { CalendarCss, FrequencyChartCss, PanelCss } from "../shared/constants/ui";
+import type { CourseData, CourseShape, ItemShape, LinkStatuses } from "../shared/types";
+import { CALENDAR_DAYS_BACK, COURSE_DATA, HIDDEN_COURSES, HIDDEN_TYPES, IS_FETCHING, LAST_FETCH_COMPLETED_AT, LINK_STATUSES, SCROLL_POS, SHOW_COMPLETED_ASSIGNMENTS, SHOW_ERROR_LINKS } from "../shared/constants/storage-keys";
+import { ASSIGNMENT_LINK_CLICKED } from "../shared/constants/actions";
+import { get_state, set_state } from "../core/state";
+import { register_panel_restore_callback } from "./panel";
+import { scroll_to_today } from "./frequency-chart";
+import { update_fetching_indicator, update_last_fetched_label } from "./fetch-indicator";
 
 const AVAILABLE_ON_PREFIX = "Available on ";
 
@@ -27,7 +25,9 @@ const META_SEPARATOR = "|";
 const COURSE_DOT_SYMBOL = "●";
 const COMPLETED_BADGE_SYMBOL = "✓";
 const INCOMPLETE_DOT_SYMBOL = "•";
-const FETCHING_STATUS_LABEL = " — Fetching...";
+const NOT_YET_AVAILABLE_BADGE_SYMBOL = "⊘";
+const UNAVAILABLE_BADGE_SYMBOL = "⚠";
+const LINK_ERROR_NOTICE = "Link unavailable. Open this item  in Brightspace.";
 
 interface DateIndexedItems {
     items_by_date: Record<string, Array<{ item: ItemShape; course: CourseShape }>>;
@@ -42,7 +42,7 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
 
     Object.keys(course_data).forEach((course_id) => {
         const course = course_data[course_id];
-        if (ui_state.hidden_course_ids.has(course_id)) return;
+        if (get_setting(HIDDEN_COURSES).has(course_id)) return;
 
         const item_collections = [
             { items: course.assignments, type: "assignments" },
@@ -51,11 +51,13 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
         ];
 
         item_collections.forEach(({ items, type }) => {
-            if (ui_state.hidden_types.has(type)) return;
+            if (get_setting(HIDDEN_TYPES).has(type)) return;
             if (!items) return;
             Object.keys(items).forEach((item_id) => {
                 const item = items[item_id];
-                if (!item.due_date || (item.completed && !ui_state.show_completed_items)) return;
+                const link_statuses = get_state(LINK_STATUSES) as LinkStatuses;
+                const is_link_error = link_statuses[item.url ?? ""] === true;
+                if (!item.due_date || (item.completed && !get_setting(SHOW_COMPLETED_ASSIGNMENTS)) || (is_link_error && !get_setting(SHOW_ERROR_LINKS))) return;
                 const date_only = getDateOnly(item.due_date);
                 if (!date_only) return;
                 const date_key = date_only.toISOString().split("T")[0];
@@ -72,7 +74,8 @@ function collect_items_by_date(course_data: CourseData): DateIndexedItems {
     return { items_by_date, min_date, max_date };
 }
 
-export function get_due_time_color(due_date: string | null | undefined, completed: boolean, now_date_only: Date): string | null {
+export function get_due_time_color(due_date: string | null | undefined, completed: boolean, now_date_only: Date, is_link_error = false): string | null {
+    if (is_link_error) return null;
     const due_date_only = getDateOnly(due_date);
     if (!due_date_only) return null;
     if (!completed && due_date_only < now_date_only) return OVERDUE_COLOR;
@@ -117,7 +120,9 @@ function build_due_date_section(item: ItemShape, course: CourseShape, now_date_o
     const due_time_el = document.createElement("span");
     due_time_el.className = CalendarCss.ITEM_TIME;
     due_time_el.textContent = formatTimeFromDate(item.due_date);
-    const color = get_due_time_color(item.due_date, item.completed, now_date_only);
+    const link_statuses = get_state(LINK_STATUSES) as LinkStatuses;
+    const is_link_error = link_statuses[item.url ?? ""] === true;
+    const color = get_due_time_color(item.due_date, item.completed, now_date_only, is_link_error);
     if (color) due_time_el.style.color = color;
     container.appendChild(due_time_el);
 
@@ -143,21 +148,54 @@ function build_item_meta(item: ItemShape, course: CourseShape, now_date_only: Da
     return meta;
 }
 
-function build_completion_badge(completed: boolean): HTMLDivElement {
+function build_completion_badge(completed: boolean, unavailable: boolean, not_yet_available: boolean): HTMLDivElement {
     const badge = document.createElement("div");
-    badge.className = completed ? CalendarCss.ITEM_COMPLETED_BADGE : CalendarCss.ITEM_INCOMPLETE_DOT;
-    badge.textContent = completed ? COMPLETED_BADGE_SYMBOL : INCOMPLETE_DOT_SYMBOL;
+    badge.className = completed && !unavailable && !not_yet_available ? CalendarCss.ITEM_COMPLETED_BADGE : CalendarCss.ITEM_INCOMPLETE_DOT;
+    badge.textContent = unavailable ? UNAVAILABLE_BADGE_SYMBOL : not_yet_available ? NOT_YET_AVAILABLE_BADGE_SYMBOL : completed ? COMPLETED_BADGE_SYMBOL : INCOMPLETE_DOT_SYMBOL;
     return badge;
+}
+
+function update_link_error_notice(link: HTMLAnchorElement, unavailable: boolean): void {
+    const content = link.querySelector<HTMLElement>(`.${CalendarCss.ITEM_CONTENT}`);
+    if (!content) return;
+
+    const existing_notice = content.querySelector(`.${CalendarCss.LINK_ERROR_NOTICE}`);
+    if (!unavailable) {
+        existing_notice?.remove();
+        return;
+    }
+    if (existing_notice) return;
+
+    const notice = document.createElement("div");
+    notice.className = CalendarCss.LINK_ERROR_NOTICE;
+    notice.textContent = LINK_ERROR_NOTICE;
+    const name = content.querySelector(`.${CalendarCss.ITEM_NAME}`);
+    if (name) {
+        name.insertAdjacentElement("afterend", notice);
+    } else {
+        content.appendChild(notice);
+    }
 }
 
 function build_item_card(item: ItemShape, course: CourseShape): HTMLAnchorElement {
     const now_date_only = getDateOnly(new Date())!;
     const start_date_only = item.start_date ? getDateOnly(item.start_date) : null;
     const is_not_yet_available = start_date_only !== null && start_date_only > now_date_only;
+    const link_statuses = get_state(LINK_STATUSES) as LinkStatuses;
+    const is_link_error = link_statuses[item.url ?? ""] === true;
 
     const link = document.createElement("a");
     link.href = item.url ?? "";
     link.className = CalendarCss.ITEM;
+    link.dataset.itemUrl = item.url ?? "";
+    link.dataset.itemCompleted = String(item.completed);
+    link.dataset.itemNotYetAvailable = String(is_not_yet_available);
+    link.dataset.itemDueDate = item.due_date ?? "";
+    if (item.url) {
+        link.addEventListener("click", () => {
+            void chrome.runtime.sendMessage({ action: ASSIGNMENT_LINK_CLICKED, url: item.url });
+        });
+    }
     if (is_not_yet_available) {
         link.classList.add(CalendarCss.ITEM_UNAVAILABLE);
     }
@@ -172,9 +210,38 @@ function build_item_card(item: ItemShape, course: CourseShape): HTMLAnchorElemen
     content.appendChild(build_item_meta(item, course, now_date_only));
 
     link.appendChild(content);
-    link.appendChild(build_completion_badge(item.completed));
+    update_link_error_notice(link, is_link_error);
+    link.appendChild(build_completion_badge(item.completed, is_link_error, is_not_yet_available));
 
     return link;
+}
+
+export function update_item_link_status(url: string, unavailable: boolean): void {
+    const calendar_container = document.getElementById(PanelCss.CALENDAR_CONTAINER_ID);
+    if (!calendar_container) return;
+
+    calendar_container.querySelectorAll<HTMLAnchorElement>(`.${CalendarCss.ITEM}`).forEach((link) => {
+        if (link.dataset.itemUrl !== url) return;
+        const is_not_yet_available = link.dataset.itemNotYetAvailable === "true";
+        link.classList.toggle(CalendarCss.ITEM_UNAVAILABLE, is_not_yet_available);
+        update_link_error_notice(link, unavailable);
+        const badge = link.querySelector<HTMLDivElement>(`.${CalendarCss.ITEM_COMPLETED_BADGE}, .${CalendarCss.ITEM_INCOMPLETE_DOT}`);
+        if (!badge) return;
+        const completed = link.dataset.itemCompleted === "true";
+        badge.classList.toggle(CalendarCss.ITEM_COMPLETED_BADGE, completed && !unavailable && !is_not_yet_available);
+        badge.classList.toggle(CalendarCss.ITEM_INCOMPLETE_DOT, !completed || unavailable || is_not_yet_available);
+        badge.textContent = unavailable ? UNAVAILABLE_BADGE_SYMBOL : is_not_yet_available ? NOT_YET_AVAILABLE_BADGE_SYMBOL : completed ? COMPLETED_BADGE_SYMBOL : INCOMPLETE_DOT_SYMBOL;
+
+        const due_time = link.querySelector<HTMLElement>(`.${CalendarCss.ITEM_TIME}`);
+        if (due_time) {
+            due_time.style.color = get_due_time_color(
+                link.dataset.itemDueDate,
+                completed,
+                getDateOnly(new Date())!,
+                unavailable,
+            ) ?? "";
+        }
+    });
 }
 
 function build_empty_day_notice(): HTMLDivElement {
@@ -285,38 +352,19 @@ function mount_scrollbar_indicator(calendar_container: HTMLElement): void {
     calendar_container.addEventListener("scroll", () => sync_scrollbar_indicator(calendar_container));
 }
 
-export function initialize_gui(): void {
-    update_gui({} as CourseData, true);
-}
 
-export function add_data_status_indicator(is_stale: boolean): void {
-    document.querySelector(`.${CalendarCss.FETCH_STATUS}`)?.remove();
+let scroll_listener_initialized = false;
 
-    const last_fetched_el = document.querySelector(`.${FrequencyChartCss.LAST_FETCHED}`);
-    if (!last_fetched_el) return;
-
-    last_fetched_el.classList.remove(CalendarCss.FETCHING);
-
-    if (is_stale) {
-        const fetch_status = document.createElement("span");
-        fetch_status.className = CalendarCss.FETCH_STATUS;
-        const label_text = document.createTextNode(FETCHING_STATUS_LABEL);
-        const spinner = document.createElement("span");
-        spinner.className = CalendarCss.FETCH_SPINNER;
-        fetch_status.appendChild(label_text);
-        fetch_status.appendChild(spinner);
-        last_fetched_el.appendChild(fetch_status);
-        last_fetched_el.classList.add(CalendarCss.FETCHING);
-    }
-}
-
-export function update_gui(course_data: CourseData, is_from_cache: boolean = false): void {
+export function update_calendar(course_data: CourseData): void {
     const calendar_container = document.getElementById(PanelCss.CALENDAR_CONTAINER_ID);
     if (!calendar_container) return;
 
-    ui_state.last_course_data = course_data;
+    if (!scroll_listener_initialized) {
+        calendar_container.addEventListener("scroll", () => save_scroll_state(calendar_container));
+        scroll_listener_initialized = true;
+    }
+
     ensureCourseColorsAssigned(course_data);
-    update_settings_course_list(course_data);
 
     const preserved_week_offset = get_preserved_week_offset(calendar_container);
     calendar_container.innerHTML = "";
@@ -329,9 +377,8 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
         console.error("Error creating frequency chart (non-fatal):", e);
     }
 
-    if (is_from_cache) {
-        add_data_status_indicator(true);
-    }
+    update_last_fetched_label(get_state(LAST_FETCH_COMPLETED_AT));
+    update_fetching_indicator();
 
     if (!min_date || !max_date) {
         show_empty_state(calendar_container);
@@ -340,34 +387,22 @@ export function update_gui(course_data: CourseData, is_from_cache: boolean = fal
 
     const today = new Date();
     const start_date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    start_date.setDate(start_date.getDate() - ui_state.calendar_start_days_back);
+    const calendar_days_back = get_setting(CALENDAR_DAYS_BACK)
+    start_date.setDate(start_date.getDate() - calendar_days_back);
     const end_date = new Date(max_date);
 
     build_calendar_list(items_by_date, start_date, end_date, calendar_container);
     mount_scrollbar_indicator(calendar_container);
 }
 
-export function set_last_fetched_time(fetch_time: Date): void {
-    ui_state.last_fetched_time = fetch_time;
+function save_scroll_state(container: HTMLElement): void {
+    set_state(SCROLL_POS, container.scrollTop);
 }
 
-export function register_ui_callbacks({ on_refresh, on_rerender }: { on_refresh: () => void; on_rerender: () => void }): void {
-    ui_state.on_refresh = on_refresh;
-    ui_state.on_rerender = on_rerender;
+export function restore_scroll_state(container: HTMLElement): void {
+    const saved = get_state(SCROLL_POS) as number;
+    saved > 0 ? (container.scrollTop = saved) : scroll_to_today();
 }
 
-export function apply_settings({ days_back, show_completed }: { days_back: number; show_completed?: boolean }): void {
-    ui_state.calendar_start_days_back = days_back;
-    localStorage.setItem(CALENDAR_START_DAYS_BACK_STORAGE_KEY, days_back.toString());
+register_panel_restore_callback(() => update_calendar(get_state(COURSE_DATA)));
 
-    if (show_completed !== undefined) {
-        ui_state.show_completed_items = show_completed;
-        localStorage.setItem(SHOW_COMPLETED_STORAGE_KEY, show_completed.toString());
-    }
-
-    const days_input = document.getElementById(SettingsCss.DAYS_BACK_INPUT_ID) as HTMLInputElement | null;
-    if (days_input) days_input.value = days_back.toString();
-
-    const completed_toggle = document.getElementById(SettingsCss.SHOW_COMPLETED_INPUT_ID) as HTMLInputElement | null;
-    if (completed_toggle) completed_toggle.checked = ui_state.show_completed_items;
-}

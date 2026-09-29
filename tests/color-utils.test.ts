@@ -68,7 +68,7 @@ describe("ensureCourseColorsAssigned", () => {
         ensureCourseColorsAssigned(course_data);
         const first_color = getCourseColor("Stable Course");
 
-        // Call again — color must remain the same
+        // Call again - color must remain the same
         ensureCourseColorsAssigned(course_data);
         expect(getCourseColor("Stable Course")).toBe(first_color);
     });

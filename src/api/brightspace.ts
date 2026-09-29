@@ -5,7 +5,7 @@
 // structured Course and Item objects consumed by the UI.
 
 import type { CourseShape } from "../shared/types";
-import { BrightspaceHtml } from "../ui/dom-constants";
+import { BrightspaceHtml } from "../shared/constants/ui";
 
 export interface BrightspaceItem {
     OrgUnitId: number;
@@ -31,21 +31,21 @@ export interface BrightspaceQuiz {
     Name: string;
     DueDate?: string | null;
     EndDate?: string | null;
-    start_date?: string | null;
+    StartDate?: string | null;
 }
 
 export interface BrightspaceAssignment {
     Id: number;
     Name: string;
     DueDate?: string | null;
-    Availability?: { EndDate?: string | null; start_date?: string | null };
+    Availability?: { EndDate?: string | null; StartDate?: string | null };
 }
 
 export interface BrightspaceDiscussionTopic {
     TopicId: number;
     Name: string;
     EndDate?: string | null;
-    start_date?: string | null;
+    StartDate?: string | null;
 }
 
 interface BrightspaceSubmission {
@@ -120,7 +120,6 @@ class Item {
     due_date?: string | null;
     start_date?: string | null;
     completed: boolean;
-
     constructor(id: number, name: string, url: string | undefined, due_date: string | null | undefined, completed: boolean, start_date: string | null = null) {
         this.id = id;
         this.name = name;
@@ -144,6 +143,34 @@ async function fetch_api_endpoint(base_url: string, endpoint: string): Promise<u
 async function fetch_quizzes(base_url: string, course_id: number): Promise<BrightspaceQuiz[]> {
     return fetch_api_endpoint(base_url, `/d2l/api/le/${ApiVersion.LE_QUIZZES}/${course_id}/quizzes/`) as Promise<BrightspaceQuiz[]>;
 }
+
+/*
+Can get quiz available date by scraping quiz submission page.
+Keep in case it's needed in the future
+export async function get_quiz_available_date(base_url: string, quiz_id: number, org_id: number): Promise<Date | null> {
+    const regex = /Available on\s+(.+?)(?=\suntil|$)/;
+    try {
+        const url = `${base_url}/d2l/lms/quizzing/user/quiz_summary.d2l?qi=${quiz_id}&ou=${org_id}`;
+        const response = await fetch(url, { credentials: "include" });
+        if (!response.ok) return null;
+        const html = await response.text();
+
+        const element_id_pattern = new RegExp(`id=["']${BrightspaceHtml.QUIZ_AVAILABLE_ELEMENT_ID}["'][^>]*>([^<]*)`);
+        const element_match = html.match(element_id_pattern);
+        if (element_match) {
+            const completed_match = element_match[1].match(regex);
+            if (completed_match) {
+                return new Date(completed_match[1]);
+            }
+        }
+
+        return null;
+    } catch (error) {
+        console.warn(`Failed to fetch available date for quiz ${quiz_id}:`, error);
+        return null;
+    }
+}
+*/
 
 export async function get_quiz_attempt_count(base_url: string, quiz_id: number, org_id: number): Promise<number> {
     try {
@@ -283,7 +310,7 @@ export async function fetch_paged_api_data(url: string): Promise<unknown[]> {
     return data.Items || data.Object || data.Objects || [];
 }
 
-export function clear_past_start_date(start_date: string | null | undefined): string | null {
+export function set_non_future_date_null(start_date: string | null | undefined): string | null {
     if (!start_date) return null;
     const start_date_obj = new Date(start_date);
     const now = new Date();
@@ -349,14 +376,14 @@ export function build_course_data(all_courses: BrightspaceCourseInfo[], all_item
     return courses_map;
 }
 
-export function build_quiz_item(base_url: string, course_id: number, quiz: BrightspaceQuiz, attempt_count: number): BrightspaceItem {
+export function build_quiz_item(base_url: string, course_id: number, quiz: BrightspaceQuiz, attempt_count: number, /*available_date: Date | null*/): BrightspaceItem {
     return {
         OrgUnitId: course_id,
         ItemId: quiz.QuizId,
         ItemName: quiz.Name,
         ItemType: ActivityType.QUIZ,
         ItemUrl: `${base_url}/d2l/lms/quizzing/user/quiz_summary.d2l?ou=${course_id}&qi=${quiz.QuizId}&cfql=0`,
-        StartDate: clear_past_start_date(quiz.start_date),
+        StartDate: set_non_future_date_null(quiz.StartDate), //2026-05-05T10:00:00.000Z
         DueDate: quiz.DueDate || quiz.EndDate,
         ActivityType: ActivityType.QUIZ,
         DateCompleted: attempt_count > 0 ? new Date().toISOString() : null,
@@ -370,7 +397,7 @@ export function build_assignment_item(base_url: string, course_id: number, assig
         ItemName: assignment.Name,
         ItemType: ActivityType.DROPBOX,
         ItemUrl: `${base_url}/d2l/lms/dropbox/user/folder_submit_files.d2l?db=${assignment.Id}&grpid=0&isprv=0&bp=0&ou=${course_id}`,
-        StartDate: clear_past_start_date(assignment.Availability?.start_date),
+        StartDate: set_non_future_date_null(assignment.Availability?.StartDate),
         DueDate: assignment.DueDate || assignment.Availability?.EndDate,
         ActivityType: ActivityType.DROPBOX,
         DateCompleted: has_submission ? new Date().toISOString() : null,
@@ -384,8 +411,8 @@ export function build_discussion_item(base_url: string, course_id: number, topic
         ItemName: topic.Name,
         ItemType: ActivityType.DISCUSSION,
         ItemUrl: `${base_url}/d2l/le/${course_id}/discussions/topics/${topic.TopicId}/View`,
-        StartDate: clear_past_start_date(topic.start_date),
-        DueDate: topic.EndDate || topic.start_date,
+        StartDate: set_non_future_date_null(topic.StartDate),
+        DueDate: topic.EndDate || topic.StartDate,
         ActivityType: ActivityType.DISCUSSION,
         DateCompleted: has_posted ? new Date().toISOString() : null,
     };
@@ -396,7 +423,12 @@ async function fetch_quiz_items_for_course(base_url: string, course: Brightspace
     const attempt_counts = await Promise.all(
         quizzes.map(quiz => get_quiz_attempt_count(base_url, quiz.QuizId, course.OrgUnit.Id))
     );
-    return quizzes.map((quiz, index) => build_quiz_item(base_url, course.OrgUnit.Id, quiz, attempt_counts[index]));
+    /*
+    const attempt_dates = await Promise.all(
+        quizzes.map(quiz => get_quiz_available_date(base_url, quiz.QuizId, course.OrgUnit.Id))
+    )
+    */
+    return quizzes.map((quiz, index) => build_quiz_item(base_url, course.OrgUnit.Id, quiz, attempt_counts[index], /*attempt_dates[index]*/));
 }
 
 async function fetch_assignment_items_for_course(base_url: string, course: BrightspaceCourseInfo): Promise<BrightspaceItem[]> {

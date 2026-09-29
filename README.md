@@ -2,7 +2,7 @@
 
 A Chrome extension that aggregates assignment due dates, quizzes, and discussion deadlines from all your enrolled D2L/Brightspace courses into a single chronological side panel.
 
-D2L buries due dates across individual course pages. This fixes that.
+Due dates can be burried across individual course pages. This fixes that.
 
 **[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/spark-for-brightspace/blajgfkdhpfijoemghigapachifplibd)** · Works on any Chromium browser (Chrome, Edge, Brave, Opera)
 

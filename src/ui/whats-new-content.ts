@@ -1,11 +1,12 @@
 export const WHATS_NEW_CONTENT = Object.freeze({
-    title: "Spark for Brightspace (1.3.2)",
+    title: "Spark for Brightspace (1.4.2)",
     items: [
         "[Note]",
         "Click the refresh button on the panel (top left) to update upcoming assignments",
 
         "[General]",
         "- Assignment frequency chart now starts on Monday instead of Sunday",
+        "- Calendar GUI style changed",
 
         "[Features]",
         "- Spark Dark Mode",
